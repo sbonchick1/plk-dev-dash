@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Popeyes New Restaurant Openings</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',sans-serif;background:#f3f4f6;color:#111;}
+.header{background:linear-gradient(135deg,#E8521A 0%,#C1272D 100%);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:70px;box-shadow:0 2px 8px rgba(0,0,0,0.15);}
+.logo{width:40px;height:40px;background:white;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;color:#E8521A;flex-shrink:0;}
+.header-title{font-size:17px;font-weight:700;color:white;}
+.header-sub{font-size:11px;color:rgba(255,255,255,0.8);margin-top:2px;}
+.filters{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;}
+.filter-group{display:flex;flex-direction:column;gap:3px;position:relative;}
+.filter-label{font-size:9px;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.7px;}
+.cb-trigger{background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.35);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer;display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:110px;justify-content:space-between;transition:background .15s;}
+.cb-trigger:hover,.cb-trigger.open{background:rgba(255,255,255,0.28);}
+.cb-trigger.filtered{background:rgba(255,255,255,0.9);color:#E8521A;border-color:white;font-weight:700;}
+.cb-arrow{font-size:9px;opacity:0.7;transition:transform .15s;}
+.cb-trigger.open .cb-arrow{transform:rotate(180deg);}
+.cb-reset{display:none;font-size:11px;line-height:1;padding:1px 3px;margin-left:2px;border-radius:3px;cursor:pointer;opacity:0.6;}
+.cb-reset:hover{opacity:1;background:rgba(232,82,26,0.15);}
+.cb-trigger.filtered .cb-reset{display:inline;}
+.cb-panel{display:none;position:absolute;top:calc(100% + 6px);right:0;background:white;border:1px solid #e5e7eb;border-radius:10px;box-shadow:0 8px 24px rgba(0,0,0,0.18);z-index:500;min-width:170px;overflow:hidden;}
+.cb-panel.open{display:block;}
+.cb-panel-header{display:flex;align-items:center;justify-content:space-between;padding:9px 12px 7px;border-bottom:1px solid #f3f4f6;}
+.cb-select-all{font-size:11px;font-weight:600;color:#E8521A;cursor:pointer;background:none;border:none;padding:0;}
+.cb-select-all:hover{text-decoration:underline;}
+.cb-clear{font-size:11px;color:#9ca3af;cursor:pointer;background:none;border:none;padding:0;}
+.cb-clear:hover{color:#E8521A;}
+.cb-options{padding:6px 0;}
+.cb-option{display:flex;align-items:center;gap:9px;padding:6px 12px;cursor:pointer;transition:background .1s;}
+.cb-option:hover{background:#fef3ee;}
+.cb-option input[type=checkbox]{accent-color:#E8521A;width:14px;height:14px;cursor:pointer;flex-shrink:0;}
+.cb-option label{font-size:12px;color:#374151;cursor:pointer;line-height:1.2;}
+.pills-bar{background:white;border-bottom:1px solid #e5e7eb;padding:6px 24px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;min-height:34px;}
+.pill{background:#E8521A18;color:#E8521A;border:1px solid #E8521A40;border-radius:99px;padding:2px 10px;font-size:11px;font-weight:600;}
+.pill-x{margin-left:4px;cursor:pointer;opacity:0.6;font-size:10px;}
+.pill-x:hover{opacity:1;}
+.pill-label{font-size:11px;color:#9ca3af;}
+.tabs{display:flex;border-bottom:2px solid #e5e7eb;background:white;padding-left:24px;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.tab{padding:12px 18px;background:none;border:none;color:#6b7280;border-bottom:3px solid transparent;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;margin-bottom:-2px;white-space:nowrap;}
+.tab.active{color:#E8521A;border-bottom-color:#E8521A;font-weight:700;}
+.content{padding:20px 24px;}
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;}
+.kpi-card{background:white;border-radius:10px;padding:16px 18px;border:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,0.07);}
+.kpi-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:5px;}
+.kpi-value{font-size:22px;font-weight:700;color:#111;}
+.kpi-sub{font-size:11px;color:#9ca3af;margin-top:3px;}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.chart-card{background:white;border-radius:10px;padding:20px;border:1px solid #e5e7eb;box-shadow:0 1px 4px rgba(0,0,0,0.07);}
+.chart-card.full{grid-column:1/-1;}
+.chart-title{font-size:13px;font-weight:600;color:#374151;margin-bottom:2px;}
+.chart-sub{font-size:11px;color:#9ca3af;margin-bottom:14px;}
+.footnote{font-size:10px;color:#9ca3af;margin-top:12px;font-style:italic;border-top:1px solid #f0f0f0;padding-top:8px;line-height:1.5;}
+canvas{max-height:260px;}
+.overlay{position:fixed;inset:0;background:#f3f4f6;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
+.spinner{width:48px;height:48px;border:4px solid #E8521A;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.overlay-title{font-size:16px;font-weight:600;color:#374151;}
+.overlay-sub{font-size:12px;color:#9ca3af;margin-top:6px;}
+.retry-btn{background:#E8521A;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;margin-top:16px;}
+.refresh-btn{margin-left:10px;background:rgba(255,255,255,0.2);color:white;border:none;border-radius:4px;padding:1px 8px;font-size:10px;cursor:pointer;}
+.footer{text-align:center;padding:12px;color:#9ca3af;font-size:11px;border-top:1px solid #e5e7eb;background:white;margin-top:8px;}
+.tab-content{display:none;}
+.tab-content.active{display:block;}
+</style>
+</head>
+<body>
+
+<div id="loading-overlay" class="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-title">Loading live Smartsheet data…</div>
+  <div class="overlay-sub">Fetching your restaurant openings</div>
+</div>
+<div id="error-overlay" class="overlay" style="display:none;">
+  <div style="font-size:40px;">⚠️</div>
+  <div class="overlay-title" style="margin-top:12px;">Could not load Smartsheet data</div>
+  <div class="overlay-sub" id="error-msg" style="max-width:400px;text-align:center;padding:0 20px;"></div>
+  <button class="retry-btn" onclick="fetchData()">↻ Try Again</button>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="header">
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="logo">P</div>
+      <div>
+        <div class="header-title">Popeyes New Restaurant Openings</div>
+        <div class="header-sub" id="header-sub">Loading…</div>
+      </div>
+    </div>
+    <div class="filters">
+
+      <div class="filter-group" id="fg-yr">
+        <span class="filter-label">Year</span>
+        <button class="cb-trigger" id="btn-yr" onclick="togglePanel('yr')">
+          <span id="lbl-yr">All Years</span>
+          <span class="cb-reset" onclick="event.stopPropagation();selectAll('yr')" title="Reset to all">✕</span>
+          <span class="cb-arrow">▼</span>
+        </button>
+        <div class="cb-panel" id="panel-yr">
+          <div class="cb-panel-header">
+            <button class="cb-select-all" onclick="selectAll('yr')">Select All</button>
+            <button class="cb-clear" onclick="clearAll('yr')">Clear</button>
+          </div>
+          <div class="cb-options" id="opts-yr"></div>
+        </div>
+      </div>
+
+      <div class="filter-group" id="fg-div">
+        <span class="filter-label">Division</span>
+        <button class="cb-trigger" id="btn-div" onclick="togglePanel('div')">
+          <span id="lbl-div">All Divisions</span>
+          <span class="cb-reset" onclick="event.stopPropagation();selectAll('div')" title="Reset to all">✕</span>
+          <span class="cb-arrow">▼</span>
+        </button>
+        <div class="cb-panel" id="panel-div">
+          <div class="cb-panel-header">
+            <button class="cb-select-all" onclick="selectAll('div')">Select All</button>
+            <button class="cb-clear" onclick="clearAll('div')">Clear</button>
+          </div>
+          <div class="cb-options" id="opts-div"></div>
+        </div>
+      </div>
+
+      <div class="filter-group" id="fg-arch">
+        <span class="filter-label">Architecture Type</span>
+        <button class="cb-trigger" id="btn-arch" onclick="togglePanel('arch')">
+          <span id="lbl-arch">All Types</span>
+          <span class="cb-reset" onclick="event.stopPropagation();selectAll('arch')" title="Reset to all">✕</span>
+          <span class="cb-arrow">▼</span>
+        </button>
+        <div class="cb-panel" id="panel-arch">
+          <div class="cb-panel-header">
+            <button class="cb-select-all" onclick="selectAll('arch')">Select All</button>
+            <button class="cb-clear" onclick="clearAll('arch')">Clear</button>
+          </div>
+          <div class="cb-options" id="opts-arch"></div>
+        </div>
+      </div>
+
+      <div class="filter-group" id="fg-urb">
+        <span class="filter-label">Urbanicity</span>
+        <button class="cb-trigger" id="btn-urb" onclick="togglePanel('urb')">
+          <span id="lbl-urb">All Urbanicities</span>
+          <span class="cb-reset" onclick="event.stopPropagation();selectAll('urb')" title="Reset to all">✕</span>
+          <span class="cb-arrow">▼</span>
+        </button>
+        <div class="cb-panel" id="panel-urb">
+          <div class="cb-panel-header">
+            <button class="cb-select-all" onclick="selectAll('urb')">Select All</button>
+            <button class="cb-clear" onclick="clearAll('urb')">Clear</button>
+          </div>
+          <div class="cb-options" id="opts-urb"></div>
+        </div>
+      </div>
+
+      <div class="filter-group" id="fg-fss">
+        <span class="filter-label">FSS Grade</span>
+        <button class="cb-trigger" id="btn-fss" onclick="togglePanel('fss')">
+          <span id="lbl-fss">All Grades</span>
+          <span class="cb-reset" onclick="event.stopPropagation();selectAll('fss')" title="Reset to all">✕</span>
+          <span class="cb-arrow">▼</span>
+        </button>
+        <div class="cb-panel" id="panel-fss">
+          <div class="cb-panel-header">
+            <button class="cb-select-all" onclick="selectAll('fss')">Select All</button>
+            <button class="cb-clear" onclick="clearAll('fss')">Clear</button>
+          </div>
+          <div class="cb-options" id="opts-fss"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="pills-bar" id="pills-bar"></div>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('overview',this)">Overview</button>
+    <button class="tab" onclick="switchTab('division',this)">Division</button>
+    <button class="tab" onclick="switchTab('architecture',this)">Architecture Type</button>
+    <button class="tab" onclick="switchTab('urbanicity',this)">Urbanicity</button>
+    <button class="tab" onclick="switchTab('fss',this)">FSS</button>
+  </div>
+
+  <div class="content">
+    <div class="kpi-grid" id="kpis"></div>
+
+    <div id="tab-overview" class="tab-content active">
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <div class="chart-title">Restaurant Openings by Year</div>
+          <div class="chart-sub">Hover over bars to see restaurant count</div>
+          <canvas id="c-openings-year"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Openings by Division</div>
+          <div class="chart-sub">Hover over segments to see restaurant count</div>
+          <canvas id="c-div-pie"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg ARS by Opening Year</div>
+          <div class="chart-sub">Hover over bars to see restaurant count</div>
+          <canvas id="c-ars-bench"></canvas>
+          <div class="footnote">Average ARS: For new restaurant openings &gt; 12 months, TTM ARS is used. For new restaurant openings between 6–12 months, Annualized ARS is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg EBITDA by Opening Year</div>
+          <div class="chart-sub">Hover over bars to see restaurant count</div>
+          <canvas id="c-ebitda-bench"></canvas>
+          <div class="footnote">Average EBITDA $: For new restaurant openings &gt; 12 months, TTM EBITDA $ is used. For new restaurant openings between 6–12 months, Annualized EBITDA $ is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-division" class="tab-content">
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <div class="chart-title">Division Mix</div>
+          <div class="chart-sub">Hover over segments to see restaurant count</div>
+          <canvas id="c-div-mix"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Opening Count by Year & Division</div>
+          <div class="chart-sub">Hover over bars to see restaurant count</div>
+          <canvas id="c-div-count"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg ARS by Opening Year & Division</div>
+          <div class="chart-sub">Hover over bars to see avg ARS & restaurant count</div>
+          <canvas id="c-div-ars"></canvas>
+          <div class="footnote">Average ARS: For new restaurant openings &gt; 12 months, TTM ARS is used. For new restaurant openings between 6–12 months, Annualized ARS is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg EBITDA $ by Opening Year & Division</div>
+          <div class="chart-sub">Hover over bars to see avg EBITDA & restaurant count</div>
+          <canvas id="c-div-eb"></canvas>
+          <div class="footnote">Average EBITDA $: For new restaurant openings &gt; 12 months, TTM EBITDA $ is used. For new restaurant openings between 6–12 months, Annualized EBITDA $ is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-architecture" class="tab-content">
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <div class="chart-title">Architecture Type Mix</div>
+          <div class="chart-sub">Hover over segments to see restaurant count</div>
+          <canvas id="c-arch-pie"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Opening Count by Year & Architecture Type</div>
+          <div class="chart-sub">Hover over bars to see restaurant count</div>
+          <canvas id="c-arch-count"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg ARS by Opening Year & Architecture Type</div>
+          <div class="chart-sub">Hover over bars to see avg ARS & restaurant count</div>
+          <canvas id="c-arch-ars"></canvas>
+          <div class="footnote">Average ARS: For new restaurant openings &gt; 12 months, TTM ARS is used. For new restaurant openings between 6–12 months, Annualized ARS is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg EBITDA $ by Opening Year & Architecture Type</div>
+          <div class="chart-sub">Hover over bars to see avg EBITDA & restaurant count</div>
+          <canvas id="c-arch-eb"></canvas>
+          <div class="footnote">Average EBITDA $: For new restaurant openings &gt; 12 months, TTM EBITDA $ is used. For new restaurant openings between 6–12 months, Annualized EBITDA $ is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-urbanicity" class="tab-content">
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <div class="chart-title">Urbanicity Mix</div>
+          <div class="chart-sub">Hover over segments to see restaurant count</div>
+          <canvas id="c-urb-pie"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Opening Count by Year & Urbanicity</div>
+          <div class="chart-sub">Hover over bars to see restaurant count</div>
+          <canvas id="c-urb-count"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg ARS by Opening Year & Urbanicity</div>
+          <div class="chart-sub">Hover over bars to see avg ARS & restaurant count</div>
+          <canvas id="c-urb-ars"></canvas>
+          <div class="footnote">Average ARS: For new restaurant openings &gt; 12 months, TTM ARS is used. For new restaurant openings between 6–12 months, Annualized ARS is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg EBITDA $ by Opening Year & Urbanicity</div>
+          <div class="chart-sub">Hover over bars to see avg EBITDA & restaurant count</div>
+          <canvas id="c-urb-eb"></canvas>
+          <div class="footnote">Average EBITDA $: For new restaurant openings &gt; 12 months, TTM EBITDA $ is used. For new restaurant openings between 6–12 months, Annualized EBITDA $ is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="tab-fss" class="tab-content">
+      <div class="chart-grid-2">
+        <div class="chart-card">
+          <div class="chart-title">FSS Grade Distribution</div>
+          <div class="chart-sub">Hover over bars to see restaurant count</div>
+          <canvas id="c-fss-grade"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg FSS Score by Opening Year</div>
+          <div class="chart-sub">Hover over bars to see avg score & restaurant count</div>
+          <canvas id="c-fss-year"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg ARS by Opening Year & FSS Grade</div>
+          <div class="chart-sub">Hover over bars to see avg ARS & restaurant count</div>
+          <canvas id="c-fss-ars"></canvas>
+          <div class="footnote">Average ARS: For new restaurant openings &gt; 12 months, TTM ARS is used. For new restaurant openings between 6–12 months, Annualized ARS is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Avg EBITDA $ by Opening Year & FSS Grade</div>
+          <div class="chart-sub">Hover over bars to see avg EBITDA & restaurant count</div>
+          <canvas id="c-fss-eb"></canvas>
+          <div class="footnote">Average EBITDA $: For new restaurant openings &gt; 12 months, TTM EBITDA $ is used. For new restaurant openings between 6–12 months, Annualized EBITDA $ is used. For new restaurant openings less than 6 months, data is being excluded.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="footer" id="footer"></div>
+</div>
+
+<script>
+const API = "/api/sheet";
+const YEARS=[2020,2021,2022,2023,2024,2025];
+const DIVS=["Northeast","Southeast","Central","West","Canada","Non-Trad"];
+const ARCHS=["Freestanding","Inline","Foodcourt","Ghost Kitchen"];
+const URBS=["CBD","Urban","Dense Suburban","Suburban","Rural"];
+const GRADES=["A","B","D","F"];
+const PLK={orange:"#E8521A",teal:"#00A99D",purple:"#7B2D8B",yellow:"#FFC20E",orange2:"#F7941D",red:"#C1272D",green:"#4CAF50"};
+const DIV_C={Northeast:PLK.orange,Southeast:PLK.teal,Central:PLK.purple,West:PLK.yellow,Canada:PLK.orange2,"Non-Trad":PLK.red};
+const ARCH_C={Freestanding:PLK.orange,Inline:PLK.teal,Foodcourt:PLK.purple,"Ghost Kitchen":PLK.green};
+const URB_C={CBD:PLK.red,Urban:PLK.purple,"Dense Suburban":PLK.orange,Suburban:PLK.teal,Rural:PLK.yellow};
+const GRADE_C={A:PLK.teal,B:PLK.orange2,D:PLK.yellow,F:PLK.red};
+let ALL=[];
+let CHS={};
+const FSTATE={yr:new Set(YEARS.map(String)),div:new Set(DIVS),arch:new Set(ARCHS),urb:new Set(URBS),fss:new Set(GRADES)};
+const FMETA={yr:{items:YEARS.map(String),allLabel:"All Years",label:"Year"},div:{items:DIVS,allLabel:"All Divisions",label:"Division"},arch:{items:ARCHS,allLabel:"All Types",label:"Arch Type"},urb:{items:URBS,allLabel:"All Urbanicities",label:"Urbanicity"},fss:{items:GRADES,allLabel:"All Grades",label:"FSS Grade"}};
+function buildFilterPanels(){Object.entries(FMETA).forEach(([key,meta])=>{const container=document.getElementById("opts-"+key);container.innerHTML=meta.items.map(item=>`<div class="cb-option" onclick="toggleItem('${key}','${item}')"><input type="checkbox" id="cb-${key}-${item.replace(/\s/g,'_')}" value="${item}" checked onclick="event.stopPropagation();toggleItem('${key}','${item}')"><label for="cb-${key}-${item.replace(/\s/g,'_')}">${item}</label></div>`).join("")})}
+function toggleItem(key,item){const s=FSTATE[key];if(s.has(item)){s.delete(item)}else{s.add(item)}syncCheckboxes(key);updateFilterButton(key);applyFilters()}
+function selectAll(key){FSTATE[key]=new Set(FMETA[key].items);syncCheckboxes(key);updateFilterButton(key);const panel=document.getElementById("panel-"+key);const btn=document.getElementById("btn-"+key);panel.classList.remove("open");btn.classList.remove("open");if(openPanel===key)openPanel=null;applyFilters()}
+function clearAll(key){FSTATE[key]=new Set();syncCheckboxes(key);updateFilterButton(key);applyFilters()}
+function syncCheckboxes(key){FMETA[key].items.forEach(item=>{const cb=document.getElementById("cb-"+key+"-"+item.replace(/\s/g,'_'));if(cb)cb.checked=FSTATE[key].has(item)})}
+function updateFilterButton(key){const meta=FMETA[key];const s=FSTATE[key];const btn=document.getElementById("btn-"+key);const lbl=document.getElementById("lbl-"+key);const allSelected=s.size===meta.items.length;if(s.size===0){lbl.textContent="None selected";btn.classList.add("filtered")}else if(allSelected){lbl.textContent=meta.allLabel;btn.classList.remove("filtered")}else if(s.size===1){lbl.textContent=[...s][0];btn.classList.add("filtered")}else{lbl.textContent=s.size+" selected";btn.classList.add("filtered")}}
+let openPanel=null;
+function togglePanel(key){const panel=document.getElementById("panel-"+key);const btn=document.getElementById("btn-"+key);if(openPanel&&openPanel!==key){document.getElementById("panel-"+openPanel).classList.remove("open");document.getElementById("btn-"+openPanel).classList.remove("open")}const isOpen=panel.classList.toggle("open");btn.classList.toggle("open",isOpen);openPanel=isOpen?key:null}
+document.addEventListener("click",function(e){if(openPanel&&!e.target.closest(".filter-group")){document.getElementById("panel-"+openPanel).classList.remove("open");document.getElementById("btn-"+openPanel).classList.remove("open");openPanel=null}});
+const fmt$=n=>n==null?"N/A":n>=1e6?`$${(n/1e6).toFixed(2)}M`:`$${(n/1e3).toFixed(0)}K`;
+const mean=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
+function getF(){return{yrs:FSTATE.yr,divs:FSTATE.div,archs:FSTATE.arch,urbs:FSTATE.urb,fsss:FSTATE.fss}}
+function applyF(rows,f){return rows.filter(r=>f.yrs.has(String(r.openYear))&&(r.div==null||f.divs.has(r.div))&&(r.arch==null||f.archs.has(r.arch))&&(r.urb==null||f.urbs.has(r.urb))&&(r.fssGrade==null||f.fsss.has(r.fssGrade)))}
+function updatePills(f){const keyMap={yrs:'yr',divs:'div',archs:'arch',urbs:'urb',fsss:'fss'};let html="";let any=false;Object.entries(keyMap).forEach(([fk,mk])=>{const s=f[fk];const m=FMETA[mk];if(s.size<m.items.length){any=true;[...s].forEach(v=>{html+=`<span class="pill">${v} <span class="pill-x" onclick="removePill('${mk}','${v}')">✕</span></span>`})}});document.getElementById("pills-bar").innerHTML=any?`<span class="pill-label">Active filters:</span>${html}`:""}
+function removePill(key,val){FSTATE[key].delete(val);syncCheckboxes(key);updateFilterButton(key);applyFilters()}
+function dc(id){if(CHS[id]){CHS[id].destroy();delete CHS[id]}}
+function bar(id,labels,datasets,opts={}){dc(id);const ctx=document.getElementById(id);if(!ctx)return;CHS[id]=new Chart(ctx,{type:"bar",data:{labels,datasets},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{display:opts.legend||false,labels:{color:"#6b7280",font:{size:11}}},tooltip:opts.tooltip||{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white"}},scales:{x:{grid:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},y:{grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11},callback:opts.yFmt||undefined}}},...(opts.extra||{})}})}
+function pie(id,labels,data,colors){dc(id);const ctx=document.getElementById(id);if(!ctx)return;CHS[id]=new Chart(ctx,{type:"doughnut",data:{labels,datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:"white"}]},options:{responsive:true,maintainAspectRatio:true,plugins:{legend:{position:"right",labels:{color:"#374151",font:{size:11}}},tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} restaurants`}}}}})}
+function renderAll(){const f=getF();const filt=applyF(ALL,f);updatePills(f);const withEB=filt.filter(r=>r.annEB!=null);const profCount=withEB.filter(r=>r.annEB>0).length;const profPct=withEB.length?(profCount/withEB.length*100).toFixed(1)+"%":"N/A";const ebVals=filt.filter(r=>r.ebPct!=null).map(r=>r.ebPct);const avgEBpct=ebVals.length?mean(ebVals).toFixed(1)+"%":"N/A";const fssVals=filt.filter(r=>r.fssScore!=null).map(r=>r.fssScore);const avgFSS=fssVals.length?mean(fssVals).toFixed(2):"N/A";const arsVals=filt.filter(r=>r.arsBench!=null).map(r=>r.arsBench);const avgARS=arsVals.length?mean(arsVals):0;const yrsSelected=[...f.yrs].sort();const yrLabel=f.yrs.size===YEARS.length?"2020–2025":yrsSelected.join(", ");document.getElementById("kpis").innerHTML=[{label:"Total Openings",val:filt.length,sub:yrLabel,c:PLK.orange},{label:"Avg ARS",val:fmt$(avgARS),sub:"Per restaurant",c:PLK.teal},{label:"Profitable Units",val:profPct,sub:`${profCount} of ${withEB.length}`,c:PLK.purple},{label:"Avg EBITDA %",val:avgEBpct,sub:"Annualized",c:PLK.orange2},{label:"Avg FSS Score",val:avgFSS,sub:"Avg of Past 2 Rounds Score",c:PLK.red}].map(k=>`<div class="kpi-card" style="border-top:4px solid ${k.c}"><div class="kpi-label">${k.label}</div><div class="kpi-value">${k.val}</div><div class="kpi-sub">${k.sub}</div></div>`).join("");const activeYears=YEARS.filter(y=>f.yrs.has(String(y)));const yrData=activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade)));const ab=r.filter(x=>x.arsBench!=null),eb=r.filter(x=>x.ebitdaBench!=null);return{yr,count:r.length,avgARSBench:ab.length?mean(ab.map(x=>x.arsBench)):0,avgEBBench:eb.length?mean(eb.map(x=>x.ebitdaBench)):0,abCount:ab.length,ebCount:eb.length}});bar("c-openings-year",activeYears,[{data:yrData.map(d=>d.count),backgroundColor:PLK.orange,borderRadius:5}],{tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`Openings: ${ctx.raw}`}}});const divKeys=DIVS.filter(d=>f.divs.has(d)&&filt.filter(r=>r.div===d).length>0);pie("c-div-pie",divKeys,divKeys.map(d=>filt.filter(r=>r.div===d).length),divKeys.map(d=>DIV_C[d]));bar("c-ars-bench",activeYears,[{data:yrData.map(d=>d.avgARSBench),backgroundColor:PLK.teal,borderRadius:5}],{yFmt:v=>`$${(v/1e6).toFixed(1)}M`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`Avg ARS: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${yrData[ctx.dataIndex].abCount}`}}});bar("c-ebitda-bench",activeYears,[{data:yrData.map(d=>d.avgEBBench),backgroundColor:yrData.map(d=>d.avgEBBench>=0?PLK.purple:PLK.red),borderRadius:5}],{yFmt:v=>`$${(v/1e3).toFixed(0)}K`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`Avg EBITDA: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${yrData[ctx.dataIndex].ebCount}`}}});const activeDivs=DIVS.filter(d=>f.divs.has(d));pie("c-div-mix",divKeys,divKeys.map(d=>filt.filter(r=>r.div===d).length),divKeys.map(d=>DIV_C[d]));const divCountData=activeDivs.map(div=>activeYears.map(yr=>ALL.filter(x=>x.openYear===yr&&x.div===div&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))).length));const divARSData=activeDivs.map(div=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.div===div&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.arsBench!=null);return{val:r.length?mean(r.map(x=>x.arsBench)):0,count:r.length}}));const divEBData=activeDivs.map(div=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.div===div&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.ebitdaBench!=null);return{val:r.length?mean(r.map(x=>x.ebitdaBench)):0,count:r.length}}));bar("c-div-count",activeYears,activeDivs.map((div,di)=>({label:div,backgroundColor:DIV_C[div],borderRadius:3,data:divCountData[di]})),{legend:true,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} restaurants`}}});bar("c-div-ars",activeYears,activeDivs.map((div,di)=>({label:div,backgroundColor:DIV_C[div],borderRadius:3,data:divARSData[di].map(d=>d.val)})),{legend:true,yFmt:v=>`$${(v/1e6).toFixed(1)}M`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${divARSData[activeDivs.indexOf(ctx.dataset.label)][ctx.dataIndex].count}`}}});bar("c-div-eb",activeYears,activeDivs.map((div,di)=>({label:div,backgroundColor:DIV_C[div],borderRadius:3,data:divEBData[di].map(d=>d.val)})),{legend:true,yFmt:v=>`$${(v/1e3).toFixed(0)}K`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${divEBData[activeDivs.indexOf(ctx.dataset.label)][ctx.dataIndex].count}`}}});const activeArchs=ARCHS.filter(a=>f.archs.has(a));const archKeys=activeArchs.filter(a=>filt.filter(r=>r.arch===a).length>0);pie("c-arch-pie",archKeys,archKeys.map(a=>filt.filter(r=>r.arch===a).length),archKeys.map(a=>ARCH_C[a]));const archCountData=activeArchs.map(a=>activeYears.map(yr=>ALL.filter(x=>x.openYear===yr&&x.arch===a&&(x.div==null||f.divs.has(x.div))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))).length));const archARSData=activeArchs.map(a=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.arch===a&&(x.div==null||f.divs.has(x.div))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.arsBench!=null);return{val:r.length?mean(r.map(x=>x.arsBench)):0,count:r.length}}));const archEBData=activeArchs.map(a=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.arch===a&&(x.div==null||f.divs.has(x.div))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.ebitdaBench!=null);return{val:r.length?mean(r.map(x=>x.ebitdaBench)):0,count:r.length}}));bar("c-arch-count",activeYears,activeArchs.map((a,ai)=>({label:a,backgroundColor:ARCH_C[a],borderRadius:3,data:archCountData[ai]})),{legend:true,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} restaurants`}}});bar("c-arch-ars",activeYears,activeArchs.map((a,ai)=>({label:a,backgroundColor:ARCH_C[a],borderRadius:3,data:archARSData[ai].map(d=>d.val)})),{legend:true,yFmt:v=>`$${(v/1e6).toFixed(1)}M`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${archARSData[activeArchs.indexOf(ctx.dataset.label)][ctx.dataIndex].count}`}}});bar("c-arch-eb",activeYears,activeArchs.map((a,ai)=>({label:a,backgroundColor:ARCH_C[a],borderRadius:3,data:archEBData[ai].map(d=>d.val)})),{legend:true,yFmt:v=>`$${(v/1e3).toFixed(0)}K`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${archEBData[activeArchs.indexOf(ctx.dataset.label)][ctx.dataIndex].count}`}}});const activeUrbs=URBS.filter(u=>f.urbs.has(u));const urbKeys=activeUrbs.filter(u=>filt.filter(r=>r.urb===u).length>0);pie("c-urb-pie",urbKeys,urbKeys.map(u=>filt.filter(r=>r.urb===u).length),urbKeys.map(u=>URB_C[u]));const urbCountData=activeUrbs.map(u=>activeYears.map(yr=>ALL.filter(x=>x.openYear===yr&&x.urb===u&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))).length));const urbARSData=activeUrbs.map(u=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.urb===u&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.arsBench!=null);return{val:r.length?mean(r.map(x=>x.arsBench)):0,count:r.length}}));const urbEBData=activeUrbs.map(u=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.urb===u&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.ebitdaBench!=null);return{val:r.length?mean(r.map(x=>x.ebitdaBench)):0,count:r.length}}));bar("c-urb-count",activeYears,activeUrbs.map((u,ui)=>({label:u,backgroundColor:URB_C[u],borderRadius:3,data:urbCountData[ui]})),{legend:true,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} restaurants`}}});bar("c-urb-ars",activeYears,activeUrbs.map((u,ui)=>({label:u,backgroundColor:URB_C[u],borderRadius:3,data:urbARSData[ui].map(d=>d.val)})),{legend:true,yFmt:v=>`$${(v/1e6).toFixed(1)}M`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${urbARSData[activeUrbs.indexOf(ctx.dataset.label)][ctx.dataIndex].count}`}}});bar("c-urb-eb",activeYears,activeUrbs.map((u,ui)=>({label:u,backgroundColor:URB_C[u],borderRadius:3,data:urbEBData[ui].map(d=>d.val)})),{legend:true,yFmt:v=>`$${(v/1e3).toFixed(0)}K`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${urbEBData[activeUrbs.indexOf(ctx.dataset.label)][ctx.dataIndex].count}`}}});const activeGrades=GRADES.filter(g=>f.fsss.has(g));const fssGradeCounts=activeGrades.map(g=>filt.filter(r=>r.fssGrade===g).length);bar("c-fss-grade",activeGrades,[{data:fssGradeCounts,backgroundColor:activeGrades.map(g=>GRADE_C[g]),borderRadius:5}],{tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`Grade ${activeGrades[ctx.dataIndex]}: ${ctx.raw} restaurants`}}});const fssYearData=activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&x.fssScore!=null);return{val:r.length?mean(r.map(x=>x.fssScore)):0,count:r.length}});bar("c-fss-year",activeYears,[{data:fssYearData.map(d=>d.val),backgroundColor:PLK.purple,borderRadius:5}],{yFmt:v=>v.toFixed(1),extra:{scales:{y:{min:0,max:5,grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11},callback:v=>v.toFixed(1)}}}},tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`Avg FSS Score: ${ctx.raw.toFixed(2)}`,afterLabel:ctx=>`Restaurants: ${fssYearData[ctx.dataIndex].count}`}}});const fssARSData=activeGrades.map(g=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.fssGrade===g&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&x.arsBench!=null);return{val:r.length?mean(r.map(x=>x.arsBench)):0,count:r.length}}));const fssEBData=activeGrades.map(g=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.fssGrade===g&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&x.ebitdaBench!=null);return{val:r.length?mean(r.map(x=>x.ebitdaBench)):0,count:r.length}}));bar("c-fss-ars",activeYears,activeGrades.map((g,gi)=>({label:`Grade ${g}`,backgroundColor:GRADE_C[g],borderRadius:3,data:fssARSData[gi].map(d=>d.val)})),{legend:true,yFmt:v=>`$${(v/1e6).toFixed(1)}M`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${fssARSData[activeGrades.indexOf(ctx.dataset.label.replace("Grade ",""))][ctx.dataIndex].count}`}}});bar("c-fss-eb",activeYears,activeGrades.map((g,gi)=>({label:`Grade ${g}`,backgroundColor:GRADE_C[g],borderRadius:3,data:fssEBData[gi].map(d=>d.val)})),{legend:true,yFmt:v=>`$${(v/1e3).toFixed(0)}K`,tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${fssEBData[activeGrades.indexOf(ctx.dataset.label.replace("Grade ",""))][ctx.dataIndex].count}`}}});document.getElementById("footer").textContent=`Popeyes Louisiana Kitchen · Development Analytics · Live Smartsheet Data · ${ALL.length} total openings`}
+function applyFilters(){renderAll()}
+function switchTab(id,el){document.querySelectorAll(".tab-content").forEach(t=>t.classList.remove("active"));document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));document.getElementById("tab-"+id).classList.add("active");el.classList.add("active");renderAll()}
+async function fetchData(){document.getElementById("loading-overlay").style.display="flex";document.getElementById("error-overlay").style.display="none";document.getElementById("app").style.display="none";try{const res=await fetch(API);if(!res.ok)throw new Error(`Server responded with ${res.status}`);const data=await res.json();if(!data.rows||!data.rows.length)throw new Error("No data returned from server");ALL=data.rows;document.getElementById("loading-overlay").style.display="none";document.getElementById("app").style.display="block";document.getElementById("header-sub").innerHTML=`🟢 Live — ${ALL.length} restaurants · Updated ${new Date().toLocaleTimeString()} <button class="refresh-btn" onclick="fetchData()">↻ Refresh</button>`;buildFilterPanels();renderAll()}catch(e){document.getElementById("loading-overlay").style.display="none";document.getElementById("error-overlay").style.display="flex";document.getElementById("error-msg").textContent=e.message}}
+fetchData();
+</script>
+</body>
+</html>
