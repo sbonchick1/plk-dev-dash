@@ -3,19 +3,19 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/index.html"
+      "destination": "/public/index.html"
     },
     {
       "source": "/nro-hub",
-      "destination": "/nro-hub.html"
+      "destination": "/public/nro-hub.html"
     },
     {
       "source": "/dashboard",
-      "destination": "/dashboard.html"
+      "destination": "/public/dashboard.html"
     },
     {
       "source": "/development-execution",
-      "destination": "/development-execution.html"
+      "destination": "/public/development-execution.html"
     }
   ]
 }
