@@ -1,14 +1,10 @@
 {
-  "rewrites": [
-    {
-      "source": "/api/:path*",
-      "destination": "/api/:path*"
-    },
-    {
-      "source": "/(.*)",
-      "destination": "/public/$1"
+  "version": 2,
+  "functions": {
+    "api/**/*.js": {
+      "runtime": "@vercel/node@3.0.7"
     }
-  ]
+  }
 }
 ```
 
@@ -16,14 +12,19 @@
 
 ---
 
-### **Step 2: Verify Your File Structure**
+### **Step 2: Check Your File Structure on GitHub**
 
-While we're at it, double-check your GitHub repo has this EXACT structure:
+This is **critical** - I need you to verify:
+
+1. Go to your repository main page on GitHub
+2. **Take a screenshot** of what you see
+
+I need to see if your files are organized correctly. The structure MUST be:
 ```
 your-repo/
 ├── api/
-│   └── sheet.js          ← Must be inside "api" folder
+│   └── sheet.js
 ├── public/
-│   └── index.html        ← Must be inside "public" folder
-├── package.json          ← In root
-└── vercel.json           ← In root
+│   └── index.html
+├── package.json
+└── vercel.json
