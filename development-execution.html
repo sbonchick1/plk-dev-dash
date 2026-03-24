@@ -426,7 +426,8 @@ const DIVISIONS = [
 
 const STATUSES = ["Prospect", "SA", "PC", "Permitting", "UC", "Open"];
 const RISK_2026 = ["Low", "Medium", "High"];
-const RISK_2027 = ["2027+", "Upside", "Upside 100"];
+const RISK_UPSIDE = ["Upside"]; // Only exact "Upside" for waterfall Upside bar
+const RISK_2027_TABLE = ["2027+", "Upside 100", "Upside"]; // For 2027+ table display
 
 let ALL_DATA = [];
 let BUDGETS = {};
@@ -447,10 +448,16 @@ function is2026(row) {
   return RISK_2026.some(r => risk.toLowerCase() === r.toLowerCase());
 }
 
-function is2027Plus(row) {
+function isUpside(row) {
   if (!row.riskLevel) return false;
   const risk = row.riskLevel.trim();
-  return RISK_2027.some(r => risk.toLowerCase().includes(r.toLowerCase()));
+  return risk.toLowerCase() === "upside";
+}
+
+function is2027PlusTable(row) {
+  if (!row.riskLevel) return false;
+  const risk = row.riskLevel.trim();
+  return RISK_2027_TABLE.some(r => risk.toLowerCase() === r.toLowerCase());
 }
 
 function countByStatus(rows) {
@@ -537,7 +544,7 @@ function renderTable2027() {
   STATUSES.filter(s => s !== "Open").forEach(s => totals.status[s] = 0);
 
   DIVISIONS.forEach(div => {
-    const divRows = ALL_DATA.filter(r => r.division === div.name && is2027Plus(r));
+    const divRows = ALL_DATA.filter(r => r.division === div.name && is2027PlusTable(r));
     const counts = countByStatus(divRows);
     const total = STATUSES.filter(s => s !== "Open").map(s => counts[s]).reduce((a, b) => a + b, 0);
 
@@ -567,40 +574,91 @@ function renderTable2027() {
   tbody.innerHTML = html;
 }
 
-function createWaterfallChart(canvasId, title, subtitle, data, budget) {
+function createWaterfallChart(canvasId, divisionName, subtitle, data, budget) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
 
-  const labels = [...STATUSES, "Budget"];
+  // Calculate values
   const values = STATUSES.map(s => data[s]);
-  const total = values.reduce((a, b) => a + b, 0);
-  const gap = budget - total;
+  const fyBU = values.reduce((a, b) => a + b, 0); // FY BU is sum of all 2026 pipeline
+  
+  // Calculate Upside (only sites with "Upside" risk level) for this division
+  let upsideCount = 0;
+  if (divisionName === "US&C Consolidated") {
+    // For consolidated view, count all Upside projects
+    upsideCount = ALL_DATA.filter(r => isUpside(r)).length;
+  } else {
+    // For specific division
+    upsideCount = ALL_DATA.filter(r => r.division === divisionName && isUpside(r)).length;
+  }
 
-  // Waterfall data
-  const chartData = [];
+  // Labels
+  const labels = [...STATUSES, "FY BU", "Upside", "Opening Budget"];
+  
+  // Build stacked datasets
+  const datasets = [];
+  
+  // Create stacking for Prospect -> Open (all orange)
   let cumulative = 0;
-  STATUSES.forEach((s, i) => {
-    chartData.push(cumulative);
+  STATUSES.forEach((status, i) => {
+    // Invisible base bar for stacking
+    if (i > 0) {
+      datasets.push({
+        label: status + "_base",
+        data: labels.map((lbl, idx) => idx === i ? cumulative : null),
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+      });
+    }
+    
+    // Visible bar (orange)
+    datasets.push({
+      label: status,
+      data: labels.map((lbl, idx) => idx === i ? values[i] : null),
+      backgroundColor: PLK.orange,
+      borderRadius: 4,
+    });
+    
     cumulative += values[i];
   });
-  chartData.push(cumulative); // Budget line
 
-  const colors = STATUSES.map(() => PLK.teal).concat([PLK.gray]);
-  colors[colors.length - 1] = gap > 0 ? PLK.red : PLK.green;
+  // FY BU bar (purple) - starts at 0
+  datasets.push({
+    label: "FY BU",
+    data: labels.map((lbl, idx) => idx === STATUSES.length ? fyBU : null),
+    backgroundColor: PLK.purple,
+    borderRadius: 4,
+  });
+
+  // Upside stack on top of FY BU (red)
+  datasets.push({
+    label: "Upside_base",
+    data: labels.map((lbl, idx) => idx === STATUSES.length + 1 ? fyBU : null),
+    backgroundColor: 'transparent',
+    borderWidth: 0,
+  });
+  
+  datasets.push({
+    label: "Upside",
+    data: labels.map((lbl, idx) => idx === STATUSES.length + 1 ? upsideCount : null),
+    backgroundColor: PLK.red,
+    borderRadius: 4,
+  });
+
+  // Opening Budget bar (teal) - starts at 0
+  datasets.push({
+    label: "Opening Budget",
+    data: labels.map((lbl, idx) => idx === labels.length - 1 ? budget : null),
+    backgroundColor: PLK.teal,
+    borderRadius: 4,
+  });
+
+  const gap = fyBU - budget;
+  const totalWithUpside = fyBU + upsideCount;
 
   new Chart(ctx, {
     type: "bar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Projects",
-          data: values.concat([gap > 0 ? gap : 0]),
-          backgroundColor: colors,
-          borderRadius: 4,
-        }
-      ]
-    },
+    data: { labels, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: true,
@@ -612,22 +670,38 @@ function createWaterfallChart(canvasId, title, subtitle, data, budget) {
           bodyColor: "white",
           callbacks: {
             label: (ctx) => {
-              if (ctx.dataIndex === labels.length - 1) {
-                return gap > 0 ? `Gap to Budget: ${gap}` : `Exceeds Budget by: ${Math.abs(gap)}`;
+              const label = labels[ctx.dataIndex];
+              if (label === "FY BU") {
+                return `FY BU: ${fyBU} (Gap: ${gap >= 0 ? '+' : ''}${gap})`;
               }
-              return `${labels[ctx.dataIndex]}: ${ctx.raw} projects`;
+              if (label === "Upside") {
+                return `Upside: ${upsideCount} (Total with Upside: ${totalWithUpside})`;
+              }
+              if (label === "Opening Budget") {
+                return `Opening Budget: ${budget}`;
+              }
+              const idx = STATUSES.indexOf(label);
+              if (idx >= 0) {
+                let runningTotal = 0;
+                for (let i = 0; i <= idx; i++) runningTotal += values[i];
+                return `${label}: ${values[idx]} (Running Total: ${runningTotal})`;
+              }
+              return '';
             }
           }
         }
       },
       scales: {
         x: {
+          stacked: true,
           grid: { display: false },
           ticks: { color: "#6b7280", font: { size: 11 } }
         },
         y: {
+          stacked: true,
           grid: { color: "#f0f0f0" },
-          ticks: { color: "#6b7280", font: { size: 11 } }
+          ticks: { color: "#6b7280", font: { size: 11 } },
+          beginAtZero: true
         }
       }
     }
@@ -650,7 +724,7 @@ function renderWaterfallCharts() {
     const counts = countByStatus(divRows);
     const budget = BUDGETS[div.name] || 0;
 
-    const canvasId = `chart-${div.name.toLowerCase().replace(/\s/g, "-")}`;
+    const canvasId = `chart-${div.name.toLowerCase().replace(/\s/g, "-").replace(/[^a-z0-9-]/g, "")}`;
     
     html += `
       <div class="chart-card">
@@ -670,23 +744,36 @@ function renderWaterfallCharts() {
     const divRows = ALL_DATA.filter(r => r.division === div.name && is2026(r));
     const counts = countByStatus(divRows);
     const budget = BUDGETS[div.name] || 0;
-    const canvasId = `chart-${div.name.toLowerCase().replace(/\s/g, "-")}`;
+    const canvasId = `chart-${div.name.toLowerCase().replace(/\s/g, "-").replace(/[^a-z0-9-]/g, "")}`;
     createWaterfallChart(canvasId, div.name, div.ddl, counts, budget);
   });
 }
 
 async function fetchData() {
   try {
+    console.log("Fetching pipeline data from API...");
     const res = await fetch(API);
-    if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+    console.log("Response status:", res.status);
+    
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("Server error:", errorText);
+      throw new Error(`Server responded with ${res.status}: ${errorText}`);
+    }
+    
     const data = await res.json();
+    console.log("Received data:", data);
     
     if (!data.rows || !data.budgets) {
+      console.error("Invalid data structure:", data);
       throw new Error("Invalid data structure returned from API");
     }
 
     ALL_DATA = data.rows;
     BUDGETS = data.budgets;
+    
+    console.log("Total rows:", ALL_DATA.length);
+    console.log("Budgets:", BUDGETS);
 
     document.getElementById("loading-overlay").style.display = "none";
     document.getElementById("app").style.display = "block";
@@ -695,8 +782,9 @@ async function fetchData() {
     renderTable2027();
     renderWaterfallCharts();
   } catch (e) {
-    alert("Error loading pipeline data: " + e.message);
-    console.error(e);
+    document.getElementById("loading-overlay").style.display = "none";
+    alert("Error loading pipeline data: " + e.message + "\n\nCheck browser console (F12) for details.");
+    console.error("Full error:", e);
   }
 }
 
