@@ -137,6 +137,10 @@ h1 {
   transform: scale(1.05);
 }
 
+.card:hover .card-icon::after {
+  filter: brightness(0) invert(1);
+}
+
 .card-title {
   font-size: 28px;
   font-weight: 700;
@@ -277,6 +281,29 @@ h1 {
   </div>
 
   <div class="cards-grid">
+    
+    <a href="/development-execution" class="card">
+      <div class="badge">
+        <div class="badge-dot"></div>
+        Live Pipeline
+      </div>
+      <div class="card-icon">📈</div>
+      <div class="card-title">Development Execution Performance</div>
+      <div class="card-description">
+        Monitor 2026 pipeline vs. budget by division with DDL accountability, waterfall analysis, and 2027+ pipeline visibility.
+      </div>
+      <div class="card-meta">
+        <div class="meta-item">
+          <div class="meta-dot"></div>
+          <span>2026 & 2027+ Pipeline</span>
+        </div>
+        <div class="meta-item">
+          <div class="meta-dot"></div>
+          <span>Budget Tracking</span>
+        </div>
+      </div>
+      <div class="card-arrow">→</div>
+    </a>
     
     <a href="/nro-hub" class="card">
       <div class="badge">
