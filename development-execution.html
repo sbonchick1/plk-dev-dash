@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Development Execution Performance</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  background: #f9fafb;
+  min-height: 100vh;
+  color: #1a1a1a;
+}
+
+.container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 40px;
+}
+
+.header {
+  margin-bottom: 40px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  color: #9b9b9b;
+}
+
+.breadcrumb a {
+  color: #9b9b9b;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumb a:hover {
+  color: #E8521A;
+}
+
+.breadcrumb-separator {
+  color: #d0d0d0;
+}
+
+.page-title {
+  font-size: 36px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 12px;
+  letter-spacing: -1px;
+}
+
+.page-subtitle {
+  font-size: 16px;
+  color: #6b6b6b;
+  line-height: 1.6;
+}
+
+.section {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  margin-bottom: 32px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-badge {
+  font-size: 28px;
+}
+
+.table-container {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+thead th {
+  background: #f9fafb;
+  padding: 12px 16px;
+  text-align: left;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  border-bottom: 2px solid #e5e7eb;
+  white-space: nowrap;
+}
+
+tbody tr {
+  border-bottom: 1px solid #f3f4f6;
+  transition: background 0.15s;
+}
+
+tbody tr:hover {
+  background: #fef3ee;
+}
+
+tbody tr.total-row {
+  background: #FFF5F0;
+  font-weight: 700;
+  border-top: 2px solid #E8521A;
+  border-bottom: 2px solid #E8521A;
+}
+
+tbody tr.total-row:hover {
+  background: #FFF5F0;
+}
+
+tbody td {
+  padding: 14px 16px;
+  color: #374151;
+}
+
+.division-cell {
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.ddl-cell {
+  color: #6b7280;
+  font-size: 12px;
+}
+
+.number-cell {
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.total-cell {
+  font-weight: 700;
+  color: #E8521A;
+  font-size: 15px;
+}
+
+.achievement-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  text-align: center;
+  min-width: 60px;
+}
+
+.achievement-high {
+  background: #D1FAE5;
+  color: #065F46;
+}
+
+.achievement-medium {
+  background: #FEF3C7;
+  color: #92400E;
+}
+
+.achievement-low {
+  background: #FEE2E2;
+  color: #991B1B;
+}
+
+.gap-positive {
+  color: #059669;
+  font-weight: 700;
+}
+
+.gap-negative {
+  color: #DC2626;
+  font-weight: 700;
+}
+
+.gap-zero {
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+.chart-card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+}
+
+.chart-card.featured {
+  border: 2px solid #E8521A;
+  background: linear-gradient(135deg, #FFF5F0 0%, #ffffff 100%);
+}
+
+.chart-header {
+  margin-bottom: 20px;
+}
+
+.chart-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+}
+
+.chart-subtitle {
+  font-size: 13px;
+  color: #6b7280;
+}
+
+.chart-canvas {
+  max-height: 300px;
+}
+
+.division-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: #f9fafb;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #E8521A;
+  border-top: 4px solid transparent;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.overlay-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.overlay-sub {
+  font-size: 14px;
+  color: #9ca3af;
+  margin-top: 8px;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 24px;
+  }
+  
+  .page-title {
+    font-size: 28px;
+  }
+  
+  .division-charts-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+
+<div id="loading-overlay" class="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-title">Loading pipeline data…</div>
+  <div class="overlay-sub">Fetching from Smartsheet</div>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="container">
+    <div class="header">
+      <div class="breadcrumb">
+        <a href="/">Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <span>Development Execution Performance</span>
+      </div>
+      <h1 class="page-title">Development Execution Performance</h1>
+      <p class="page-subtitle">New restaurant pipeline analysis by division with budget tracking and accountability</p>
+    </div>
+
+    <!-- Executive Summary - 2026 Pipeline -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-badge">📊</span>
+          2026 Pipeline vs. Budget
+        </div>
+      </div>
+      <div class="table-container">
+        <table id="table-2026">
+          <thead>
+            <tr>
+              <th>Division</th>
+              <th>DDL</th>
+              <th>Prospect</th>
+              <th>SA</th>
+              <th>PC</th>
+              <th>Permitting</th>
+              <th>UC</th>
+              <th>Open</th>
+              <th>Total 2026</th>
+              <th>Budget</th>
+              <th>Gap</th>
+              <th>Achievement</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-2026">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Waterfall Charts -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-badge">📈</span>
+          2026 Pipeline Waterfall Analysis
+        </div>
+      </div>
+      
+      <!-- US&C Consolidated Chart -->
+      <div class="chart-card featured">
+        <div class="chart-header">
+          <div class="chart-title">US&C Consolidated - 2026 Pipeline</div>
+          <div class="chart-subtitle">All divisions combined vs. total budget</div>
+        </div>
+        <canvas id="chart-usc" class="chart-canvas"></canvas>
+      </div>
+
+      <!-- Individual Division Charts -->
+      <div class="division-charts-grid" id="division-charts">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- 2027+ Pipeline -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">
+          <span class="section-badge">🔮</span>
+          2027+ Pipeline Visibility
+        </div>
+      </div>
+      <div class="table-container">
+        <table id="table-2027">
+          <thead>
+            <tr>
+              <th>Division</th>
+              <th>DDL</th>
+              <th>Prospect</th>
+              <th>SA</th>
+              <th>PC</th>
+              <th>Permitting</th>
+              <th>UC</th>
+              <th>Total 2027+</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-2027">
+            <!-- Populated by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "/api/pipeline";
+
+const DIVISIONS = [
+  { name: "Northeast", ddl: "Shanda O'Kelly" },
+  { name: "Southeast", ddl: "Shanda O'Kelly" },
+  { name: "Central", ddl: "Rita Sterling" },
+  { name: "West", ddl: "Rita Sterling" },
+  { name: "Canada", ddl: "Kevin Fitzgerald" },
+  { name: "Non-Trad", ddl: "Sean Davis" }
+];
+
+const STATUSES = ["Prospect", "SA", "PC", "Permitting", "UC", "Open"];
+const RISK_2026 = ["Low", "Medium", "High"];
+const RISK_2027 = ["2027+", "Upside", "Upside 100"];
+
+let ALL_DATA = [];
+let BUDGETS = {};
+
+const PLK = {
+  orange: "#E8521A",
+  teal: "#00A99D",
+  purple: "#7B2D8B",
+  yellow: "#FFC20E",
+  green: "#4CAF50",
+  red: "#C1272D",
+  gray: "#9CA3AF"
+};
+
+function is2026(row) {
+  if (!row.riskLevel) return false;
+  const risk = row.riskLevel.trim();
+  return RISK_2026.some(r => risk.toLowerCase() === r.toLowerCase());
+}
+
+function is2027Plus(row) {
+  if (!row.riskLevel) return false;
+  const risk = row.riskLevel.trim();
+  return RISK_2027.some(r => risk.toLowerCase().includes(r.toLowerCase()));
+}
+
+function countByStatus(rows) {
+  const counts = {};
+  STATUSES.forEach(s => counts[s] = 0);
+  rows.forEach(r => {
+    if (r.status && counts.hasOwnProperty(r.status)) {
+      counts[r.status]++;
+    }
+  });
+  return counts;
+}
+
+function renderTable2026() {
+  const tbody = document.getElementById("tbody-2026");
+  let html = "";
+
+  const totals = { status: {}, total: 0, budget: 0 };
+  STATUSES.forEach(s => totals.status[s] = 0);
+
+  DIVISIONS.forEach(div => {
+    const divRows = ALL_DATA.filter(r => r.division === div.name && is2026(r));
+    const counts = countByStatus(divRows);
+    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const budget = BUDGETS[div.name] || 0;
+    const gap = total - budget;
+    const achievement = budget > 0 ? (total / budget * 100) : 0;
+
+    let achievementClass = "achievement-low";
+    if (achievement >= 90) achievementClass = "achievement-high";
+    else if (achievement >= 70) achievementClass = "achievement-medium";
+
+    let gapClass = "gap-zero";
+    if (gap > 0) gapClass = "gap-positive";
+    else if (gap < 0) gapClass = "gap-negative";
+
+    html += `
+      <tr>
+        <td class="division-cell">${div.name}</td>
+        <td class="ddl-cell">${div.ddl}</td>
+        ${STATUSES.map(s => `<td class="number-cell">${counts[s]}</td>`).join("")}
+        <td class="number-cell total-cell">${total}</td>
+        <td class="number-cell">${budget}</td>
+        <td class="number-cell ${gapClass}">${gap >= 0 ? '+' : ''}${gap}</td>
+        <td class="number-cell"><span class="achievement-badge ${achievementClass}">${achievement.toFixed(0)}%</span></td>
+      </tr>
+    `;
+
+    STATUSES.forEach(s => totals.status[s] += counts[s]);
+    totals.total += total;
+    totals.budget += budget;
+  });
+
+  const totalGap = totals.total - totals.budget;
+  const totalAchievement = totals.budget > 0 ? (totals.total / totals.budget * 100) : 0;
+  let totalAchievementClass = "achievement-low";
+  if (totalAchievement >= 90) totalAchievementClass = "achievement-high";
+  else if (totalAchievement >= 70) totalAchievementClass = "achievement-medium";
+
+  let totalGapClass = "gap-zero";
+  if (totalGap > 0) totalGapClass = "gap-positive";
+  else if (totalGap < 0) totalGapClass = "gap-negative";
+
+  html += `
+    <tr class="total-row">
+      <td class="division-cell">US&C Total</td>
+      <td class="ddl-cell">—</td>
+      ${STATUSES.map(s => `<td class="number-cell">${totals.status[s]}</td>`).join("")}
+      <td class="number-cell total-cell">${totals.total}</td>
+      <td class="number-cell">${totals.budget}</td>
+      <td class="number-cell ${totalGapClass}">${totalGap >= 0 ? '+' : ''}${totalGap}</td>
+      <td class="number-cell"><span class="achievement-badge ${totalAchievementClass}">${totalAchievement.toFixed(0)}%</span></td>
+    </tr>
+  `;
+
+  tbody.innerHTML = html;
+}
+
+function renderTable2027() {
+  const tbody = document.getElementById("tbody-2027");
+  let html = "";
+
+  const totals = { status: {} };
+  STATUSES.filter(s => s !== "Open").forEach(s => totals.status[s] = 0);
+
+  DIVISIONS.forEach(div => {
+    const divRows = ALL_DATA.filter(r => r.division === div.name && is2027Plus(r));
+    const counts = countByStatus(divRows);
+    const total = STATUSES.filter(s => s !== "Open").map(s => counts[s]).reduce((a, b) => a + b, 0);
+
+    html += `
+      <tr>
+        <td class="division-cell">${div.name}</td>
+        <td class="ddl-cell">${div.ddl}</td>
+        ${STATUSES.filter(s => s !== "Open").map(s => `<td class="number-cell">${counts[s]}</td>`).join("")}
+        <td class="number-cell total-cell">${total}</td>
+      </tr>
+    `;
+
+    STATUSES.filter(s => s !== "Open").forEach(s => totals.status[s] += counts[s]);
+  });
+
+  const total2027 = Object.values(totals.status).reduce((a, b) => a + b, 0);
+
+  html += `
+    <tr class="total-row">
+      <td class="division-cell">US&C Total</td>
+      <td class="ddl-cell">—</td>
+      ${STATUSES.filter(s => s !== "Open").map(s => `<td class="number-cell">${totals.status[s]}</td>`).join("")}
+      <td class="number-cell total-cell">${total2027}</td>
+    </tr>
+  `;
+
+  tbody.innerHTML = html;
+}
+
+function createWaterfallChart(canvasId, title, subtitle, data, budget) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+
+  const labels = [...STATUSES, "Budget"];
+  const values = STATUSES.map(s => data[s]);
+  const total = values.reduce((a, b) => a + b, 0);
+  const gap = budget - total;
+
+  // Waterfall data
+  const chartData = [];
+  let cumulative = 0;
+  STATUSES.forEach((s, i) => {
+    chartData.push(cumulative);
+    cumulative += values[i];
+  });
+  chartData.push(cumulative); // Budget line
+
+  const colors = STATUSES.map(() => PLK.teal).concat([PLK.gray]);
+  colors[colors.length - 1] = gap > 0 ? PLK.red : PLK.green;
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          label: "Projects",
+          data: values.concat([gap > 0 ? gap : 0]),
+          backgroundColor: colors,
+          borderRadius: 4,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#1f2937",
+          titleColor: "white",
+          bodyColor: "white",
+          callbacks: {
+            label: (ctx) => {
+              if (ctx.dataIndex === labels.length - 1) {
+                return gap > 0 ? `Gap to Budget: ${gap}` : `Exceeds Budget by: ${Math.abs(gap)}`;
+              }
+              return `${labels[ctx.dataIndex]}: ${ctx.raw} projects`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { color: "#6b7280", font: { size: 11 } }
+        },
+        y: {
+          grid: { color: "#f0f0f0" },
+          ticks: { color: "#6b7280", font: { size: 11 } }
+        }
+      }
+    }
+  });
+}
+
+function renderWaterfallCharts() {
+  // US&C Consolidated
+  const usc2026 = ALL_DATA.filter(r => is2026(r));
+  const uscCounts = countByStatus(usc2026);
+  const uscBudget = Object.values(BUDGETS).reduce((a, b) => a + b, 0);
+  createWaterfallChart("chart-usc", "US&C Consolidated", "All divisions", uscCounts, uscBudget);
+
+  // Individual divisions
+  const container = document.getElementById("division-charts");
+  let html = "";
+
+  DIVISIONS.forEach(div => {
+    const divRows = ALL_DATA.filter(r => r.division === div.name && is2026(r));
+    const counts = countByStatus(divRows);
+    const budget = BUDGETS[div.name] || 0;
+
+    const canvasId = `chart-${div.name.toLowerCase().replace(/\s/g, "-")}`;
+    
+    html += `
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-title">${div.name}</div>
+          <div class="chart-subtitle">${div.ddl} • Budget: ${budget}</div>
+        </div>
+        <canvas id="${canvasId}" class="chart-canvas"></canvas>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+
+  // Render each division chart
+  DIVISIONS.forEach(div => {
+    const divRows = ALL_DATA.filter(r => r.division === div.name && is2026(r));
+    const counts = countByStatus(divRows);
+    const budget = BUDGETS[div.name] || 0;
+    const canvasId = `chart-${div.name.toLowerCase().replace(/\s/g, "-")}`;
+    createWaterfallChart(canvasId, div.name, div.ddl, counts, budget);
+  });
+}
+
+async function fetchData() {
+  try {
+    const res = await fetch(API);
+    if (!res.ok) throw new Error(`Server responded with ${res.status}`);
+    const data = await res.json();
+    
+    if (!data.rows || !data.budgets) {
+      throw new Error("Invalid data structure returned from API");
+    }
+
+    ALL_DATA = data.rows;
+    BUDGETS = data.budgets;
+
+    document.getElementById("loading-overlay").style.display = "none";
+    document.getElementById("app").style.display = "block";
+
+    renderTable2026();
+    renderTable2027();
+    renderWaterfallCharts();
+  } catch (e) {
+    alert("Error loading pipeline data: " + e.message);
+    console.error(e);
+  }
+}
+
+fetchData();
+</script>
+
+</body>
+</html>
