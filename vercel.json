@@ -12,6 +12,10 @@
     {
       "source": "/dashboard",
       "destination": "/dashboard.html"
+    },
+    {
+      "source": "/development-execution",
+      "destination": "/development-execution.html"
     }
   ]
 }
