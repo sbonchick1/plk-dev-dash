@@ -11,8 +11,8 @@ module.exports = async function(req, res) {
   }
 
   const TOKEN = process.env.SMARTSHEET_TOKEN;
-  const PIPELINE_SHEET_ID = "2173912308726660"; // 02. Opening sheet
-  const BUDGET_SHEET_ID = "3699973825901444"; // Budget sheet
+  const PIPELINE_SHEET_ID = "8717733601798020"; // 02. Opening sheet
+  const BUDGET_SHEET_ID = "7864670409936772"; // Budget sheet
 
   try {
     // Fetch pipeline data
