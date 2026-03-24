@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>NRO Performance Hub</title>
+<style>
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
+  background: #ffffff;
+  min-height: 100vh;
+  color: #1a1a1a;
+}
+
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 60px 40px;
+}
+
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 40px;
+  font-size: 14px;
+  color: #9b9b9b;
+}
+
+.breadcrumb a {
+  color: #9b9b9b;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.breadcrumb a:hover {
+  color: #E8521A;
+}
+
+.breadcrumb-separator {
+  color: #d0d0d0;
+}
+
+.page-header {
+  margin-bottom: 60px;
+}
+
+.header-top {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.back-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 1px solid #e8e8e8;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+  color: #1a1a1a;
+  font-size: 18px;
+}
+
+.back-button:hover {
+  background: #f8f8f8;
+  border-color: #E8521A;
+  color: #E8521A;
+}
+
+h1 {
+  font-size: 42px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: -1px;
+  flex: 1;
+}
+
+.page-description {
+  font-size: 18px;
+  color: #6b6b6b;
+  line-height: 1.6;
+  max-width: 800px;
+}
+
+.widgets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 32px;
+}
+
+.widget-card {
+  background: #ffffff;
+  border: 1px solid #e8e8e8;
+  border-radius: 20px;
+  padding: 48px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  text-decoration: none;
+  display: block;
+  position: relative;
+  overflow: hidden;
+}
+
+.widget-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #E8521A 0%, #C1272D 100%);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s ease;
+}
+
+.widget-card:hover::before {
+  transform: scaleX(1);
+}
+
+.widget-card:hover {
+  border-color: #E8521A;
+  box-shadow: 0 20px 60px rgba(232, 82, 26, 0.08);
+  transform: translateY(-4px);
+}
+
+.widget-type {
+  display: inline-block;
+  background: #FFF5F0;
+  color: #E8521A;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.widget-icon {
+  width: 72px;
+  height: 72px;
+  background: #FFF5F0;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 28px;
+  font-size: 36px;
+  transition: all 0.3s ease;
+}
+
+.widget-card:hover .widget-icon {
+  background: #E8521A;
+  transform: scale(1.05);
+}
+
+.widget-title {
+  font-size: 26px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin-bottom: 14px;
+  letter-spacing: -0.5px;
+  line-height: 1.2;
+}
+
+.widget-description {
+  font-size: 15px;
+  color: #6b6b6b;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+
+.widget-features {
+  list-style: none;
+  margin-bottom: 28px;
+}
+
+.widget-features li {
+  font-size: 14px;
+  color: #6b6b6b;
+  padding: 10px 0;
+  padding-left: 28px;
+  position: relative;
+  line-height: 1.6;
+}
+
+.widget-features li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #E8521A;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.widget-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  padding-top: 20px;
+  border-top: 1px solid #f5f5f5;
+  transition: all 0.2s;
+}
+
+.widget-card:hover .widget-cta {
+  color: #E8521A;
+  gap: 12px;
+}
+
+.external-icon {
+  font-size: 18px;
+  opacity: 0.5;
+  transition: opacity 0.2s;
+}
+
+.widget-card:hover .external-icon {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 40px 24px;
+  }
+  
+  h1 {
+    font-size: 32px;
+  }
+  
+  .widgets-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .widget-card {
+    padding: 32px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a>
+    <span class="breadcrumb-separator">/</span>
+    <span>NRO Performance Hub</span>
+  </div>
+
+  <div class="page-header">
+    <div class="header-top">
+      <a href="/" class="back-button">←</a>
+      <h1>New Restaurant Opening (NRO) Performance</h1>
+    </div>
+    <p class="page-description">
+      Comprehensive analytics and data management for new restaurant openings from 2020-2025. Access interactive dashboards and manage source data.
+    </p>
+  </div>
+
+  <div class="widgets-grid">
+    
+    <!-- Dashboard Widget -->
+    <a href="/dashboard" class="widget-card">
+      <div class="widget-type">Interactive Dashboard</div>
+      <div class="widget-icon">📊</div>
+      <div class="widget-title">Performance Dashboard</div>
+      <div class="widget-description">
+        Explore interactive visualizations and analytics across multiple dimensions including division, architecture type, urbanicity, and FSS performance metrics.
+      </div>
+      <ul class="widget-features">
+        <li>Real-time data from Smartsheet</li>
+        <li>Interactive filters and drill-downs</li>
+        <li>ARS and EBITDA performance metrics</li>
+        <li>Multi-year trend analysis (2020-2025)</li>
+        <li>Export and sharing capabilities</li>
+      </ul>
+      <div class="widget-cta">
+        View Dashboard
+        <span>→</span>
+      </div>
+    </a>
+
+    <!-- Backend Data Widget -->
+    <a href="https://app.smartsheet.com/sheets/HrgrvJj8fHMhQ5gfgQx82hrR6p35mCHcG6hJXf41?view=grid" target="_blank" class="widget-card">
+      <div class="widget-type">Data Source</div>
+      <div class="widget-icon">🗄️</div>
+      <div class="widget-title">Backend Data Management</div>
+      <div class="widget-description">
+        Access the source Smartsheet containing all NRO performance data. View, edit, and manage the underlying data that powers the dashboard.
+      </div>
+      <ul class="widget-features">
+        <li>Direct access to Smartsheet database</li>
+        <li>Edit and update records in real-time</li>
+        <li>Full data export capabilities</li>
+        <li>Audit trail and version history</li>
+        <li>Collaborative data management</li>
+      </ul>
+      <div class="widget-cta">
+        Open Smartsheet
+        <span class="external-icon">↗</span>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+</body>
+</html>
