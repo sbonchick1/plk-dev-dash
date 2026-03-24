@@ -11,7 +11,7 @@
     },
     {
       "source": "/dashboard",
-      "destination": "/public/dashboard.html"
+      "destination": "/dashboard.html"
     }
   ]
 }
