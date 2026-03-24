@@ -1,23 +1,29 @@
 {
-  "version": 2,
-  "builds": [
+  "rewrites": [
     {
-      "src": "api/**/*.js",
-      "use": "@vercel/node"
+      "source": "/api/:path*",
+      "destination": "/api/:path*"
     },
     {
-      "src": "public/**",
-      "use": "@vercel/static"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/api/(.*)",
-      "dest": "/api/$1"
-    },
-    {
-      "src": "/(.*)",
-      "dest": "/public/$1"
+      "source": "/(.*)",
+      "destination": "/public/$1"
     }
   ]
 }
+```
+
+5. Scroll down and click **"Commit changes"**
+
+---
+
+### **Step 2: Verify Your File Structure**
+
+While we're at it, double-check your GitHub repo has this EXACT structure:
+```
+your-repo/
+├── api/
+│   └── sheet.js          ← Must be inside "api" folder
+├── public/
+│   └── index.html        ← Must be inside "public" folder
+├── package.json          ← In root
+└── vercel.json           ← In root
