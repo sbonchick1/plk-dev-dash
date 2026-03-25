@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Restaurant Closure Performance Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;background:#f9fafb;min-height:100vh;color:#1a1a1a;}
+.container{max-width:1700px;margin:0 auto;padding:40px;}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:14px;color:#9b9b9b;}
+.breadcrumb a{color:#9b9b9b;text-decoration:none;}.breadcrumb a:hover{color:#C1272D;}
+.page-title{font-size:36px;font-weight:700;color:#1a1a1a;margin-bottom:12px;letter-spacing:-1px;}
+.page-subtitle{font-size:16px;color:#6b6b6b;line-height:1.6;margin-bottom:32px;}
+.section{background:white;border-radius:16px;padding:32px;margin-bottom:32px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #f0f0f0;flex-wrap:wrap;gap:12px;}
+.section-title{font-size:20px;font-weight:700;color:#1a1a1a;display:flex;align-items:center;gap:10px;}
+.export-btn{display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.export-btn:hover{background:#dcfce7;border-color:#4ade80;}
+.export-btn svg{width:15px;height:15px;}
+
+/* KPI Banner */
+.kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin-bottom:32px;}
+.kpi-card{background:white;border-radius:12px;padding:18px 20px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#C1272D);}
+.kpi-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-weight:600;}
+.kpi-value{font-size:26px;font-weight:800;color:#1a1a1a;line-height:1;margin-bottom:4px;}
+.kpi-sub{font-size:11px;color:#9ca3af;}
+.kpi-urgent .kpi-value{color:#C1272D;}
+.kpi-good   .kpi-value{color:#059669;}
+.kpi-progress-wrap{margin-top:10px;background:#f3f4f6;border-radius:99px;height:6px;overflow:hidden;}
+.kpi-progress-bar{height:6px;border-radius:99px;background:var(--kpi-color,#C1272D);transition:width 0.6s ease;}
+
+/* Tables */
+.table-container{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:#f9fafb;padding:12px 14px;text-align:center;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.5px;border-bottom:2px solid #e5e7eb;white-space:nowrap;vertical-align:middle;line-height:1.4;}
+thead th.left{text-align:left;}
+tbody tr{border-bottom:1px solid #f3f4f6;transition:filter 0.15s;}
+tbody tr:hover{filter:brightness(0.96);}
+tbody tr.total-row{background:#FFF0F0!important;font-weight:700;border-top:2px solid #C1272D;border-bottom:2px solid #C1272D;}
+tbody td{padding:13px 14px;color:#374151;}
+.division-cell{font-weight:600;color:#1a1a1a;}
+.ddl-cell{color:#6b7280;font-size:12px;}
+.number-cell{text-align:center;font-weight:600;font-variant-numeric:tabular-nums;}
+.number-cell.clickable{cursor:pointer;}
+.number-cell.clickable:hover span{text-decoration:underline;color:#C1272D;}
+.achievement-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12px;text-align:center;min-width:54px;}
+.achievement-high{background:#D1FAE5;color:#065F46;}
+.achievement-medium{background:#FEF3C7;color:#92400E;}
+.achievement-low{background:#FEE2E2;color:#991B1B;}
+.gap-positive{color:#C1272D;font-weight:700;}  /* more closures than budget = bad */
+.gap-negative{color:#059669;font-weight:700;}  /* fewer closures than budget = good */
+.gap-zero{color:#6b7280;font-weight:600;}
+
+/* Rank pills */
+.rank-pill{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800;margin-right:6px;flex-shrink:0;}
+.rank-1{background:#059669;color:white;}.rank-2{background:#34d399;color:white;}
+.rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
+.rank-5{background:#f87171;color:white;}.rank-6{background:#C1272D;color:white;}
+
+/* Risk mini-bar */
+.risk-minibar{display:flex;height:8px;border-radius:4px;overflow:hidden;min-width:80px;gap:1px;}
+.risk-seg{height:100%;}
+
+/* Controllable grid */
+.ctrl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
+.ctrl-card{background:#f9fafb;border-radius:10px;padding:16px 18px;border:1px solid #e5e7eb;}
+.ctrl-name{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:10px;}
+.ctrl-bar-wrap{background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden;margin-bottom:6px;}
+.ctrl-bar-ctrl{height:8px;border-radius:99px;background:#C1272D;float:left;}
+.ctrl-bar-non{height:8px;border-radius:99px;background:#9ca3af;float:left;}
+.ctrl-legend{display:flex;gap:12px;font-size:11px;color:#6b7280;}
+.ctrl-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;}
+
+/* Reason waterfall chart */
+.chart-card{background:white;border-radius:12px;padding:24px;border:1px solid #e5e7eb;}
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
+.chart-header-left{flex:1;}
+.chart-title{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+.chart-subtitle{font-size:13px;color:#6b7280;}
+.chart-canvas{max-height:340px;}
+.charts-2col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;}
+
+/* Legend */
+.legend-bar{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.modal-overlay.open{opacity:1;pointer-events:auto;}
+.modal{background:white;border-radius:16px;width:100%;max-width:1200px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.2);transform:translateY(20px);transition:transform 0.2s;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;}
+.modal-title{font-size:17px;font-weight:700;color:#1a1a1a;}
+.modal-subtitle{font-size:13px;color:#6b7280;margin-top:2px;}
+.modal-actions{display:flex;gap:8px;align-items:center;}
+.modal-close{background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#6b7280;}
+.modal-close:hover{background:#fee2e2;color:#dc2626;}
+.modal-filterbar{display:flex;gap:10px;align-items:center;padding:12px 24px;background:#f9fafb;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;flex-shrink:0;}
+.modal-filter-label{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;}
+.modal-select{padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white;cursor:pointer;outline:none;}
+.modal-select:focus{border-color:#C1272D;}
+.modal-count{margin-left:auto;font-size:12px;color:#9ca3af;white-space:nowrap;}
+.modal-reset{background:none;border:1px solid #e5e7eb;border-radius:6px;padding:5px 10px;font-size:12px;color:#6b7280;cursor:pointer;}
+.modal-reset:hover{border-color:#C1272D;color:#C1272D;}
+.modal-body{overflow-y:auto;padding:0 24px 20px;}
+.modal-table{width:100%;border-collapse:collapse;font-size:12px;}
+.modal-table thead th{background:#f9fafb;padding:9px 12px;text-align:left;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.4px;border-bottom:2px solid #e5e7eb;white-space:nowrap;position:sticky;top:0;z-index:1;cursor:pointer;user-select:none;}
+.modal-table thead th:hover{color:#C1272D;}
+.modal-table thead th .sort-arrow{margin-left:4px;opacity:0.4;font-size:9px;}
+.modal-table thead th.sort-asc .sort-arrow::after{content:'▲';opacity:1;}
+.modal-table thead th.sort-desc .sort-arrow::after{content:'▼';opacity:1;}
+.modal-table thead th:not(.sort-asc):not(.sort-desc) .sort-arrow::after{content:'⇅';}
+.modal-table tbody tr{border-bottom:1px solid #f3f4f6;}
+.modal-table tbody tr:hover{background:#fff0f0;}
+.modal-table tbody td{padding:10px 12px;color:#374151;}
+.modal-empty{text-align:center;padding:40px;color:#9ca3af;font-size:14px;}
+/* risk badges */
+.risk-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.risk-low{background:#D1FAE5;color:#065F46;}.risk-medium{background:#FEF3C7;color:#92400E;}
+.risk-high{background:#FEE2E2;color:#991B1B;}.risk-definite{background:#fee2e2;color:#7f1d1d;}
+.risk-closed{background:#f3f4f6;color:#374151;}.risk-default{background:#F3F4F6;color:#374151;}
+/* ctrl badges */
+.ctrl-yes{background:#fee2e2;color:#991B1B;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;}
+.ctrl-no{background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;}
+/* overlay */
+.overlay{position:fixed;inset:0;background:#f9fafb;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
+.spinner{width:48px;height:48px;border:4px solid #C1272D;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.overlay-title{font-size:18px;font-weight:600;color:#374151;}
+.overlay-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
+@media(max-width:768px){.container{padding:24px;}.page-title{font-size:28px;}.charts-2col{grid-template-columns:1fr;}.kpi-banner{grid-template-columns:repeat(2,1fr);}}
+</style>
+</head>
+<body>
+
+<div id="loading-overlay" class="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-title">Loading closure data…</div>
+  <div class="overlay-sub">Fetching from Smartsheet</div>
+</div>
+
+<!-- Drill-down Modal -->
+<div class="modal-overlay" id="drill-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Closures</div>
+        <div class="modal-subtitle" id="modal-subtitle"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="export-btn" onclick="exportModalToExcel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-filterbar">
+      <span class="modal-filter-label">Filter:</span>
+      <select class="modal-select" id="modal-filter-bucket" onchange="renderModalTable()">
+        <option value="">All Buckets</option>
+        <option value="LE">LE</option>
+        <option value="LE (Opp)">LE (Opp)</option>
+        <option value="Mitigate">Mitigate</option>
+        <option value="2027 LE">2027 LE</option>
+        <option value="2028 LE">2028 LE</option>
+        <option value="Not in LE">Not in LE</option>
+      </select>
+      <select class="modal-select" id="modal-filter-risk" onchange="renderModalTable()">
+        <option value="">All Risk Levels</option>
+        <option value="Low Risk">Low Risk</option>
+        <option value="Medium Risk">Medium Risk</option>
+        <option value="High Risk">High Risk</option>
+        <option value="Definite Closure">Definite Closure</option>
+        <option value="Closed">Closed</option>
+      </select>
+      <select class="modal-select" id="modal-filter-ctrl" onchange="renderModalTable()">
+        <option value="">All Control</option>
+        <option value="Yes">Controllable (Yes)</option>
+        <option value="No">Non-Controllable (No)</option>
+      </select>
+      <select class="modal-select" id="modal-filter-reason" onchange="renderModalTable()">
+        <option value="">All Reasons</option>
+        <option>Poor Profitability</option><option>FZ Financial Issue</option>
+        <option>Enforcement</option><option>Loss of Property Control</option>
+        <option>FA Expiration</option><option>Lack of Interest in renewing FA</option>
+        <option>Relocation</option><option>F2F</option><option>Bad Trade Area</option>
+        <option>California - Potential Closure</option><option>Other</option>
+      </select>
+      <button class="modal-reset" onclick="resetModalFilters()">Reset</button>
+      <span class="modal-count" id="modal-count"></span>
+    </div>
+    <div class="modal-body">
+      <table class="modal-table">
+        <thead>
+          <tr id="modal-thead-row">
+            <th onclick="sortModal(0)">Rest No<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(1)">FZ<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(2)">Address<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(3)">City<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(4)">ST<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(5)">Date of Closure<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(6)">Closure Bucket<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(7)">Risk Level<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(8)">Reason<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(9)">PLK Control<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(10)">2025 ARS<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(11)">TTM EBITDA<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(12)">Comments<span class="sort-arrow"></span></th>
+          </tr>
+        </thead>
+        <tbody id="modal-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/">Home</a>
+      <span style="color:#d0d0d0">/</span>
+      <span>Restaurant Closure Performance Dashboard</span>
+    </div>
+    <h1 class="page-title">Restaurant Closure Performance Dashboard</h1>
+    <p class="page-subtitle">2026 closure pipeline analysis by division and closure reason with budget tracking</p>
+
+    <!-- KPI Banner -->
+    <div class="kpi-banner" id="kpi-banner"></div>
+
+    <!-- 2026 Pipeline Table -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span>📊</span>2026 Closure Pipeline vs. Budget</div>
+        <button class="export-btn" onclick="exportTable2026()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="left" style="width:30px;"></th>
+              <th class="left">Division</th>
+              <th style="background:#fee2e2;color:#991b1b;">LE<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Definite 2026)</span></th>
+              <th style="background:#fef3c7;color:#92400e;">LE (Opp)<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Upside Risk)</span></th>
+              <th style="background:#f0fdf4;color:#166534;">Closed YTD</th>
+              <th>Budget</th><th>Gap</th>
+              <th style="background:#eff6ff;color:#1d4ed8;">Current Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Closed / Budget)</span></th>
+              <th style="background:#fff0f0;color:#991b1b;">Projected Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(LE / Budget)</span></th>
+              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-2026"></tbody>
+        </table>
+      </div>
+      <div class="legend-bar">
+        <span style="font-size:11px;color:#6b7280;font-weight:600;">Overall Rank (fewest closures vs budget = best):</span>
+        <div class="legend-item"><div class="legend-dot" style="background:#059669;"></div>#1 Best</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#34d399;"></div>#2</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>#3</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fb923c;"></div>#4</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f87171;"></div>#5</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C1272D;"></div>#6 Most Closures</div>
+        <div style="width:1px;background:#e5e7eb;height:16px;margin:0 4px;"></div>
+        <span style="font-size:11px;color:#6b7280;font-weight:600;">Risk Mix:</span>
+        <div class="legend-item"><div class="legend-dot" style="background:#059669;"></div>Low</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>Medium</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fb923c;"></div>High</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#C1272D;"></div>Definite</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#6b7280;"></div>Closed</div>
+      </div>
+      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* 2026 LE = definite closures. LE (Opp) = additional upside risk. Rank is a weighted score: 40% Current Achievement + 60% Projected Achievement vs budget — lower closures relative to budget = better rank.</p>
+    </div>
+
+    <!-- Closure Reason Waterfall -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span>📈</span>2026 Closure Pipeline — Reason Analysis</div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <div class="chart-header-left">
+            <div class="chart-title">US&amp;C Consolidated — 2026 LE Closures by Reason</div>
+            <div class="chart-subtitle">Stacked by closure reason vs. total LE budget · Click bars to drill down</div>
+          </div>
+        </div>
+        <canvas id="chart-reasons" class="chart-canvas"></canvas>
+      </div>
+      <div class="charts-2col">
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-header-left">
+              <div class="chart-title">Controllable vs Non-Controllable</div>
+              <div class="chart-subtitle">2026 LE closures · PLK Control split</div>
+            </div>
+          </div>
+          <canvas id="chart-ctrl-pie" class="chart-canvas" style="max-height:260px;"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-header">
+            <div class="chart-header-left">
+              <div class="chart-title">Closure Reason Distribution</div>
+              <div class="chart-subtitle">All 2026 LE + LE (Opp) · Click to drill down</div>
+            </div>
+          </div>
+          <canvas id="chart-reason-dist" class="chart-canvas" style="max-height:260px;"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Controllable vs Non-Controllable by Division -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span>🎯</span>Controllable vs Non-Controllable by Division</div>
+      </div>
+      <div class="ctrl-grid" id="ctrl-grid"></div>
+      <p style="margin-top:14px;font-size:11px;color:#9ca3af;font-style:italic;">* Based on 2026 LE closures. PLK Control = Yes means the closure is within PLK/franchisor influence. No = external factors.</p>
+    </div>
+
+    <!-- 2027 Pipeline Table -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span>🔮</span>2027 Pipeline Visibility</div>
+        <button class="export-btn" onclick="exportTable2027()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Division</th>
+              <th>2027 LE</th><th>Mitigate</th><th>Not in LE</th><th>Total 2027</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-2027"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- 2028 Pipeline Table -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span>🔭</span>2028 Pipeline Visibility</div>
+        <button class="export-btn" onclick="exportTable2028()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="left">Division</th>
+              <th>2028 LE</th><th>Mitigate</th><th>Not in LE</th><th>Total 2028</th>
+            </tr>
+          </thead>
+          <tbody id="tbody-2028"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "/api/closures";
+const DIVISIONS = [
+  {name:"Northeast"},{name:"Southeast"},{name:"Central"},
+  {name:"West"},{name:"Canada"},{name:"Non-Trad"}
+];
+const RANK_COLORS = ["#059669","#34d399","#fbbf24","#fb923c","#f87171","#C1272D"];
+const RANK_BG     = ["rgba(209,250,229,0.35)","rgba(187,247,208,0.25)","rgba(254,249,195,0.35)","rgba(254,215,170,0.25)","rgba(254,202,202,0.25)","rgba(254,226,226,0.35)"];
+const REASON_COLORS = {
+  "Poor Profitability":              "#C1272D",
+  "FZ Financial Issue":              "#E8521A",
+  "Enforcement":                     "#F7941D",
+  "FA Expiration":                   "#FFC20E",
+  "Lack of Interest in renewing FA": "#7B2D8B",
+  "Loss of Property Control":        "#00A99D",
+  "Relocation":                      "#1d4ed8",
+  "F2F":                             "#059669",
+  "Bad Trade Area":                  "#6b7280",
+  "California - Potential Closure":  "#0ea5e9",
+  "Other":                           "#9ca3af",
+};
+const ALL_REASONS = Object.keys(REASON_COLORS);
+const fmt$ = n => n==null?"N/A": Math.abs(n)>=1e6?`$${(n/1e6).toFixed(2)}M`:`$${(n/1e3).toFixed(0)}K`;
+
+let ALL_DATA=[], BUDGETS={};
+let MODAL_SITES=[], MODAL_TITLE_TEXT="";
+let modalSortCol=-1, modalSortDir=1;
+
+// ── Bucket helpers ──────────────────────────────────────────────────────────
+function isLE(r)       { return r.closureBucket === "LE"; }
+function isLEOpp(r)    { return r.closureBucket === "LE (Opp)"; }
+function isClosed(r)   { return r.closureRisk && r.closureRisk.trim() === "Closed"; }
+function is2026BU(r)   { return isLE(r) || isLEOpp(r); }
+function is2027(r)     { return r.closureBucket === "2027 LE"; }
+function is2028(r)     { return r.closureBucket === "2028 LE"; }
+function isMitigate(r) { return r.closureBucket === "Mitigate"; }
+function isNotInLE(r)  { return r.closureBucket === "Not in LE"; }
+function gapClass(g)   {
+  // for closures: over budget (positive gap) = bad (red), under budget = good (green)
+  return g>0?"gap-positive":g<0?"gap-negative":"gap-zero";
+}
+function achieveClass(p){ return p>=90?"achievement-high":p>=70?"achievement-medium":"achievement-low"; }
+
+// ── KPI Banner ──────────────────────────────────────────────────────────────
+function renderKPIBanner() {
+  const totalBudget = Object.values(BUDGETS).reduce((a,b)=>a+b,0);
+  const leRows      = ALL_DATA.filter(r=>isLE(r));
+  const leOppRows   = ALL_DATA.filter(r=>isLEOpp(r));
+  const closedRows  = ALL_DATA.filter(r=>isClosed(r));
+  const leCount     = leRows.length;
+  const leOppCount  = leOppRows.length;
+  const closedYTD   = closedRows.length;
+  const ltg         = Math.max(0, totalBudget - closedYTD);
+  const projAch     = totalBudget>0?Math.round(leCount/totalBudget*100):0;
+  const currAch     = totalBudget>0?Math.round(closedYTD/totalBudget*100):0;
+  const ctrlCount   = leRows.filter(r=>r.plkControl==="Yes").length;
+  const ctrlPct     = leCount>0?Math.round(ctrlCount/leCount*100):0;
+  const arsVals     = leRows.filter(r=>r.ars2025!=null).map(r=>r.ars2025);
+  const avgARS      = arsVals.length?arsVals.reduce((a,b)=>a+b,0)/arsVals.length:null;
+  const ebitdaVals  = leRows.filter(r=>r.ttmEbitda!=null).map(r=>r.ttmEbitda);
+  const avgEBITDA   = ebitdaVals.length?ebitdaVals.reduce((a,b)=>a+b,0)/ebitdaVals.length:null;
+
+  const cards = [
+    { label:"2026 LE Closures",        value:leCount,      sub:`of ${totalBudget} budget`, color:"#C1272D",
+      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#C1272D;width:${Math.min(100,projAch)}%"></div></div>`,
+      cls: projAch>=100?"kpi-urgent":"" },
+    { label:"LE (Opp) — Upside Risk",  value:leOppCount,   sub:"Additional 2026 risk",     color:"#E8521A", extra:"", cls:"" },
+    { label:"Closed YTD",              value:closedYTD,    sub:`of ${totalBudget} budget`,  color:"#6b7280",
+      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#6b7280;width:${Math.min(100,currAch)}%"></div></div>`,
+      cls:"" },
+    { label:"Closures LTG",            value:ltg,          sub:"Left to go vs budget",      color:"#F7941D", extra:"", cls: ltg===0?"kpi-good":"" },
+    { label:"% Controllable (LE)",     value:ctrlPct+"%",  sub:`${ctrlCount} of ${leCount} LE sites`, color:"#7B2D8B",
+      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#7B2D8B;width:${ctrlPct}%"></div></div>`,
+      cls:"" },
+    { label:"Avg 2025 ARS",            value:fmt$(avgARS), sub:"2026 LE units",             color:"#00A99D", extra:"", cls:"" },
+    { label:"Avg TTM EBITDA",          value:fmt$(avgEBITDA), sub:"2026 LE units",          color:"#1d4ed8", extra:"", cls: avgEBITDA!=null&&avgEBITDA<0?"kpi-urgent":"" },
+    { label:"Current Achievement",     value:currAch+"%",  sub:"Closed vs budget",          color:"#1d4ed8",
+      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#1d4ed8;width:${Math.min(100,currAch)}%"></div></div>`,
+      cls: currAch>=100?"kpi-urgent":"" },
+    { label:"Projected Achievement",   value:projAch+"%",  sub:"LE vs budget",              color:"#991b1b",
+      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#991b1b;width:${Math.min(100,projAch)}%"></div></div>`,
+      cls: projAch>=100?"kpi-urgent":"" },
+  ];
+
+  document.getElementById("kpi-banner").innerHTML = cards.map(c=>`
+    <div class="kpi-card ${c.cls}" style="--kpi-color:${c.color}">
+      <div class="kpi-label">${c.label}</div>
+      <div class="kpi-value">${c.value}</div>
+      <div class="kpi-sub">${c.sub}</div>
+      ${c.extra}
+    </div>`).join("");
+}
+
+// ── 2026 Table ──────────────────────────────────────────────────────────────
+function renderTable2026() {
+  const divStats = DIVISIONS.map(div=>{
+    const leRows    = ALL_DATA.filter(r=>r.division===div.name&&isLE(r));
+    const leOppRows = ALL_DATA.filter(r=>r.division===div.name&&isLEOpp(r));
+    const closedRows= ALL_DATA.filter(r=>r.division===div.name&&isClosed(r));
+    const leCount   = leRows.length;
+    const leOppCount= leOppRows.length;
+    const closedYTD = closedRows.length;
+    const budget    = BUDGETS[div.name]||0;
+    const gap       = leCount - budget;
+    const currPct   = budget>0?(closedYTD/budget*100):0;
+    const projPct   = budget>0?(leCount/budget*100):0;
+    // risk counts from LE rows
+    const nLow  = leRows.filter(r=>r.closureRisk==="Low Risk").length;
+    const nMed  = leRows.filter(r=>r.closureRisk==="Medium Risk").length;
+    const nHigh = leRows.filter(r=>r.closureRisk==="High Risk").length;
+    const nDef  = leRows.filter(r=>r.closureRisk==="Definite Closure").length;
+    const nClosed=leRows.filter(r=>r.closureRisk==="Closed").length;
+    return {div,leCount,leOppCount,closedYTD,budget,gap,currPct,projPct,nLow,nMed,nHigh,nDef,nClosed};
+  });
+
+  // Rank: lower projPct = better (we WANT fewer closures vs budget)
+  const byProj=[...divStats].sort((a,b)=>a.projPct-b.projPct);
+  const byCurr=[...divStats].sort((a,b)=>a.currPct-b.currPct);
+  const projRank={},currRank={};
+  byProj.forEach((d,i)=>projRank[d.div.name]=i);
+  byCurr.forEach((d,i)=>currRank[d.div.name]=i);
+  divStats.forEach(d=>{d.wScore=0.4*currRank[d.div.name]+0.6*projRank[d.div.name];});
+  const rankMap={};
+  [...divStats].sort((a,b)=>a.wScore-b.wScore).forEach((d,i)=>rankMap[d.div.name]=i);
+
+  const totals={le:0,leOpp:0,closed:0,budget:0};
+  let html="";
+
+  divStats.forEach(({div,leCount,leOppCount,closedYTD,budget,gap,currPct,projPct,nLow,nMed,nHigh,nDef,nClosed})=>{
+    const rank=rankMap[div.name], rn=rank+1;
+    const rColor=RANK_COLORS[Math.min(rank,5)], rBg=RANK_BG[Math.min(rank,5)];
+    const rTotal=nLow+nMed+nHigh+nDef+nClosed||1;
+    const minibar=`<div class="risk-minibar" title="Low:${nLow} Med:${nMed} High:${nHigh} Definite:${nDef} Closed:${nClosed}">
+      <div class="risk-seg" style="width:${nLow/rTotal*100}%;background:#059669;"></div>
+      <div class="risk-seg" style="width:${nMed/rTotal*100}%;background:#fbbf24;"></div>
+      <div class="risk-seg" style="width:${nHigh/rTotal*100}%;background:#fb923c;"></div>
+      <div class="risk-seg" style="width:${nDef/rTotal*100}%;background:#C1272D;"></div>
+      <div class="risk-seg" style="width:${nClosed/rTotal*100}%;background:#6b7280;"></div>
+    </div><div style="font-size:10px;color:#9ca3af;margin-top:3px;">${nLow}L·${nMed}M·${nHigh}H·${nDef}D·${nClosed}C</div>`;
+
+    html+=`<tr style="background:${rBg};border-left:4px solid ${rColor};">
+      <td style="padding-left:10px;"><span class="rank-pill rank-${rn}">${rn}</span></td>
+      <td class="division-cell">${div.name}</td>
+      ${clickableCell(leCount,   div.name,"LE",   "2026 LE",   `${div.name} · LE`)}
+      ${clickableCell(leOppCount,div.name,"LE (Opp)","leOpp", `${div.name} · LE (Opp)`)}
+      ${clickableCell(closedYTD, div.name,"Closed","closed",   `${div.name} · Closed YTD`)}
+      <td class="number-cell">${budget}</td>
+      <td class="number-cell ${gapClass(gap)}">${gap>=0?"+":""}${gap}</td>
+      <td class="number-cell"><span class="achievement-badge ${achieveClass(currPct)} ach-current">${currPct.toFixed(0)}%</span></td>
+      <td class="number-cell"><span class="achievement-badge ${achieveClass(projPct)}" style="background:#fff0f0;color:#991b1b;">${projPct.toFixed(0)}%</span></td>
+      <td style="min-width:100px;">${minibar}</td>
+    </tr>`;
+    totals.le+=leCount; totals.leOpp+=leOppCount; totals.closed+=closedYTD; totals.budget+=budget;
+  });
+
+  const tGap=totals.le-totals.budget;
+  const tCurr=totals.budget>0?(totals.closed/totals.budget*100):0;
+  const tProj=totals.budget>0?(totals.le/totals.budget*100):0;
+  html+=`<tr class="total-row">
+    <td></td><td class="division-cell">US&amp;C Total</td>
+    ${clickableCell(totals.le,"US&C","LE","2026 LE","US&C · LE")}
+    ${clickableCell(totals.leOpp,"US&C","LE (Opp)","leOpp","US&C · LE (Opp)")}
+    ${clickableCell(totals.closed,"US&C","Closed","closed","US&C · Closed YTD")}
+    <td class="number-cell">${totals.budget}</td>
+    <td class="number-cell ${gapClass(tGap)}">${tGap>=0?"+":""}${tGap}</td>
+    <td class="number-cell"><span class="achievement-badge ${achieveClass(tCurr)} ach-current">${tCurr.toFixed(0)}%</span></td>
+    <td class="number-cell"><span class="achievement-badge ${achieveClass(tProj)}" style="background:#fff0f0;color:#991b1b;">${tProj.toFixed(0)}%</span></td>
+    <td></td>
+  </tr>`;
+  document.getElementById("tbody-2026").innerHTML=html;
+}
+
+// ── Reason Waterfall Chart ──────────────────────────────────────────────────
+function renderReasonCharts() {
+  const totalBudget = Object.values(BUDGETS).reduce((a,b)=>a+b,0);
+  const leRows = ALL_DATA.filter(r=>isLE(r));
+
+  // Count by reason
+  const reasonCounts = {};
+  ALL_REASONS.forEach(r=>reasonCounts[r]=0);
+  leRows.forEach(r=>{
+    const reason = r.closureReason||"Other";
+    if(reasonCounts.hasOwnProperty(reason)) reasonCounts[reason]++;
+    else reasonCounts["Other"]=(reasonCounts["Other"]||0)+1;
+  });
+
+  // Build waterfall — cumulative stacked
+  const labels=[], baseData=[], barData=[], barColors=[], displayVals=[];
+  let cumulative=0;
+  ALL_REASONS.forEach(reason=>{
+    const count=reasonCounts[reason]||0;
+    if(count===0)return;
+    labels.push(reason);
+    baseData.push(cumulative);
+    barData.push(count);
+    barColors.push(REASON_COLORS[reason]||"#9ca3af");
+    displayVals.push(count);
+    cumulative+=count;
+  });
+  // Add budget bar
+  labels.push("Budget");
+  baseData.push(0);
+  barData.push(totalBudget);
+  barColors.push("#00A99D");
+  displayVals.push(totalBudget);
+
+  const ctx=document.getElementById("chart-reasons");
+  new Chart(ctx,{
+    type:"bar",
+    data:{labels,datasets:[
+      {label:"_base",data:baseData,backgroundColor:"rgba(0,0,0,0)",borderColor:"rgba(0,0,0,0)",borderWidth:0,stack:"wf"},
+      {label:"_bars",data:barData,backgroundColor:barColors,borderRadius:4,barPercentage:0.6,stack:"wf"}
+    ]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
+        filter:item=>item.datasetIndex===1,
+        callbacks:{label:ctx=>{
+          const lbl=labels[ctx.dataIndex];
+          if(lbl==="Budget")return`Budget: ${totalBudget}`;
+          let run=0;for(let i=0;i<=ctx.dataIndex;i++)run+=barData[i];
+          return`${lbl}: ${barData[ctx.dataIndex]}  |  Running Total: ${run-totalBudget>0?run:(run)}`;
+        }}}},
+      scales:{x:{stacked:true,grid:{display:false},border:{display:false},ticks:{color:"#6b7280",font:{size:10},maxRotation:35}},
+              y:{stacked:true,grid:{display:false},border:{display:false},ticks:{display:false},beginAtZero:true}},
+      layout:{padding:{top:32}}},
+    plugins:[{id:"lbl_reasons",afterDraw(chart){
+      const meta=chart.getDatasetMeta(1); if(!meta?.data)return;
+      const cCtx=chart.ctx; cCtx.save();
+      cCtx.font="bold 11px -apple-system,sans-serif";
+      cCtx.fillStyle="#FFFFFF";cCtx.textAlign="center";cCtx.textBaseline="middle";
+      displayVals.forEach((val,i)=>{
+        if(!val)return;
+        const bar=meta.data[i]; if(!bar)return;
+        const barH=bar.base-bar.y; if(barH<14)return;
+        cCtx.fillText(val,bar.x,(bar.y+bar.base)/2);
+      });
+      cCtx.restore();
+    }}]
+  });
+
+  // Click drill-down on reason bars
+  ctx.addEventListener("click",function(e){
+    const chart=Chart.getChart(ctx); if(!chart)return;
+    const pts=chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false); if(!pts.length)return;
+    const idx=pts[0].index;
+    const lbl=labels[idx];
+    if(lbl==="Budget")return;
+    openDrillDown({bucket:"LE",reason:lbl},`US&C · LE · ${lbl}`,`All divisions · LE · ${lbl}`);
+  });
+  ctx.style.cursor="pointer";
+
+  // Controllable pie
+  const ctrlYes=leRows.filter(r=>r.plkControl==="Yes").length;
+  const ctrlNo =leRows.filter(r=>r.plkControl==="No").length;
+  new Chart(document.getElementById("chart-ctrl-pie"),{
+    type:"doughnut",
+    data:{labels:["Controllable (Yes)","Non-Controllable (No)"],
+      datasets:[{data:[ctrlYes,ctrlNo],backgroundColor:["#C1272D","#9ca3af"],borderWidth:2,borderColor:"white"}]},
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{position:"right",labels:{color:"#374151",font:{size:11}}},
+        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
+          callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} sites`}}}}
+  });
+
+  // Reason distribution bar (LE + LE Opp)
+  const allBURows=ALL_DATA.filter(r=>is2026BU(r));
+  const distCounts={};
+  ALL_REASONS.forEach(r=>distCounts[r]=0);
+  allBURows.forEach(r=>{
+    const reason=r.closureReason||"Other";
+    if(distCounts.hasOwnProperty(reason))distCounts[reason]++;
+    else distCounts["Other"]=(distCounts["Other"]||0)+1;
+  });
+  const distLabels=ALL_REASONS.filter(r=>distCounts[r]>0);
+  new Chart(document.getElementById("chart-reason-dist"),{
+    type:"bar",
+    data:{labels:distLabels,datasets:[{
+      data:distLabels.map(r=>distCounts[r]),
+      backgroundColor:distLabels.map(r=>REASON_COLORS[r]||"#9ca3af"),
+      borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:true,indexAxis:"y",
+      plugins:{legend:{display:false},tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
+        callbacks:{label:ctx=>`${ctx.raw} sites`}}},
+      scales:{x:{grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:10}}},
+              y:{grid:{display:false},ticks:{color:"#374151",font:{size:10}}}}}
+  });
+}
+
+// ── Controllable by Division ─────────────────────────────────────────────────
+function renderCtrlGrid() {
+  const html = DIVISIONS.map(div=>{
+    const rows=ALL_DATA.filter(r=>r.division===div.name&&isLE(r));
+    const yes=rows.filter(r=>r.plkControl==="Yes").length;
+    const no =rows.filter(r=>r.plkControl==="No").length;
+    const total=yes+no||1;
+    const yesPct=Math.round(yes/total*100);
+    return`<div class="ctrl-card">
+      <div class="ctrl-name">${div.name} <span style="font-size:11px;font-weight:400;color:#9ca3af;">(${yes+no} LE sites)</span></div>
+      <div class="ctrl-bar-wrap" style="overflow:hidden;border-radius:99px;">
+        <div style="height:8px;display:flex;">
+          <div style="width:${yesPct}%;background:#C1272D;"></div>
+          <div style="width:${100-yesPct}%;background:#e5e7eb;"></div>
+        </div>
+      </div>
+      <div class="ctrl-legend" style="margin-top:6px;">
+        <span><span class="ctrl-dot" style="background:#C1272D;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;"></span>Controllable: <strong>${yes}</strong> (${yesPct}%)</span>
+        <span><span class="ctrl-dot" style="background:#9ca3af;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;"></span>Non-Controllable: <strong>${no}</strong> (${100-yesPct}%)</span>
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("ctrl-grid").innerHTML=html;
+}
+
+// ── 2027 Table ───────────────────────────────────────────────────────────────
+function renderTable2027() {
+  const totals={le27:0,mit:0,nil:0};
+  let html="";
+  DIVISIONS.forEach(div=>{
+    const le27=ALL_DATA.filter(r=>r.division===div.name&&is2027(r)).length;
+    const mit =ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;
+    const nil =ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;
+    const total=le27+mit+nil;
+    html+=`<tr>
+      <td class="division-cell">${div.name}</td>
+      ${clickableCell(le27,div.name,"2027 LE","2027","${div.name} · 2027 LE")}
+      ${clickableCell(mit, div.name,"Mitigate","mitigate","${div.name} · Mitigate")}
+      ${clickableCell(nil, div.name,"Not in LE","notInLE","${div.name} · Not in LE")}
+      <td class="number-cell">${total}</td>
+    </tr>`;
+    totals.le27+=le27; totals.mit+=mit; totals.nil+=nil;
+  });
+  html+=`<tr class="total-row">
+    <td class="division-cell">US&amp;C Total</td>
+    ${clickableCell(totals.le27,"US&C","2027 LE","2027","US&C · 2027 LE")}
+    ${clickableCell(totals.mit,"US&C","Mitigate","mitigate","US&C · Mitigate")}
+    ${clickableCell(totals.nil,"US&C","Not in LE","notInLE","US&C · Not in LE")}
+    <td class="number-cell">${totals.le27+totals.mit+totals.nil}</td>
+  </tr>`;
+  document.getElementById("tbody-2027").innerHTML=html;
+}
+
+// ── 2028 Table ───────────────────────────────────────────────────────────────
+function renderTable2028() {
+  const totals={le28:0,mit:0,nil:0};
+  let html="";
+  DIVISIONS.forEach(div=>{
+    const le28=ALL_DATA.filter(r=>r.division===div.name&&is2028(r)).length;
+    const mit =ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;
+    const nil =ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;
+    const total=le28+mit+nil;
+    html+=`<tr>
+      <td class="division-cell">${div.name}</td>
+      ${clickableCell(le28,div.name,"2028 LE","2028","${div.name} · 2028 LE")}
+      ${clickableCell(mit, div.name,"Mitigate","mitigate","${div.name} · Mitigate")}
+      ${clickableCell(nil, div.name,"Not in LE","notInLE","${div.name} · Not in LE")}
+      <td class="number-cell">${total}</td>
+    </tr>`;
+    totals.le28+=le28; totals.mit+=mit; totals.nil+=nil;
+  });
+  html+=`<tr class="total-row">
+    <td class="division-cell">US&amp;C Total</td>
+    ${clickableCell(totals.le28,"US&C","2028 LE","2028","US&C · 2028 LE")}
+    ${clickableCell(totals.mit,"US&C","Mitigate","mitigate","US&C · Mitigate")}
+    ${clickableCell(totals.nil,"US&C","Not in LE","notInLE","US&C · Not in LE")}
+    <td class="number-cell">${totals.le28+totals.mit+totals.nil}</td>
+  </tr>`;
+  document.getElementById("tbody-2028").innerHTML=html;
+}
+
+// ── Clickable cell helper ────────────────────────────────────────────────────
+function clickableCell(count, divName, bucket, filterKey, label) {
+  if(count===0)return`<td class="number-cell">0</td>`;
+  const ed=divName.replace(/'/g,"\\'"),
+        eb=bucket.replace(/'/g,"\\'"),
+        el=label.replace(/'/g,"\\'");
+  return`<td class="number-cell clickable" onclick="openDrillDown({division:'${ed}',bucket:'${eb}',filterKey:'${filterKey}'},'${el}','${ed}')"><span>${count}</span></td>`;
+}
+
+// ── Modal ────────────────────────────────────────────────────────────────────
+function getSiteRow(s){
+  return[s.restNum||"",s.fz||"",s.address||"",s.city||"",s.state||"",
+         s.dateOfClosure||"",s.closureBucket||"",s.closureRisk||"",
+         s.closureReason||"",s.plkControl||"",
+         s.ars2025!=null?String(s.ars2025):"",
+         s.ttmEbitda!=null?String(s.ttmEbitda):"",
+         s.comments||""];
+}
+
+function renderModalTable() {
+  const bucketF = document.getElementById("modal-filter-bucket").value;
+  const riskF   = document.getElementById("modal-filter-risk").value;
+  const ctrlF   = document.getElementById("modal-filter-ctrl").value;
+  const reasonF = document.getElementById("modal-filter-reason").value;
+
+  let sites = MODAL_SITES.filter(s=>{
+    return (!bucketF || s.closureBucket===bucketF)
+        && (!riskF   || s.closureRisk===riskF)
+        && (!ctrlF   || s.plkControl===ctrlF)
+        && (!reasonF || s.closureReason===reasonF);
+  });
+  if(modalSortCol>=0) sites=[...sites].sort((a,b)=>getSiteRow(a)[modalSortCol].localeCompare(getSiteRow(b)[modalSortCol],undefined,{sensitivity:"base"})*modalSortDir);
+
+  document.getElementById("modal-count").textContent=`${sites.length} site${sites.length!==1?"s":""}`;
+  const tbody=document.getElementById("modal-tbody");
+  if(!sites.length){tbody.innerHTML=`<tr><td colspan="13" class="modal-empty">No sites match the current filters.</td></tr>`;return;}
+
+  tbody.innerHTML=sites.map(s=>{
+    const rl=(s.closureRisk||"").trim();
+    let rc="risk-default";
+    if(rl==="Low Risk")rc="risk-low";
+    else if(rl==="Medium Risk")rc="risk-medium";
+    else if(rl==="High Risk")rc="risk-high";
+    else if(rl==="Definite Closure")rc="risk-definite";
+    else if(rl==="Closed")rc="risk-closed";
+    const ctrlBadge=s.plkControl==="Yes"?`<span class="ctrl-yes">Yes</span>`:`<span class="ctrl-no">No</span>`;
+    const arsStr=s.ars2025!=null?fmt$(s.ars2025):"—";
+    const ebitdaStr=s.ttmEbitda!=null?fmt$(s.ttmEbitda):"—";
+    const ebitdaColor=s.ttmEbitda!=null&&s.ttmEbitda<0?"color:#C1272D;font-weight:600":"";
+    return`<tr>
+      <td><strong>${s.restNum||"—"}</strong></td>
+      <td>${s.fz||"—"}</td>
+      <td style="white-space:nowrap">${s.address||"—"}</td>
+      <td>${s.city||"—"}</td><td>${s.state||"—"}</td>
+      <td style="white-space:nowrap">${s.dateOfClosure||"—"}</td>
+      <td>${s.closureBucket||"—"}</td>
+      <td><span class="risk-badge ${rc}">${s.closureRisk||"—"}</span></td>
+      <td style="white-space:nowrap;font-size:11px;">${s.closureReason||"—"}</td>
+      <td>${ctrlBadge}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;">${arsStr}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;${ebitdaColor}">${ebitdaStr}</td>
+      <td style="max-width:220px;white-space:normal;font-size:11px;color:#6b7280;">${s.comments||"—"}</td>
+    </tr>`;
+  }).join("");
+}
+
+function sortModal(col){
+  const ths=document.querySelectorAll("#modal-thead-row th");
+  modalSortDir=(modalSortCol===col)?modalSortDir*-1:1; modalSortCol=col;
+  ths.forEach((th,i)=>{th.classList.remove("sort-asc","sort-desc");if(i===col)th.classList.add(modalSortDir===1?"sort-asc":"sort-desc");});
+  renderModalTable();
+}
+function resetModalFilters(){
+  ["modal-filter-bucket","modal-filter-risk","modal-filter-ctrl","modal-filter-reason"].forEach(id=>document.getElementById(id).value="");
+  modalSortCol=-1;modalSortDir=1;
+  document.querySelectorAll("#modal-thead-row th").forEach(th=>th.classList.remove("sort-asc","sort-desc"));
+  renderModalTable();
+}
+
+function openDrillDown(filter, title, subtitle) {
+  let sites = ALL_DATA;
+  if(filter.division && filter.division!=="US&C") sites=sites.filter(r=>r.division===filter.division);
+  if(filter.bucket) {
+    const fk=filter.filterKey||"";
+    if(fk==="2026 LE"||filter.bucket==="LE")          sites=sites.filter(r=>isLE(r));
+    else if(fk==="leOpp"||filter.bucket==="LE (Opp)") sites=sites.filter(r=>isLEOpp(r));
+    else if(fk==="closed"||filter.bucket==="Closed")  sites=sites.filter(r=>isClosed(r));
+    else if(fk==="2027"||filter.bucket==="2027 LE")   sites=sites.filter(r=>is2027(r));
+    else if(fk==="2028"||filter.bucket==="2028 LE")   sites=sites.filter(r=>is2028(r));
+    else if(fk==="mitigate"||filter.bucket==="Mitigate") sites=sites.filter(r=>isMitigate(r));
+    else if(fk==="notInLE"||filter.bucket==="Not in LE") sites=sites.filter(r=>isNotInLE(r));
+  }
+  if(filter.reason) sites=sites.filter(r=>r.closureReason===filter.reason);
+
+  MODAL_SITES=sites; MODAL_TITLE_TEXT=title;
+  document.getElementById("modal-title").textContent=title;
+  document.getElementById("modal-subtitle").textContent=subtitle+" · "+sites.length+" site"+(sites.length!==1?"s":"");
+  ["modal-filter-bucket","modal-filter-risk","modal-filter-ctrl","modal-filter-reason"].forEach(id=>document.getElementById(id).value="");
+  modalSortCol=-1;modalSortDir=1;
+  document.querySelectorAll("#modal-thead-row th").forEach(th=>th.classList.remove("sort-asc","sort-desc"));
+  renderModalTable();
+  document.getElementById("drill-modal").classList.add("open");
+}
+function closeModal(){document.getElementById("drill-modal").classList.remove("open");}
+document.getElementById("drill-modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
+
+function exportModalToExcel(){
+  const bucketF=document.getElementById("modal-filter-bucket").value;
+  const riskF  =document.getElementById("modal-filter-risk").value;
+  const ctrlF  =document.getElementById("modal-filter-ctrl").value;
+  const reasonF=document.getElementById("modal-filter-reason").value;
+  const sites=MODAL_SITES.filter(s=>(!bucketF||s.closureBucket===bucketF)&&(!riskF||s.closureRisk===riskF)&&(!ctrlF||s.plkControl===ctrlF)&&(!reasonF||s.closureReason===reasonF));
+  if(!sites.length)return;
+  const wb=XLSX.utils.book_new();
+  const rows=[["Rest No","FZ","Address","City","ST","Date of Closure","Closure Bucket","Closure Risk Level","Closure Reason","PLK Control","2025 ARS","TTM EBITDA","Comments"]];
+  sites.forEach(s=>rows.push([s.restNum||"",s.fz||"",s.address||"",s.city||"",s.state||"",s.dateOfClosure||"",s.closureBucket||"",s.closureRisk||"",s.closureReason||"",s.plkControl||"",s.ars2025||"",s.ttmEbitda||"",s.comments||""]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[10,20,24,16,6,14,12,14,22,10,12,12,40].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"Closures");
+  XLSX.writeFile(wb,MODAL_TITLE_TEXT.replace(/[^a-zA-Z0-9 ]/g,"_")+".xlsx");
+}
+
+// ── Excel exports ────────────────────────────────────────────────────────────
+function exportTable2026(){
+  const wb=XLSX.utils.book_new();
+  const rows=[["Division","LE","LE (Opp)","Closed YTD","Budget","Gap","Current Achievement","Projected Achievement"]];
+  DIVISIONS.forEach(div=>{
+    const le=ALL_DATA.filter(r=>r.division===div.name&&isLE(r)).length;
+    const leOpp=ALL_DATA.filter(r=>r.division===div.name&&isLEOpp(r)).length;
+    const closed=ALL_DATA.filter(r=>r.division===div.name&&isClosed(r)).length;
+    const budget=BUDGETS[div.name]||0;
+    rows.push([div.name,le,leOpp,closed,budget,le-budget,budget>0?(closed/budget):0,budget>0?(le/budget):0]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const range=XLSX.utils.decode_range(ws["!ref"]);
+  for(let R=1;R<=range.e.r;R++){["G","H"].forEach(col=>{const cell=ws[col+(R+1)];if(cell){cell.t="n";cell.z="0%";}});}
+  ws["!cols"]=[14,8,10,10,8,8,16,16].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"2026 Closures");
+  XLSX.writeFile(wb,"2026_Closure_Pipeline.xlsx");
+}
+
+function exportTable2027(){
+  const wb=XLSX.utils.book_new();
+  const rows=[["Division","2027 LE","Mitigate","Not in LE","Total"]];
+  DIVISIONS.forEach(div=>{
+    const le27=ALL_DATA.filter(r=>r.division===div.name&&is2027(r)).length;
+    const mit=ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;
+    const nil=ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;
+    rows.push([div.name,le27,mit,nil,le27+mit+nil]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[14,10,10,10,8].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"2027 Pipeline");
+  XLSX.writeFile(wb,"2027_Closure_Pipeline.xlsx");
+}
+
+function exportTable2028(){
+  const wb=XLSX.utils.book_new();
+  const rows=[["Division","2028 LE","Mitigate","Not in LE","Total"]];
+  DIVISIONS.forEach(div=>{
+    const le28=ALL_DATA.filter(r=>r.division===div.name&&is2028(r)).length;
+    const mit=ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;
+    const nil=ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;
+    rows.push([div.name,le28,mit,nil,le28+mit+nil]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[14,10,10,10,8].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"2028 Pipeline");
+  XLSX.writeFile(wb,"2028_Closure_Pipeline.xlsx");
+}
+
+// ── Fetch ────────────────────────────────────────────────────────────────────
+async function fetchData(){
+  try{
+    const res=await fetch(API); if(!res.ok)throw new Error(`Server responded with ${res.status}`);
+    const data=await res.json(); if(!data.rows||!data.budgets)throw new Error("Invalid data structure");
+    ALL_DATA=data.rows; BUDGETS=data.budgets;
+    document.getElementById("loading-overlay").style.display="none";
+    document.getElementById("app").style.display="block";
+    renderKPIBanner();
+    renderTable2026();
+    renderReasonCharts();
+    renderCtrlGrid();
+    renderTable2027();
+    renderTable2028();
+  }catch(e){
+    document.getElementById("loading-overlay").style.display="none";
+    alert("Error loading closure data: "+e.message);
+  }
+}
+fetchData();
+</script>
+</body>
+</html>
