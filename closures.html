@@ -36,14 +36,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 /* Tables */
 .table-container{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
-thead th{background:#f9fafb;padding:12px 14px;text-align:center;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.5px;border-bottom:2px solid #e5e7eb;white-space:nowrap;vertical-align:middle;line-height:1.4;}
+thead th{background:#f9fafb;padding:10px 12px;text-align:center;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.5px;border-bottom:2px solid #e5e7eb;white-space:nowrap;vertical-align:middle;line-height:1.4;}
 thead th.left{text-align:left;}
+thead th.grp-2027{background:#eff6ff!important;color:#1d4ed8!important;}
+thead th.grp-2028{background:#f0fdf4!important;color:#166534!important;}
+thead th.grp-shared{background:#faf5ff!important;color:#6b21a8!important;}
+thead th.grp-border-l{border-left:2px solid #e5e7eb;}
 tbody tr{border-bottom:1px solid #f3f4f6;transition:filter 0.15s;}
 tbody tr:hover{filter:brightness(0.96);}
 tbody tr.total-row{background:#FFF0F0!important;font-weight:700;border-top:2px solid #C1272D;border-bottom:2px solid #C1272D;}
-tbody td{padding:13px 14px;color:#374151;}
+tbody td{padding:11px 12px;color:#374151;}
+td.border-l{border-left:2px solid #e5e7eb;}
 .division-cell{font-weight:600;color:#1a1a1a;}
-.ddl-cell{color:#6b7280;font-size:12px;}
 .number-cell{text-align:center;font-weight:600;font-variant-numeric:tabular-nums;}
 .number-cell.clickable{cursor:pointer;}
 .number-cell.clickable:hover span{text-decoration:underline;color:#C1272D;}
@@ -51,43 +55,39 @@ tbody td{padding:13px 14px;color:#374151;}
 .achievement-high{background:#D1FAE5;color:#065F46;}
 .achievement-medium{background:#FEF3C7;color:#92400E;}
 .achievement-low{background:#FEE2E2;color:#991B1B;}
-.gap-positive{color:#C1272D;font-weight:700;}  /* more closures than budget = bad */
-.gap-negative{color:#059669;font-weight:700;}  /* fewer closures than budget = good */
+.gap-positive{color:#C1272D;font-weight:700;}
+.gap-negative{color:#059669;font-weight:700;}
 .gap-zero{color:#6b7280;font-weight:600;}
-
-/* Rank pills */
 .rank-pill{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800;margin-right:6px;flex-shrink:0;}
 .rank-1{background:#059669;color:white;}.rank-2{background:#34d399;color:white;}
 .rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
 .rank-5{background:#f87171;color:white;}.rank-6{background:#C1272D;color:white;}
-
-/* Risk mini-bar */
 .risk-minibar{display:flex;height:8px;border-radius:4px;overflow:hidden;min-width:80px;gap:1px;}
 .risk-seg{height:100%;}
+
+/* Side-by-side charts */
+.charts-side{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.chart-card{background:white;border-radius:12px;padding:22px;border:1px solid #e5e7eb;}
+.chart-card.le-card{border-top:4px solid #C1272D;}
+.chart-card.opp-card{border-top:4px solid #E8521A;}
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:14px;gap:12px;}
+.chart-header-left{flex:1;}
+.chart-title-main{font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:2px;}
+.chart-subtitle{font-size:12px;color:#6b7280;}
+.chart-canvas{max-height:300px;}
+.chart-legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;}
+.legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
 
 /* Controllable grid */
 .ctrl-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;}
 .ctrl-card{background:#f9fafb;border-radius:10px;padding:16px 18px;border:1px solid #e5e7eb;}
 .ctrl-name{font-size:13px;font-weight:700;color:#1a1a1a;margin-bottom:10px;}
-.ctrl-bar-wrap{background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden;margin-bottom:6px;}
-.ctrl-bar-ctrl{height:8px;border-radius:99px;background:#C1272D;float:left;}
-.ctrl-bar-non{height:8px;border-radius:99px;background:#9ca3af;float:left;}
-.ctrl-legend{display:flex;gap:12px;font-size:11px;color:#6b7280;}
+.ctrl-legend{display:flex;gap:12px;font-size:11px;color:#6b7280;margin-top:6px;}
 .ctrl-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;}
 
-/* Reason waterfall chart */
-.chart-card{background:white;border-radius:12px;padding:24px;border:1px solid #e5e7eb;}
-.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
-.chart-header-left{flex:1;}
-.chart-title{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
-.chart-subtitle{font-size:13px;color:#6b7280;}
-.chart-canvas{max-height:340px;}
-.charts-2col{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px;}
-
-/* Legend */
-.legend-bar{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
-.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+/* FZ Rollup */
+.fz-table thead th{background:#fafafa;}
 
 /* Modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
@@ -119,21 +119,21 @@ tbody td{padding:13px 14px;color:#374151;}
 .modal-table tbody tr:hover{background:#fff0f0;}
 .modal-table tbody td{padding:10px 12px;color:#374151;}
 .modal-empty{text-align:center;padding:40px;color:#9ca3af;font-size:14px;}
-/* risk badges */
 .risk-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
 .risk-low{background:#D1FAE5;color:#065F46;}.risk-medium{background:#FEF3C7;color:#92400E;}
 .risk-high{background:#FEE2E2;color:#991B1B;}.risk-definite{background:#fee2e2;color:#7f1d1d;}
 .risk-closed{background:#f3f4f6;color:#374151;}.risk-default{background:#F3F4F6;color:#374151;}
-/* ctrl badges */
 .ctrl-yes{background:#fee2e2;color:#991B1B;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;}
 .ctrl-no{background:#e0f2fe;color:#0369a1;font-size:11px;font-weight:600;padding:2px 8px;border-radius:4px;}
-/* overlay */
 .overlay{position:fixed;inset:0;background:#f9fafb;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
 .spinner{width:48px;height:48px;border:4px solid #C1272D;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .overlay-title{font-size:18px;font-weight:600;color:#374151;}
 .overlay-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
-@media(max-width:768px){.container{padding:24px;}.page-title{font-size:28px;}.charts-2col{grid-template-columns:1fr;}.kpi-banner{grid-template-columns:repeat(2,1fr);}}
+.legend-bar{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
+.legend-item2{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
+.legend-dot2{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+@media(max-width:900px){.charts-side{grid-template-columns:1fr;}.container{padding:24px;}.page-title{font-size:28px;}}
 </style>
 </head>
 <body>
@@ -164,25 +164,19 @@ tbody td{padding:13px 14px;color:#374151;}
       <span class="modal-filter-label">Filter:</span>
       <select class="modal-select" id="modal-filter-bucket" onchange="renderModalTable()">
         <option value="">All Buckets</option>
-        <option value="LE">LE</option>
-        <option value="LE (Opp)">LE (Opp)</option>
-        <option value="Mitigate">Mitigate</option>
-        <option value="2027 LE">2027 LE</option>
-        <option value="2028 LE">2028 LE</option>
-        <option value="Not in LE">Not in LE</option>
+        <option value="LE">LE</option><option value="LE (Opp)">LE (Opp)</option>
+        <option value="Mitigate">Mitigate</option><option value="2027 LE">2027 LE</option>
+        <option value="2028 LE">2028 LE</option><option value="Not in LE">Not in LE</option>
       </select>
       <select class="modal-select" id="modal-filter-risk" onchange="renderModalTable()">
         <option value="">All Risk Levels</option>
-        <option value="Low Risk">Low Risk</option>
-        <option value="Medium Risk">Medium Risk</option>
-        <option value="High Risk">High Risk</option>
-        <option value="Definite Closure">Definite Closure</option>
+        <option value="Low Risk">Low Risk</option><option value="Medium Risk">Medium Risk</option>
+        <option value="High Risk">High Risk</option><option value="Definite Closure">Definite Closure</option>
         <option value="Closed">Closed</option>
       </select>
       <select class="modal-select" id="modal-filter-ctrl" onchange="renderModalTable()">
         <option value="">All Control</option>
-        <option value="Yes">Controllable (Yes)</option>
-        <option value="No">Non-Controllable (No)</option>
+        <option value="Yes">Controllable (Yes)</option><option value="No">Non-Controllable (No)</option>
       </select>
       <select class="modal-select" id="modal-filter-reason" onchange="renderModalTable()">
         <option value="">All Reasons</option>
@@ -204,7 +198,7 @@ tbody td{padding:13px 14px;color:#374151;}
             <th onclick="sortModal(2)">Address<span class="sort-arrow"></span></th>
             <th onclick="sortModal(3)">City<span class="sort-arrow"></span></th>
             <th onclick="sortModal(4)">ST<span class="sort-arrow"></span></th>
-            <th onclick="sortModal(5)">Date of Closure<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(5)">Date of Closure (LE)<span class="sort-arrow"></span></th>
             <th onclick="sortModal(6)">Closure Bucket<span class="sort-arrow"></span></th>
             <th onclick="sortModal(7)">Risk Level<span class="sort-arrow"></span></th>
             <th onclick="sortModal(8)">Reason<span class="sort-arrow"></span></th>
@@ -252,8 +246,8 @@ tbody td{padding:13px 14px;color:#374151;}
               <th style="background:#fef3c7;color:#92400e;">LE (Opp)<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Upside Risk)</span></th>
               <th style="background:#f0fdf4;color:#166534;">Closed YTD</th>
               <th>Budget</th><th>Gap</th>
-              <th style="background:#eff6ff;color:#1d4ed8;">Current Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Closed / Budget)</span></th>
-              <th style="background:#fff0f0;color:#991b1b;">Projected Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(LE / Budget)</span></th>
+              <th style="background:#eff6ff;color:#1d4ed8;">Current Ach.<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Closed / Budget)</span></th>
+              <th style="background:#fff0f0;color:#991b1b;">Projected Ach.<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(LE / Budget)</span></th>
               <th style="background:#faf5ff;color:#6b21a8;">Risk Mix</th>
             </tr>
           </thead>
@@ -261,111 +255,104 @@ tbody td{padding:13px 14px;color:#374151;}
         </table>
       </div>
       <div class="legend-bar">
-        <span style="font-size:11px;color:#6b7280;font-weight:600;">Overall Rank (fewest closures vs budget = best):</span>
-        <div class="legend-item"><div class="legend-dot" style="background:#059669;"></div>#1 Best</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#34d399;"></div>#2</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>#3</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fb923c;"></div>#4</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f87171;"></div>#5</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#C1272D;"></div>#6 Most Closures</div>
+        <span style="font-size:11px;color:#6b7280;font-weight:600;">Rank (fewest vs budget = best):</span>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#059669;"></div>#1 Best</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#34d399;"></div>#2</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#fbbf24;"></div>#3</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#fb923c;"></div>#4</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#f87171;"></div>#5</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#C1272D;"></div>#6</div>
         <div style="width:1px;background:#e5e7eb;height:16px;margin:0 4px;"></div>
         <span style="font-size:11px;color:#6b7280;font-weight:600;">Risk Mix:</span>
-        <div class="legend-item"><div class="legend-dot" style="background:#059669;"></div>Low</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>Medium</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fb923c;"></div>High</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#C1272D;"></div>Definite</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#6b7280;"></div>Closed</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#059669;"></div>Low</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#fbbf24;"></div>Medium</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#fb923c;"></div>High</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#C1272D;"></div>Definite</div>
+        <div class="legend-item2"><div class="legend-dot2" style="background:#6b7280;"></div>Closed</div>
       </div>
-      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* 2026 LE = definite closures. LE (Opp) = additional upside risk. Rank is a weighted score: 40% Current Achievement + 60% Projected Achievement vs budget — lower closures relative to budget = better rank.</p>
+      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Rank: weighted score 40% Current Achievement + 60% Projected Achievement vs budget — fewer closures relative to budget = better rank.</p>
     </div>
 
-    <!-- Closure Reason Waterfall -->
+    <!-- Closure Reason Charts (side by side) -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📈</span>2026 Closure Pipeline — Reason Analysis</div>
       </div>
-      <div class="chart-card">
-        <div class="chart-header">
-          <div class="chart-header-left">
-            <div class="chart-title">US&amp;C Consolidated — 2026 LE Closures by Reason</div>
-            <div class="chart-subtitle">Stacked by closure reason vs. total LE budget · Click bars to drill down</div>
-          </div>
-        </div>
-        <canvas id="chart-reasons" class="chart-canvas"></canvas>
-      </div>
-      <div class="charts-2col">
-        <div class="chart-card">
+      <div class="charts-side">
+        <!-- LEFT: Closure LE -->
+        <div class="chart-card le-card">
           <div class="chart-header">
             <div class="chart-header-left">
-              <div class="chart-title">Controllable vs Non-Controllable</div>
-              <div class="chart-subtitle">2026 LE closures · PLK Control split</div>
+              <div class="chart-title-main">Closure LE</div>
+              <div class="chart-subtitle">2026 LE by reason · stacked by PLK control · click to drill down</div>
             </div>
           </div>
-          <canvas id="chart-ctrl-pie" class="chart-canvas" style="max-height:260px;"></canvas>
+          <canvas id="chart-le-reasons" class="chart-canvas"></canvas>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-swatch" style="background:#7B2D8B;"></div>PLK Controlled</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#C1272D;"></div>Non-Controlled</div>
+          </div>
         </div>
-        <div class="chart-card">
+        <!-- RIGHT: Additional Closure Risk (LE Opp) -->
+        <div class="chart-card opp-card">
           <div class="chart-header">
             <div class="chart-header-left">
-              <div class="chart-title">Closure Reason Distribution</div>
-              <div class="chart-subtitle">All 2026 LE + LE (Opp) · Click to drill down</div>
+              <div class="chart-title-main">Additional Closure Risk</div>
+              <div class="chart-subtitle">2026 LE (Opp) by reason · stacked by PLK control · click to drill down</div>
             </div>
           </div>
-          <canvas id="chart-reason-dist" class="chart-canvas" style="max-height:260px;"></canvas>
+          <canvas id="chart-opp-reasons" class="chart-canvas"></canvas>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-swatch" style="background:#7B2D8B;"></div>PLK Controlled</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Non-Controlled</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Controllable vs Non-Controllable by Division -->
+    <!-- Controllable by Division -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>🎯</span>Controllable vs Non-Controllable by Division</div>
       </div>
       <div class="ctrl-grid" id="ctrl-grid"></div>
-      <p style="margin-top:14px;font-size:11px;color:#9ca3af;font-style:italic;">* Based on 2026 LE closures. PLK Control = Yes means the closure is within PLK/franchisor influence. No = external factors.</p>
+      <p style="margin-top:14px;font-size:11px;color:#9ca3af;font-style:italic;">* Based on 2026 LE closures. PLK Control = Yes means the closure is within PLK/franchisor influence.</p>
     </div>
 
-    <!-- 2027 Pipeline Table -->
+    <!-- FZ Rollup -->
     <div class="section">
       <div class="section-header">
-        <div class="section-title"><span>🔮</span>2027 Pipeline Visibility</div>
-        <button class="export-btn" onclick="exportTable2027()">
+        <div class="section-title"><span>🏢</span>2026 LE Pipeline — Rollup by Franchisee (FZ)</div>
+        <button class="export-btn" onclick="exportFZRollup()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           Export to Excel
         </button>
       </div>
       <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th class="left">Division</th>
-              <th>2027 LE</th><th>Mitigate</th><th>Not in LE</th><th>Total 2027</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-2027"></tbody>
+        <table class="fz-table" id="fz-table">
+          <thead id="fz-thead"></thead>
+          <tbody id="fz-tbody"></tbody>
         </table>
       </div>
+      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Shows franchisees with 1+ 2026 LE sites. Click any count to drill down into those sites.</p>
     </div>
 
-    <!-- 2028 Pipeline Table -->
+    <!-- Combined 2027 / 2028 Pipeline Table -->
     <div class="section">
       <div class="section-header">
-        <div class="section-title"><span>🔭</span>2028 Pipeline Visibility</div>
-        <button class="export-btn" onclick="exportTable2028()">
+        <div class="section-title"><span>🔮</span>2027 &amp; 2028 Pipeline Visibility — by Closure Reason</div>
+        <button class="export-btn" onclick="exportFuturePipeline()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           Export to Excel
         </button>
       </div>
       <div class="table-container">
-        <table>
-          <thead>
-            <tr>
-              <th class="left">Division</th>
-              <th>2028 LE</th><th>Mitigate</th><th>Not in LE</th><th>Total 2028</th>
-            </tr>
-          </thead>
-          <tbody id="tbody-2028"></tbody>
+        <table id="future-table">
+          <thead id="future-thead"></thead>
+          <tbody id="future-tbody"></tbody>
         </table>
       </div>
+      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Only closure reasons with at least 1 site in 2027 or 2028 are shown. Mitigate and Not in LE are shared across both years.</p>
     </div>
   </div>
 </div>
@@ -378,39 +365,34 @@ const DIVISIONS = [
 ];
 const RANK_COLORS = ["#059669","#34d399","#fbbf24","#fb923c","#f87171","#C1272D"];
 const RANK_BG     = ["rgba(209,250,229,0.35)","rgba(187,247,208,0.25)","rgba(254,249,195,0.35)","rgba(254,215,170,0.25)","rgba(254,202,202,0.25)","rgba(254,226,226,0.35)"];
+const ALL_REASONS = [
+  "Poor Profitability","FZ Financial Issue","Enforcement","Loss of Property Control",
+  "FA Expiration","Lack of Interest in renewing FA","Relocation","F2F",
+  "Bad Trade Area","California - Potential Closure","Other"
+];
 const REASON_COLORS = {
-  "Poor Profitability":              "#C1272D",
-  "FZ Financial Issue":              "#E8521A",
-  "Enforcement":                     "#F7941D",
-  "FA Expiration":                   "#FFC20E",
-  "Lack of Interest in renewing FA": "#7B2D8B",
-  "Loss of Property Control":        "#00A99D",
-  "Relocation":                      "#1d4ed8",
-  "F2F":                             "#059669",
-  "Bad Trade Area":                  "#6b7280",
-  "California - Potential Closure":  "#0ea5e9",
-  "Other":                           "#9ca3af",
+  "Poor Profitability":"#C1272D","FZ Financial Issue":"#E8521A","Enforcement":"#F7941D",
+  "FA Expiration":"#FFC20E","Lack of Interest in renewing FA":"#7B2D8B",
+  "Loss of Property Control":"#00A99D","Relocation":"#1d4ed8","F2F":"#059669",
+  "Bad Trade Area":"#6b7280","California - Potential Closure":"#0ea5e9","Other":"#9ca3af"
 };
-const ALL_REASONS = Object.keys(REASON_COLORS);
 const fmt$ = n => n==null?"N/A": Math.abs(n)>=1e6?`$${(n/1e6).toFixed(2)}M`:`$${(n/1e3).toFixed(0)}K`;
 
 let ALL_DATA=[], BUDGETS={};
 let MODAL_SITES=[], MODAL_TITLE_TEXT="";
 let modalSortCol=-1, modalSortDir=1;
+let FZ_REASONS=[], FUTURE_REASONS=[];
 
-// ── Bucket helpers ──────────────────────────────────────────────────────────
-function isLE(r)       { return r.closureBucket === "LE"; }
-function isLEOpp(r)    { return r.closureBucket === "LE (Opp)"; }
-function isClosed(r)   { return r.closureRisk && r.closureRisk.trim() === "Closed"; }
-function is2026BU(r)   { return isLE(r) || isLEOpp(r); }
-function is2027(r)     { return r.closureBucket === "2027 LE"; }
-function is2028(r)     { return r.closureBucket === "2028 LE"; }
-function isMitigate(r) { return r.closureBucket === "Mitigate"; }
-function isNotInLE(r)  { return r.closureBucket === "Not in LE"; }
-function gapClass(g)   {
-  // for closures: over budget (positive gap) = bad (red), under budget = good (green)
-  return g>0?"gap-positive":g<0?"gap-negative":"gap-zero";
-}
+function isLE(r)       { return r.closureBucket==="LE"; }
+function isLEOpp(r)    { return r.closureBucket==="LE (Opp)"; }
+function isClosed(r)   { return r.closureRisk&&r.closureRisk.trim()==="Closed"; }
+function is2026BU(r)   { return isLE(r)||isLEOpp(r); }
+function is2027(r)     { return r.closureBucket==="2027 LE"; }
+function is2028(r)     { return r.closureBucket==="2028 LE"; }
+function isMitigate(r) { return r.closureBucket==="Mitigate"; }
+function isNotInLE(r)  { return r.closureBucket==="Not in LE"; }
+function normalizeReason(r){ return ALL_REASONS.includes(r.closureReason)?r.closureReason:"Other"; }
+function gapClass(g)   { return g>0?"gap-positive":g<0?"gap-negative":"gap-zero"; }
 function achieveClass(p){ return p>=90?"achievement-high":p>=70?"achievement-medium":"achievement-low"; }
 
 // ── KPI Banner ──────────────────────────────────────────────────────────────
@@ -419,42 +401,37 @@ function renderKPIBanner() {
   const leRows      = ALL_DATA.filter(r=>isLE(r));
   const leOppRows   = ALL_DATA.filter(r=>isLEOpp(r));
   const closedRows  = ALL_DATA.filter(r=>isClosed(r));
-  const leCount     = leRows.length;
-  const leOppCount  = leOppRows.length;
-  const closedYTD   = closedRows.length;
-  const ltg         = Math.max(0, totalBudget - closedYTD);
-  const projAch     = totalBudget>0?Math.round(leCount/totalBudget*100):0;
-  const currAch     = totalBudget>0?Math.round(closedYTD/totalBudget*100):0;
-  const ctrlCount   = leRows.filter(r=>r.plkControl==="Yes").length;
-  const ctrlPct     = leCount>0?Math.round(ctrlCount/leCount*100):0;
-  const arsVals     = leRows.filter(r=>r.ars2025!=null).map(r=>r.ars2025);
-  const avgARS      = arsVals.length?arsVals.reduce((a,b)=>a+b,0)/arsVals.length:null;
-  const ebitdaVals  = leRows.filter(r=>r.ttmEbitda!=null).map(r=>r.ttmEbitda);
-  const avgEBITDA   = ebitdaVals.length?ebitdaVals.reduce((a,b)=>a+b,0)/ebitdaVals.length:null;
+  const leCount=leRows.length, leOppCount=leOppRows.length, closedYTD=closedRows.length;
+  const ltg=Math.max(0,totalBudget-closedYTD);
+  const projAch=totalBudget>0?Math.round(leCount/totalBudget*100):0;
+  const currAch=totalBudget>0?Math.round(closedYTD/totalBudget*100):0;
+  const ctrlCount=leRows.filter(r=>r.plkControl==="Yes").length;
+  const ctrlPct=leCount>0?Math.round(ctrlCount/leCount*100):0;
+  const arsVals=leRows.filter(r=>r.ars2025!=null).map(r=>r.ars2025);
+  const avgARS=arsVals.length?arsVals.reduce((a,b)=>a+b,0)/arsVals.length:null;
+  const ebitdaVals=leRows.filter(r=>r.ttmEbitda!=null).map(r=>r.ttmEbitda);
+  const avgEBITDA=ebitdaVals.length?ebitdaVals.reduce((a,b)=>a+b,0)/ebitdaVals.length:null;
 
   const cards = [
-    { label:"2026 LE Closures",        value:leCount,      sub:`of ${totalBudget} budget`, color:"#C1272D",
-      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#C1272D;width:${Math.min(100,projAch)}%"></div></div>`,
-      cls: projAch>=100?"kpi-urgent":"" },
-    { label:"LE (Opp) — Upside Risk",  value:leOppCount,   sub:"Additional 2026 risk",     color:"#E8521A", extra:"", cls:"" },
-    { label:"Closed YTD",              value:closedYTD,    sub:`of ${totalBudget} budget`,  color:"#6b7280",
-      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#6b7280;width:${Math.min(100,currAch)}%"></div></div>`,
-      cls:"" },
-    { label:"Closures LTG",            value:ltg,          sub:"Left to go vs budget",      color:"#F7941D", extra:"", cls: ltg===0?"kpi-good":"" },
-    { label:"% Controllable (LE)",     value:ctrlPct+"%",  sub:`${ctrlCount} of ${leCount} LE sites`, color:"#7B2D8B",
-      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#7B2D8B;width:${ctrlPct}%"></div></div>`,
-      cls:"" },
-    { label:"Avg 2025 ARS",            value:fmt$(avgARS), sub:"2026 LE units",             color:"#00A99D", extra:"", cls:"" },
-    { label:"Avg TTM EBITDA",          value:fmt$(avgEBITDA), sub:"2026 LE units",          color:"#1d4ed8", extra:"", cls: avgEBITDA!=null&&avgEBITDA<0?"kpi-urgent":"" },
-    { label:"Current Achievement",     value:currAch+"%",  sub:"Closed vs budget",          color:"#1d4ed8",
-      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#1d4ed8;width:${Math.min(100,currAch)}%"></div></div>`,
-      cls: currAch>=100?"kpi-urgent":"" },
-    { label:"Projected Achievement",   value:projAch+"%",  sub:"LE vs budget",              color:"#991b1b",
-      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#991b1b;width:${Math.min(100,projAch)}%"></div></div>`,
-      cls: projAch>=100?"kpi-urgent":"" },
+    {label:"2026 LE Closures",       value:leCount,       sub:`of ${totalBudget} budget`,    color:"#C1272D",
+     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#C1272D;width:${Math.min(100,projAch)}%"></div></div>`,
+     cls:projAch>=100?"kpi-urgent":""},
+    {label:"LE (Opp) — Upside Risk", value:leOppCount,    sub:"Additional 2026 risk",         color:"#E8521A",extra:"",cls:""},
+    {label:"Closed YTD",             value:closedYTD,     sub:`of ${totalBudget} budget`,     color:"#6b7280",
+     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#6b7280;width:${Math.min(100,currAch)}%"></div></div>`,cls:""},
+    {label:"Closures LTG",           value:ltg,           sub:"Left to go vs budget",          color:"#F7941D",extra:"",cls:ltg===0?"kpi-good":""},
+    {label:"% Controllable (LE)",    value:ctrlPct+"%",   sub:`${ctrlCount} of ${leCount} LE`, color:"#7B2D8B",
+     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#7B2D8B;width:${ctrlPct}%"></div></div>`,cls:""},
+    {label:"Avg 2025 ARS",           value:fmt$(avgARS),  sub:"2026 LE units",                 color:"#00A99D",extra:"",cls:""},
+    {label:"Avg TTM EBITDA",         value:fmt$(avgEBITDA),sub:"2026 LE units",                color:"#1d4ed8",extra:"",cls:avgEBITDA!=null&&avgEBITDA<0?"kpi-urgent":""},
+    {label:"Current Achievement",    value:currAch+"%",   sub:"Closed vs budget",              color:"#1d4ed8",
+     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#1d4ed8;width:${Math.min(100,currAch)}%"></div></div>`,
+     cls:currAch>=100?"kpi-urgent":""},
+    {label:"Projected Achievement",  value:projAch+"%",   sub:"LE vs budget",                  color:"#991b1b",
+     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#991b1b;width:${Math.min(100,projAch)}%"></div></div>`,
+     cls:projAch>=100?"kpi-urgent":""},
   ];
-
-  document.getElementById("kpi-banner").innerHTML = cards.map(c=>`
+  document.getElementById("kpi-banner").innerHTML=cards.map(c=>`
     <div class="kpi-card ${c.cls}" style="--kpi-color:${c.color}">
       <div class="kpi-label">${c.label}</div>
       <div class="kpi-value">${c.value}</div>
@@ -465,27 +442,21 @@ function renderKPIBanner() {
 
 // ── 2026 Table ──────────────────────────────────────────────────────────────
 function renderTable2026() {
-  const divStats = DIVISIONS.map(div=>{
-    const leRows    = ALL_DATA.filter(r=>r.division===div.name&&isLE(r));
-    const leOppRows = ALL_DATA.filter(r=>r.division===div.name&&isLEOpp(r));
-    const closedRows= ALL_DATA.filter(r=>r.division===div.name&&isClosed(r));
-    const leCount   = leRows.length;
-    const leOppCount= leOppRows.length;
-    const closedYTD = closedRows.length;
-    const budget    = BUDGETS[div.name]||0;
-    const gap       = leCount - budget;
-    const currPct   = budget>0?(closedYTD/budget*100):0;
-    const projPct   = budget>0?(leCount/budget*100):0;
-    // risk counts from LE rows
-    const nLow  = leRows.filter(r=>r.closureRisk==="Low Risk").length;
-    const nMed  = leRows.filter(r=>r.closureRisk==="Medium Risk").length;
-    const nHigh = leRows.filter(r=>r.closureRisk==="High Risk").length;
-    const nDef  = leRows.filter(r=>r.closureRisk==="Definite Closure").length;
+  const divStats=DIVISIONS.map(div=>{
+    const leRows=ALL_DATA.filter(r=>r.division===div.name&&isLE(r));
+    const leOppRows=ALL_DATA.filter(r=>r.division===div.name&&isLEOpp(r));
+    const closedRows=ALL_DATA.filter(r=>r.division===div.name&&isClosed(r));
+    const leCount=leRows.length, leOppCount=leOppRows.length, closedYTD=closedRows.length;
+    const budget=BUDGETS[div.name]||0, gap=leCount-budget;
+    const currPct=budget>0?(closedYTD/budget*100):0, projPct=budget>0?(leCount/budget*100):0;
+    const nLow=leRows.filter(r=>r.closureRisk==="Low Risk").length;
+    const nMed=leRows.filter(r=>r.closureRisk==="Medium Risk").length;
+    const nHigh=leRows.filter(r=>r.closureRisk==="High Risk").length;
+    const nDef=leRows.filter(r=>r.closureRisk==="Definite Closure").length;
     const nClosed=leRows.filter(r=>r.closureRisk==="Closed").length;
-    return {div,leCount,leOppCount,closedYTD,budget,gap,currPct,projPct,nLow,nMed,nHigh,nDef,nClosed};
+    return{div,leCount,leOppCount,closedYTD,budget,gap,currPct,projPct,nLow,nMed,nHigh,nDef,nClosed};
   });
 
-  // Rank: lower projPct = better (we WANT fewer closures vs budget)
   const byProj=[...divStats].sort((a,b)=>a.projPct-b.projPct);
   const byCurr=[...divStats].sort((a,b)=>a.currPct-b.currPct);
   const projRank={},currRank={};
@@ -497,34 +468,31 @@ function renderTable2026() {
 
   const totals={le:0,leOpp:0,closed:0,budget:0};
   let html="";
-
   divStats.forEach(({div,leCount,leOppCount,closedYTD,budget,gap,currPct,projPct,nLow,nMed,nHigh,nDef,nClosed})=>{
-    const rank=rankMap[div.name], rn=rank+1;
-    const rColor=RANK_COLORS[Math.min(rank,5)], rBg=RANK_BG[Math.min(rank,5)];
+    const rank=rankMap[div.name],rn=rank+1;
+    const rColor=RANK_COLORS[Math.min(rank,5)],rBg=RANK_BG[Math.min(rank,5)];
     const rTotal=nLow+nMed+nHigh+nDef+nClosed||1;
-    const minibar=`<div class="risk-minibar" title="Low:${nLow} Med:${nMed} High:${nHigh} Definite:${nDef} Closed:${nClosed}">
+    const minibar=`<div class="risk-minibar" title="Low:${nLow} Med:${nMed} High:${nHigh} Def:${nDef} Closed:${nClosed}">
       <div class="risk-seg" style="width:${nLow/rTotal*100}%;background:#059669;"></div>
       <div class="risk-seg" style="width:${nMed/rTotal*100}%;background:#fbbf24;"></div>
       <div class="risk-seg" style="width:${nHigh/rTotal*100}%;background:#fb923c;"></div>
       <div class="risk-seg" style="width:${nDef/rTotal*100}%;background:#C1272D;"></div>
       <div class="risk-seg" style="width:${nClosed/rTotal*100}%;background:#6b7280;"></div>
     </div><div style="font-size:10px;color:#9ca3af;margin-top:3px;">${nLow}L·${nMed}M·${nHigh}H·${nDef}D·${nClosed}C</div>`;
-
     html+=`<tr style="background:${rBg};border-left:4px solid ${rColor};">
       <td style="padding-left:10px;"><span class="rank-pill rank-${rn}">${rn}</span></td>
       <td class="division-cell">${div.name}</td>
-      ${clickableCell(leCount,   div.name,"LE",   "2026 LE",   `${div.name} · LE`)}
-      ${clickableCell(leOppCount,div.name,"LE (Opp)","leOpp", `${div.name} · LE (Opp)`)}
-      ${clickableCell(closedYTD, div.name,"Closed","closed",   `${div.name} · Closed YTD`)}
+      ${clickableCell(leCount,div.name,"LE","2026 LE",`${div.name} · LE`)}
+      ${clickableCell(leOppCount,div.name,"LE (Opp)","leOpp",`${div.name} · LE (Opp)`)}
+      ${clickableCell(closedYTD,div.name,"Closed","closed",`${div.name} · Closed YTD`)}
       <td class="number-cell">${budget}</td>
       <td class="number-cell ${gapClass(gap)}">${gap>=0?"+":""}${gap}</td>
       <td class="number-cell"><span class="achievement-badge ${achieveClass(currPct)} ach-current">${currPct.toFixed(0)}%</span></td>
       <td class="number-cell"><span class="achievement-badge ${achieveClass(projPct)}" style="background:#fff0f0;color:#991b1b;">${projPct.toFixed(0)}%</span></td>
       <td style="min-width:100px;">${minibar}</td>
     </tr>`;
-    totals.le+=leCount; totals.leOpp+=leOppCount; totals.closed+=closedYTD; totals.budget+=budget;
+    totals.le+=leCount;totals.leOpp+=leOppCount;totals.closed+=closedYTD;totals.budget+=budget;
   });
-
   const tGap=totals.le-totals.budget;
   const tCurr=totals.budget>0?(totals.closed/totals.budget*100):0;
   const tProj=totals.budget>0?(totals.le/totals.budget*100):0;
@@ -542,209 +510,278 @@ function renderTable2026() {
   document.getElementById("tbody-2026").innerHTML=html;
 }
 
-// ── Reason Waterfall Chart ──────────────────────────────────────────────────
-function renderReasonCharts() {
-  const totalBudget = Object.values(BUDGETS).reduce((a,b)=>a+b,0);
-  const leRows = ALL_DATA.filter(r=>isLE(r));
-
-  // Count by reason
-  const reasonCounts = {};
-  ALL_REASONS.forEach(r=>reasonCounts[r]=0);
-  leRows.forEach(r=>{
-    const reason = r.closureReason||"Other";
-    if(reasonCounts.hasOwnProperty(reason)) reasonCounts[reason]++;
-    else reasonCounts["Other"]=(reasonCounts["Other"]||0)+1;
+// ── Reason Charts (side by side, stacked PLK Controlled vs Non-Controlled) ──
+function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor) {
+  const reasonCounts={};
+  ALL_REASONS.forEach(r=>reasonCounts[r]={ctrl:0,nonCtrl:0});
+  rows.forEach(r=>{
+    const reason=normalizeReason(r);
+    if(r.plkControl==="Yes") reasonCounts[reason].ctrl++;
+    else reasonCounts[reason].nonCtrl++;
   });
 
-  // Build waterfall — cumulative stacked
-  const labels=[], baseData=[], barData=[], barColors=[], displayVals=[];
-  let cumulative=0;
-  ALL_REASONS.forEach(reason=>{
-    const count=reasonCounts[reason]||0;
-    if(count===0)return;
-    labels.push(reason);
-    baseData.push(cumulative);
-    barData.push(count);
-    barColors.push(REASON_COLORS[reason]||"#9ca3af");
-    displayVals.push(count);
-    cumulative+=count;
-  });
-  // Add budget bar
-  labels.push("Budget");
-  baseData.push(0);
-  barData.push(totalBudget);
-  barColors.push("#00A99D");
-  displayVals.push(totalBudget);
+  // Only show reasons with data
+  const activeReasons=ALL_REASONS.filter(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl>0);
+  const ctrlData=activeReasons.map(r=>reasonCounts[r].ctrl);
+  const nonCtrlData=activeReasons.map(r=>reasonCounts[r].nonCtrl);
+  const totals=activeReasons.map(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl);
 
-  const ctx=document.getElementById("chart-reasons");
+  const ctx=document.getElementById(canvasId);
   new Chart(ctx,{
     type:"bar",
-    data:{labels,datasets:[
-      {label:"_base",data:baseData,backgroundColor:"rgba(0,0,0,0)",borderColor:"rgba(0,0,0,0)",borderWidth:0,stack:"wf"},
-      {label:"_bars",data:barData,backgroundColor:barColors,borderRadius:4,barPercentage:0.6,stack:"wf"}
-    ]},
-    options:{responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{display:false},tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
-        filter:item=>item.datasetIndex===1,
-        callbacks:{label:ctx=>{
-          const lbl=labels[ctx.dataIndex];
-          if(lbl==="Budget")return`Budget: ${totalBudget}`;
-          let run=0;for(let i=0;i<=ctx.dataIndex;i++)run+=barData[i];
-          return`${lbl}: ${barData[ctx.dataIndex]}  |  Running Total: ${run-totalBudget>0?run:(run)}`;
-        }}}},
-      scales:{x:{stacked:true,grid:{display:false},border:{display:false},ticks:{color:"#6b7280",font:{size:10},maxRotation:35}},
-              y:{stacked:true,grid:{display:false},border:{display:false},ticks:{display:false},beginAtZero:true}},
-      layout:{padding:{top:32}}},
-    plugins:[{id:"lbl_reasons",afterDraw(chart){
-      const meta=chart.getDatasetMeta(1); if(!meta?.data)return;
-      const cCtx=chart.ctx; cCtx.save();
-      cCtx.font="bold 11px -apple-system,sans-serif";
-      cCtx.fillStyle="#FFFFFF";cCtx.textAlign="center";cCtx.textBaseline="middle";
-      displayVals.forEach((val,i)=>{
-        if(!val)return;
-        const bar=meta.data[i]; if(!bar)return;
-        const barH=bar.base-bar.y; if(barH<14)return;
-        cCtx.fillText(val,bar.x,(bar.y+bar.base)/2);
-      });
-      cCtx.restore();
-    }}]
+    data:{
+      labels:activeReasons,
+      datasets:[
+        {label:"PLK Controlled",data:ctrlData,backgroundColor:ctrlColor,stack:"s"},
+        {label:"Non-Controlled", data:nonCtrlData,backgroundColor:nonCtrlColor,stack:"s"}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
+          callbacks:{
+            title:ctx=>[ctx[0].label],
+            label:ctx=>`${ctx.dataset.label}: ${ctx.raw}`,
+            afterBody:ctx=>{
+              const idx=ctx[0].dataIndex;
+              return[`Total: ${totals[idx]}`];
+            }
+          }
+        }
+      },
+      scales:{
+        x:{stacked:true,grid:{display:false},border:{display:false},
+           ticks:{color:"#374151",font:{size:10},maxRotation:35}},
+        y:{stacked:true,grid:{color:"#f0f0f0"},border:{display:false},
+           ticks:{color:"#9ca3af",font:{size:10},stepSize:1}}
+      },
+      layout:{padding:{top:24}}
+    },
+    plugins:[{
+      id:"totals_"+canvasId,
+      afterDraw(chart){
+        const ds0=chart.getDatasetMeta(0),ds1=chart.getDatasetMeta(1);
+        if(!ds0?.data||!ds1?.data)return;
+        const cCtx=chart.ctx; cCtx.save();
+        cCtx.font="bold 11px -apple-system,sans-serif";
+        cCtx.fillStyle="#374151"; cCtx.textAlign="center"; cCtx.textBaseline="bottom";
+        totals.forEach((val,i)=>{
+          if(!val)return;
+          // use the top of the non-ctrl bar (second dataset) if it has data, else ctrl bar
+          const bar=ds1.data[i]&&nonCtrlData[i]>0?ds1.data[i]:ds0.data[i];
+          if(bar) cCtx.fillText(val,bar.x,bar.y-3);
+        });
+        cCtx.restore();
+      }
+    }]
   });
 
-  // Click drill-down on reason bars
+  // Click to drill down by reason
   ctx.addEventListener("click",function(e){
     const chart=Chart.getChart(ctx); if(!chart)return;
     const pts=chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false); if(!pts.length)return;
-    const idx=pts[0].index;
-    const lbl=labels[idx];
-    if(lbl==="Budget")return;
-    openDrillDown({bucket:"LE",reason:lbl},`US&C · LE · ${lbl}`,`All divisions · LE · ${lbl}`);
+    const reason=activeReasons[pts[0].index];
+    const bucket=canvasId.includes("opp")?"LE (Opp)":"LE";
+    openDrillDown({bucket,reason},`US&C · ${bucket} · ${reason}`,`All divisions · ${bucket}`);
   });
   ctx.style.cursor="pointer";
+}
 
-  // Controllable pie
-  const ctrlYes=leRows.filter(r=>r.plkControl==="Yes").length;
-  const ctrlNo =leRows.filter(r=>r.plkControl==="No").length;
-  new Chart(document.getElementById("chart-ctrl-pie"),{
-    type:"doughnut",
-    data:{labels:["Controllable (Yes)","Non-Controllable (No)"],
-      datasets:[{data:[ctrlYes,ctrlNo],backgroundColor:["#C1272D","#9ca3af"],borderWidth:2,borderColor:"white"}]},
-    options:{responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{position:"right",labels:{color:"#374151",font:{size:11}}},
-        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
-          callbacks:{label:ctx=>`${ctx.label}: ${ctx.raw} sites`}}}}
-  });
-
-  // Reason distribution bar (LE + LE Opp)
-  const allBURows=ALL_DATA.filter(r=>is2026BU(r));
-  const distCounts={};
-  ALL_REASONS.forEach(r=>distCounts[r]=0);
-  allBURows.forEach(r=>{
-    const reason=r.closureReason||"Other";
-    if(distCounts.hasOwnProperty(reason))distCounts[reason]++;
-    else distCounts["Other"]=(distCounts["Other"]||0)+1;
-  });
-  const distLabels=ALL_REASONS.filter(r=>distCounts[r]>0);
-  new Chart(document.getElementById("chart-reason-dist"),{
-    type:"bar",
-    data:{labels:distLabels,datasets:[{
-      data:distLabels.map(r=>distCounts[r]),
-      backgroundColor:distLabels.map(r=>REASON_COLORS[r]||"#9ca3af"),
-      borderRadius:4}]},
-    options:{responsive:true,maintainAspectRatio:true,indexAxis:"y",
-      plugins:{legend:{display:false},tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
-        callbacks:{label:ctx=>`${ctx.raw} sites`}}},
-      scales:{x:{grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:10}}},
-              y:{grid:{display:false},ticks:{color:"#374151",font:{size:10}}}}}
-  });
+function renderReasonCharts(){
+  buildReasonChart("chart-le-reasons",  ALL_DATA.filter(r=>isLE(r)),    "#7B2D8B","#C1272D");
+  buildReasonChart("chart-opp-reasons", ALL_DATA.filter(r=>isLEOpp(r)), "#7B2D8B","#E8521A");
 }
 
 // ── Controllable by Division ─────────────────────────────────────────────────
-function renderCtrlGrid() {
-  const html = DIVISIONS.map(div=>{
+function renderCtrlGrid(){
+  const html=DIVISIONS.map(div=>{
     const rows=ALL_DATA.filter(r=>r.division===div.name&&isLE(r));
     const yes=rows.filter(r=>r.plkControl==="Yes").length;
-    const no =rows.filter(r=>r.plkControl==="No").length;
-    const total=yes+no||1;
-    const yesPct=Math.round(yes/total*100);
+    const no=rows.filter(r=>r.plkControl==="No").length;
+    const total=yes+no||1, yesPct=Math.round(yes/total*100);
     return`<div class="ctrl-card">
       <div class="ctrl-name">${div.name} <span style="font-size:11px;font-weight:400;color:#9ca3af;">(${yes+no} LE sites)</span></div>
-      <div class="ctrl-bar-wrap" style="overflow:hidden;border-radius:99px;">
+      <div style="background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden;">
         <div style="height:8px;display:flex;">
           <div style="width:${yesPct}%;background:#C1272D;"></div>
           <div style="width:${100-yesPct}%;background:#e5e7eb;"></div>
         </div>
       </div>
       <div class="ctrl-legend" style="margin-top:6px;">
-        <span><span class="ctrl-dot" style="background:#C1272D;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;"></span>Controllable: <strong>${yes}</strong> (${yesPct}%)</span>
-        <span><span class="ctrl-dot" style="background:#9ca3af;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;"></span>Non-Controllable: <strong>${no}</strong> (${100-yesPct}%)</span>
+        <span><span class="ctrl-dot" style="background:#C1272D;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;"></span>Controlled: <strong>${yes}</strong> (${yesPct}%)</span>
+        <span><span class="ctrl-dot" style="background:#9ca3af;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;"></span>Non-Controlled: <strong>${no}</strong> (${100-yesPct}%)</span>
       </div>
     </div>`;
   }).join("");
   document.getElementById("ctrl-grid").innerHTML=html;
 }
 
-// ── 2027 Table ───────────────────────────────────────────────────────────────
-function renderTable2027() {
-  const totals={le27:0,mit:0,nil:0};
-  let html="";
-  DIVISIONS.forEach(div=>{
-    const le27=ALL_DATA.filter(r=>r.division===div.name&&is2027(r)).length;
-    const mit =ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;
-    const nil =ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;
-    const total=le27+mit+nil;
-    html+=`<tr>
-      <td class="division-cell">${div.name}</td>
-      ${clickableCell(le27,div.name,"2027 LE","2027","${div.name} · 2027 LE")}
-      ${clickableCell(mit, div.name,"Mitigate","mitigate","${div.name} · Mitigate")}
-      ${clickableCell(nil, div.name,"Not in LE","notInLE","${div.name} · Not in LE")}
-      <td class="number-cell">${total}</td>
-    </tr>`;
-    totals.le27+=le27; totals.mit+=mit; totals.nil+=nil;
+// ── FZ Rollup ─────────────────────────────────────────────────────────────────
+function renderFZRollup(){
+  const leRows=ALL_DATA.filter(r=>isLE(r));
+
+  // Get active reasons for FZ table
+  const reasonCounts={};
+  ALL_REASONS.forEach(r=>reasonCounts[r]=0);
+  leRows.forEach(r=>{const reason=normalizeReason(r);reasonCounts[reason]++;});
+  FZ_REASONS=ALL_REASONS.filter(r=>reasonCounts[r]>0);
+
+  // Build FZ map
+  const fzMap={};
+  leRows.forEach(r=>{
+    const fz=r.fz||"Unknown";
+    if(!fzMap[fz]) fzMap[fz]={fz,total:0,reasons:{}};
+    fzMap[fz].total++;
+    const reason=normalizeReason(r);
+    fzMap[fz].reasons[reason]=(fzMap[fz].reasons[reason]||0)+1;
   });
-  html+=`<tr class="total-row">
-    <td class="division-cell">US&amp;C Total</td>
-    ${clickableCell(totals.le27,"US&C","2027 LE","2027","US&C · 2027 LE")}
-    ${clickableCell(totals.mit,"US&C","Mitigate","mitigate","US&C · Mitigate")}
-    ${clickableCell(totals.nil,"US&C","Not in LE","notInLE","US&C · Not in LE")}
-    <td class="number-cell">${totals.le27+totals.mit+totals.nil}</td>
+
+  // Sort by total desc
+  const fzList=Object.values(fzMap).sort((a,b)=>b.total-a.total);
+
+  // Build totals row
+  const totalsRow={fz:"Total",total:0,reasons:{}};
+  FZ_REASONS.forEach(r=>totalsRow.reasons[r]=0);
+  fzList.forEach(fz=>{
+    totalsRow.total+=fz.total;
+    FZ_REASONS.forEach(r=>totalsRow.reasons[r]+=(fz.reasons[r]||0));
+  });
+
+  // Header
+  const thead=document.getElementById("fz-thead");
+  thead.innerHTML=`<tr>
+    <th class="left">Franchisee (FZ)</th>
+    ${FZ_REASONS.map(r=>`<th style="max-width:80px;white-space:normal;line-height:1.3;">${r}</th>`).join("")}
+    <th style="background:#fee2e2;color:#991b1b;">Total LE</th>
   </tr>`;
-  document.getElementById("tbody-2027").innerHTML=html;
+
+  // Body
+  const tbody=document.getElementById("fz-tbody");
+  let html=fzList.map(fz=>`<tr>
+    <td class="division-cell">${fz.fz}</td>
+    ${FZ_REASONS.map(r=>{
+      const cnt=fz.reasons[r]||0;
+      if(cnt===0)return`<td class="number-cell">—</td>`;
+      const esc=fz.fz.replace(/'/g,"\\'"),er=r.replace(/'/g,"\\'");
+      return`<td class="number-cell clickable" onclick="openDrillDown({fz:'${esc}',bucket:'LE',reason:'${er}'},'${esc} · ${er}','${esc}')"><span>${cnt}</span></td>`;
+    }).join("")}
+    <td class="number-cell" style="font-weight:700;color:#C1272D;">${fz.total}</td>
+  </tr>`).join("");
+
+  // Totals row
+  html+=`<tr class="total-row">
+    <td class="division-cell">Total</td>
+    ${FZ_REASONS.map(r=>`<td class="number-cell">${totalsRow.reasons[r]||0}</td>`).join("")}
+    <td class="number-cell" style="font-weight:700;color:#C1272D;">${totalsRow.total}</td>
+  </tr>`;
+  tbody.innerHTML=html;
 }
 
-// ── 2028 Table ───────────────────────────────────────────────────────────────
-function renderTable2028() {
-  const totals={le28:0,mit:0,nil:0};
-  let html="";
-  DIVISIONS.forEach(div=>{
-    const le28=ALL_DATA.filter(r=>r.division===div.name&&is2028(r)).length;
-    const mit =ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;
-    const nil =ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;
-    const total=le28+mit+nil;
-    html+=`<tr>
-      <td class="division-cell">${div.name}</td>
-      ${clickableCell(le28,div.name,"2028 LE","2028","${div.name} · 2028 LE")}
-      ${clickableCell(mit, div.name,"Mitigate","mitigate","${div.name} · Mitigate")}
-      ${clickableCell(nil, div.name,"Not in LE","notInLE","${div.name} · Not in LE")}
-      <td class="number-cell">${total}</td>
+// ── Combined 2027 / 2028 Table by Reason ─────────────────────────────────────
+function renderFuturePipeline(){
+  const rows27=ALL_DATA.filter(r=>is2027(r));
+  const rows28=ALL_DATA.filter(r=>is2028(r));
+
+  // Get only reasons with data in either year
+  const reasonSet=new Set();
+  [...rows27,...rows28].forEach(r=>reasonSet.add(normalizeReason(r)));
+  FUTURE_REASONS=ALL_REASONS.filter(r=>reasonSet.has(r));
+
+  // Build division maps
+  function buildMap(rows){
+    const map={};
+    DIVISIONS.forEach(div=>{ map[div.name]={total:0,reasons:{}}; FUTURE_REASONS.forEach(r=>map[div.name].reasons[r]=0); });
+    rows.forEach(r=>{
+      if(!map[r.division])return;
+      map[r.division].total++;
+      const reason=normalizeReason(r);
+      if(FUTURE_REASONS.includes(reason)) map[r.division].reasons[reason]++;
+    });
+    return map;
+  }
+  const map27=buildMap(rows27), map28=buildMap(rows28);
+
+  // Shared counts (mitigate + not in LE — same rows regardless of year)
+  const mitMap={}, nilMap={};
+  DIVISIONS.forEach(div=>{ mitMap[div.name]=ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length; nilMap[div.name]=ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length; });
+
+  const n=FUTURE_REASONS.length;
+
+  // Header — two rows for merged groups
+  const thead=document.getElementById("future-thead");
+  thead.innerHTML=`
+    <tr>
+      <th class="left" rowspan="2">Division</th>
+      <th class="grp-2027 grp-border-l" colspan="${n+1}">2027 Pipeline</th>
+      <th class="grp-2028 grp-border-l" colspan="${n+1}">2028 Pipeline</th>
+      <th class="grp-shared grp-border-l" colspan="2">Shared</th>
+    </tr>
+    <tr>
+      ${FUTURE_REASONS.map((r,i)=>`<th class="grp-2027${i===0?" grp-border-l":""}" style="max-width:70px;white-space:normal;line-height:1.3;">${r}</th>`).join("")}
+      <th class="grp-2027" style="font-weight:700;">Total</th>
+      ${FUTURE_REASONS.map((r,i)=>`<th class="grp-2028${i===0?" grp-border-l":""}" style="max-width:70px;white-space:normal;line-height:1.3;">${r}</th>`).join("")}
+      <th class="grp-2028" style="font-weight:700;">Total</th>
+      <th class="grp-shared grp-border-l">Mitigate</th>
+      <th class="grp-shared">Not in LE</th>
     </tr>`;
-    totals.le28+=le28; totals.mit+=mit; totals.nil+=nil;
-  });
+
+  // Body
+  const tbody=document.getElementById("future-tbody");
+  const totals27={reasons:{},total:0}, totals28={reasons:{},total:0}, totalsMit={total:0}, totalsNil={total:0};
+  FUTURE_REASONS.forEach(r=>{totals27.reasons[r]=0;totals28.reasons[r]=0;});
+
+  let html=DIVISIONS.map(div=>{
+    const d27=map27[div.name], d28=map28[div.name];
+    const mit=mitMap[div.name]||0, nil=nilMap[div.name]||0;
+    totals27.total+=d27.total; totals28.total+=d28.total;
+    totalsMit.total+=mit; totalsNil.total+=nil;
+    FUTURE_REASONS.forEach(r=>{totals27.reasons[r]+=(d27.reasons[r]||0);totals28.reasons[r]+=(d28.reasons[r]||0);});
+
+    const cells27=FUTURE_REASONS.map((r,i)=>{
+      const cnt=d27.reasons[r]||0;
+      const borderClass=i===0?" border-l":"";
+      if(!cnt)return`<td class="number-cell${borderClass}">—</td>`;
+      const ed=div.name.replace(/'/g,"\\'"),er=r.replace(/'/g,"\\'");
+      return`<td class="number-cell clickable${borderClass}" onclick="openDrillDown({division:'${ed}',bucket:'2027 LE',reason:'${er}'},'${ed} · 2027 LE · ${er}','${ed}')"><span>${cnt}</span></td>`;
+    });
+    const cells28=FUTURE_REASONS.map((r,i)=>{
+      const cnt=d28.reasons[r]||0;
+      const borderClass=i===0?" border-l":"";
+      if(!cnt)return`<td class="number-cell${borderClass}">—</td>`;
+      const ed=div.name.replace(/'/g,"\\'"),er=r.replace(/'/g,"\\'");
+      return`<td class="number-cell clickable${borderClass}" onclick="openDrillDown({division:'${ed}',bucket:'2028 LE',reason:'${er}'},'${ed} · 2028 LE · ${er}','${ed}')"><span>${cnt}</span></td>`;
+    });
+    const mitCC=mit>0?`<td class="number-cell clickable border-l" onclick="openDrillDown({division:'${div.name.replace(/'/g,"\\'")}',bucket:'Mitigate'},'${div.name} · Mitigate','${div.name}')"><span>${mit}</span></td>`:`<td class="number-cell border-l">—</td>`;
+    const nilCC=nil>0?`<td class="number-cell clickable" onclick="openDrillDown({division:'${div.name.replace(/'/g,"\\'")}',bucket:'Not in LE'},'${div.name} · Not in LE','${div.name}')"><span>${nil}</span></td>`:`<td class="number-cell">—</td>`;
+    return`<tr>
+      <td class="division-cell">${div.name}</td>
+      ${cells27.join("")}
+      <td class="number-cell" style="font-weight:700;color:#1d4ed8;">${d27.total||"—"}</td>
+      ${cells28.join("")}
+      <td class="number-cell" style="font-weight:700;color:#166534;">${d28.total||"—"}</td>
+      ${mitCC}${nilCC}
+    </tr>`;
+  }).join("");
+
+  // Totals
   html+=`<tr class="total-row">
     <td class="division-cell">US&amp;C Total</td>
-    ${clickableCell(totals.le28,"US&C","2028 LE","2028","US&C · 2028 LE")}
-    ${clickableCell(totals.mit,"US&C","Mitigate","mitigate","US&C · Mitigate")}
-    ${clickableCell(totals.nil,"US&C","Not in LE","notInLE","US&C · Not in LE")}
-    <td class="number-cell">${totals.le28+totals.mit+totals.nil}</td>
+    ${FUTURE_REASONS.map((r,i)=>`<td class="number-cell${i===0?" border-l":""}">${totals27.reasons[r]||0}</td>`).join("")}
+    <td class="number-cell" style="font-weight:700;color:#1d4ed8;">${totals27.total}</td>
+    ${FUTURE_REASONS.map((r,i)=>`<td class="number-cell${i===0?" border-l":""}">${totals28.reasons[r]||0}</td>`).join("")}
+    <td class="number-cell" style="font-weight:700;color:#166534;">${totals28.total}</td>
+    <td class="number-cell border-l">${totalsMit.total}</td>
+    <td class="number-cell">${totalsNil.total}</td>
   </tr>`;
-  document.getElementById("tbody-2028").innerHTML=html;
+  tbody.innerHTML=html;
 }
 
 // ── Clickable cell helper ────────────────────────────────────────────────────
-function clickableCell(count, divName, bucket, filterKey, label) {
+function clickableCell(count,divName,bucket,filterKey,label){
   if(count===0)return`<td class="number-cell">0</td>`;
-  const ed=divName.replace(/'/g,"\\'"),
-        eb=bucket.replace(/'/g,"\\'"),
-        el=label.replace(/'/g,"\\'");
+  const ed=divName.replace(/'/g,"\\'"),eb=bucket.replace(/'/g,"\\'"),el=label.replace(/'/g,"\\'");
   return`<td class="number-cell clickable" onclick="openDrillDown({division:'${ed}',bucket:'${eb}',filterKey:'${filterKey}'},'${el}','${ed}')"><span>${count}</span></td>`;
 }
 
@@ -754,60 +791,46 @@ function getSiteRow(s){
          s.dateOfClosure||"",s.closureBucket||"",s.closureRisk||"",
          s.closureReason||"",s.plkControl||"",
          s.ars2025!=null?String(s.ars2025):"",
-         s.ttmEbitda!=null?String(s.ttmEbitda):"",
-         s.comments||""];
+         s.ttmEbitda!=null?String(s.ttmEbitda):"",s.comments||""];
 }
-
-function renderModalTable() {
-  const bucketF = document.getElementById("modal-filter-bucket").value;
-  const riskF   = document.getElementById("modal-filter-risk").value;
-  const ctrlF   = document.getElementById("modal-filter-ctrl").value;
-  const reasonF = document.getElementById("modal-filter-reason").value;
-
-  let sites = MODAL_SITES.filter(s=>{
-    return (!bucketF || s.closureBucket===bucketF)
-        && (!riskF   || s.closureRisk===riskF)
-        && (!ctrlF   || s.plkControl===ctrlF)
-        && (!reasonF || s.closureReason===reasonF);
-  });
+function renderModalTable(){
+  const bucketF=document.getElementById("modal-filter-bucket").value;
+  const riskF  =document.getElementById("modal-filter-risk").value;
+  const ctrlF  =document.getElementById("modal-filter-ctrl").value;
+  const reasonF=document.getElementById("modal-filter-reason").value;
+  let sites=MODAL_SITES.filter(s=>
+    (!bucketF||s.closureBucket===bucketF)&&(!riskF||s.closureRisk===riskF)&&
+    (!ctrlF||s.plkControl===ctrlF)&&(!reasonF||s.closureReason===reasonF));
   if(modalSortCol>=0) sites=[...sites].sort((a,b)=>getSiteRow(a)[modalSortCol].localeCompare(getSiteRow(b)[modalSortCol],undefined,{sensitivity:"base"})*modalSortDir);
-
   document.getElementById("modal-count").textContent=`${sites.length} site${sites.length!==1?"s":""}`;
   const tbody=document.getElementById("modal-tbody");
   if(!sites.length){tbody.innerHTML=`<tr><td colspan="13" class="modal-empty">No sites match the current filters.</td></tr>`;return;}
-
   tbody.innerHTML=sites.map(s=>{
     const rl=(s.closureRisk||"").trim();
     let rc="risk-default";
-    if(rl==="Low Risk")rc="risk-low";
-    else if(rl==="Medium Risk")rc="risk-medium";
-    else if(rl==="High Risk")rc="risk-high";
-    else if(rl==="Definite Closure")rc="risk-definite";
+    if(rl==="Low Risk")rc="risk-low";else if(rl==="Medium Risk")rc="risk-medium";
+    else if(rl==="High Risk")rc="risk-high";else if(rl==="Definite Closure")rc="risk-definite";
     else if(rl==="Closed")rc="risk-closed";
     const ctrlBadge=s.plkControl==="Yes"?`<span class="ctrl-yes">Yes</span>`:`<span class="ctrl-no">No</span>`;
     const arsStr=s.ars2025!=null?fmt$(s.ars2025):"—";
     const ebitdaStr=s.ttmEbitda!=null?fmt$(s.ttmEbitda):"—";
-    const ebitdaColor=s.ttmEbitda!=null&&s.ttmEbitda<0?"color:#C1272D;font-weight:600":"";
+    const eColor=s.ttmEbitda!=null&&s.ttmEbitda<0?"color:#C1272D;font-weight:600":"";
     return`<tr>
-      <td><strong>${s.restNum||"—"}</strong></td>
-      <td>${s.fz||"—"}</td>
-      <td style="white-space:nowrap">${s.address||"—"}</td>
-      <td>${s.city||"—"}</td><td>${s.state||"—"}</td>
-      <td style="white-space:nowrap">${s.dateOfClosure||"—"}</td>
-      <td>${s.closureBucket||"—"}</td>
+      <td><strong>${s.restNum||"—"}</strong></td><td>${s.fz||"—"}</td>
+      <td style="white-space:nowrap">${s.address||"—"}</td><td>${s.city||"—"}</td><td>${s.state||"—"}</td>
+      <td style="white-space:nowrap">${s.dateOfClosure||"—"}</td><td>${s.closureBucket||"—"}</td>
       <td><span class="risk-badge ${rc}">${s.closureRisk||"—"}</span></td>
       <td style="white-space:nowrap;font-size:11px;">${s.closureReason||"—"}</td>
       <td>${ctrlBadge}</td>
       <td style="text-align:right;font-variant-numeric:tabular-nums;">${arsStr}</td>
-      <td style="text-align:right;font-variant-numeric:tabular-nums;${ebitdaColor}">${ebitdaStr}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;${eColor}">${ebitdaStr}</td>
       <td style="max-width:220px;white-space:normal;font-size:11px;color:#6b7280;">${s.comments||"—"}</td>
     </tr>`;
   }).join("");
 }
-
 function sortModal(col){
   const ths=document.querySelectorAll("#modal-thead-row th");
-  modalSortDir=(modalSortCol===col)?modalSortDir*-1:1; modalSortCol=col;
+  modalSortDir=(modalSortCol===col)?modalSortDir*-1:1;modalSortCol=col;
   ths.forEach((th,i)=>{th.classList.remove("sort-asc","sort-desc");if(i===col)th.classList.add(modalSortDir===1?"sort-asc":"sort-desc");});
   renderModalTable();
 }
@@ -817,22 +840,21 @@ function resetModalFilters(){
   document.querySelectorAll("#modal-thead-row th").forEach(th=>th.classList.remove("sort-asc","sort-desc"));
   renderModalTable();
 }
-
-function openDrillDown(filter, title, subtitle) {
-  let sites = ALL_DATA;
-  if(filter.division && filter.division!=="US&C") sites=sites.filter(r=>r.division===filter.division);
-  if(filter.bucket) {
-    const fk=filter.filterKey||"";
-    if(fk==="2026 LE"||filter.bucket==="LE")          sites=sites.filter(r=>isLE(r));
-    else if(fk==="leOpp"||filter.bucket==="LE (Opp)") sites=sites.filter(r=>isLEOpp(r));
-    else if(fk==="closed"||filter.bucket==="Closed")  sites=sites.filter(r=>isClosed(r));
-    else if(fk==="2027"||filter.bucket==="2027 LE")   sites=sites.filter(r=>is2027(r));
-    else if(fk==="2028"||filter.bucket==="2028 LE")   sites=sites.filter(r=>is2028(r));
-    else if(fk==="mitigate"||filter.bucket==="Mitigate") sites=sites.filter(r=>isMitigate(r));
-    else if(fk==="notInLE"||filter.bucket==="Not in LE") sites=sites.filter(r=>isNotInLE(r));
+function openDrillDown(filter,title,subtitle){
+  let sites=ALL_DATA;
+  if(filter.division&&filter.division!=="US&C") sites=sites.filter(r=>r.division===filter.division);
+  if(filter.fz) sites=sites.filter(r=>r.fz===filter.fz);
+  if(filter.bucket){
+    const b=filter.bucket, fk=filter.filterKey||"";
+    if(b==="LE"||fk==="2026 LE")        sites=sites.filter(r=>isLE(r));
+    else if(b==="LE (Opp)"||fk==="leOpp") sites=sites.filter(r=>isLEOpp(r));
+    else if(b==="Closed"||fk==="closed")   sites=sites.filter(r=>isClosed(r));
+    else if(b==="2027 LE"||fk==="2027")    sites=sites.filter(r=>is2027(r));
+    else if(b==="2028 LE"||fk==="2028")    sites=sites.filter(r=>is2028(r));
+    else if(b==="Mitigate"||fk==="mitigate") sites=sites.filter(r=>isMitigate(r));
+    else if(b==="Not in LE"||fk==="notInLE") sites=sites.filter(r=>isNotInLE(r));
   }
-  if(filter.reason) sites=sites.filter(r=>r.closureReason===filter.reason);
-
+  if(filter.reason) sites=sites.filter(r=>normalizeReason(r)===filter.reason);
   MODAL_SITES=sites; MODAL_TITLE_TEXT=title;
   document.getElementById("modal-title").textContent=title;
   document.getElementById("modal-subtitle").textContent=subtitle+" · "+sites.length+" site"+(sites.length!==1?"s":"");
@@ -845,23 +867,20 @@ function openDrillDown(filter, title, subtitle) {
 function closeModal(){document.getElementById("drill-modal").classList.remove("open");}
 document.getElementById("drill-modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
 
+// ── Excel exports ────────────────────────────────────────────────────────────
 function exportModalToExcel(){
-  const bucketF=document.getElementById("modal-filter-bucket").value;
-  const riskF  =document.getElementById("modal-filter-risk").value;
-  const ctrlF  =document.getElementById("modal-filter-ctrl").value;
-  const reasonF=document.getElementById("modal-filter-reason").value;
-  const sites=MODAL_SITES.filter(s=>(!bucketF||s.closureBucket===bucketF)&&(!riskF||s.closureRisk===riskF)&&(!ctrlF||s.plkControl===ctrlF)&&(!reasonF||s.closureReason===reasonF));
+  const bF=document.getElementById("modal-filter-bucket").value,rF=document.getElementById("modal-filter-risk").value;
+  const cF=document.getElementById("modal-filter-ctrl").value,rsF=document.getElementById("modal-filter-reason").value;
+  const sites=MODAL_SITES.filter(s=>(!bF||s.closureBucket===bF)&&(!rF||s.closureRisk===rF)&&(!cF||s.plkControl===cF)&&(!rsF||s.closureReason===rsF));
   if(!sites.length)return;
   const wb=XLSX.utils.book_new();
-  const rows=[["Rest No","FZ","Address","City","ST","Date of Closure","Closure Bucket","Closure Risk Level","Closure Reason","PLK Control","2025 ARS","TTM EBITDA","Comments"]];
+  const rows=[["Rest No","FZ","Address","City","ST","Date of Closure (LE)","Closure Bucket","Closure Risk Level","Closure Reason","PLK Control","2025 ARS","TTM EBITDA","Comments"]];
   sites.forEach(s=>rows.push([s.restNum||"",s.fz||"",s.address||"",s.city||"",s.state||"",s.dateOfClosure||"",s.closureBucket||"",s.closureRisk||"",s.closureReason||"",s.plkControl||"",s.ars2025||"",s.ttmEbitda||"",s.comments||""]));
   const ws=XLSX.utils.aoa_to_sheet(rows);
   ws["!cols"]=[10,20,24,16,6,14,12,14,22,10,12,12,40].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb,ws,"Closures");
   XLSX.writeFile(wb,MODAL_TITLE_TEXT.replace(/[^a-zA-Z0-9 ]/g,"_")+".xlsx");
 }
-
-// ── Excel exports ────────────────────────────────────────────────────────────
 function exportTable2026(){
   const wb=XLSX.utils.book_new();
   const rows=[["Division","LE","LE (Opp)","Closed YTD","Budget","Gap","Current Achievement","Projected Achievement"]];
@@ -876,38 +895,42 @@ function exportTable2026(){
   const range=XLSX.utils.decode_range(ws["!ref"]);
   for(let R=1;R<=range.e.r;R++){["G","H"].forEach(col=>{const cell=ws[col+(R+1)];if(cell){cell.t="n";cell.z="0%";}});}
   ws["!cols"]=[14,8,10,10,8,8,16,16].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws,"2026 Closures");
-  XLSX.writeFile(wb,"2026_Closure_Pipeline.xlsx");
+  XLSX.utils.book_append_sheet(wb,ws,"2026 Closures");XLSX.writeFile(wb,"2026_Closure_Pipeline.xlsx");
 }
-
-function exportTable2027(){
+function exportFZRollup(){
   const wb=XLSX.utils.book_new();
-  const rows=[["Division","2027 LE","Mitigate","Not in LE","Total"]];
+  const leRows=ALL_DATA.filter(r=>isLE(r));
+  const fzMap={};
+  leRows.forEach(r=>{
+    const fz=r.fz||"Unknown"; if(!fzMap[fz]){fzMap[fz]={fz,total:0,reasons:{}};}
+    fzMap[fz].total++;
+    const reason=normalizeReason(r); fzMap[fz].reasons[reason]=(fzMap[fz].reasons[reason]||0)+1;
+  });
+  const fzList=Object.values(fzMap).sort((a,b)=>b.total-a.total);
+  const rows=[["Franchisee (FZ)",...FZ_REASONS,"Total LE"]];
+  fzList.forEach(fz=>rows.push([fz.fz,...FZ_REASONS.map(r=>fz.reasons[r]||0),fz.total]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[24,...FZ_REASONS.map(()=>14),10].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"FZ Rollup");XLSX.writeFile(wb,"FZ_Rollup_2026_LE.xlsx");
+}
+function exportFuturePipeline(){
+  const wb=XLSX.utils.book_new();
+  const rows=[["Division",...FUTURE_REASONS.map(r=>"2027 · "+r),"2027 Total",...FUTURE_REASONS.map(r=>"2028 · "+r),"2028 Total","Mitigate","Not in LE"]];
   DIVISIONS.forEach(div=>{
-    const le27=ALL_DATA.filter(r=>r.division===div.name&&is2027(r)).length;
+    const r27=ALL_DATA.filter(r=>r.division===div.name&&is2027(r));
+    const r28=ALL_DATA.filter(r=>r.division===div.name&&is2028(r));
+    const cnt27={},cnt28={};
+    FUTURE_REASONS.forEach(r=>{cnt27[r]=0;cnt28[r]=0;});
+    r27.forEach(r=>{ const rn=normalizeReason(r); if(cnt27[rn]!==undefined)cnt27[rn]++; });
+    r28.forEach(r=>{ const rn=normalizeReason(r); if(cnt28[rn]!==undefined)cnt28[rn]++; });
+    const t27=FUTURE_REASONS.reduce((a,r)=>a+cnt27[r],0);
+    const t28=FUTURE_REASONS.reduce((a,r)=>a+cnt28[r],0);
     const mit=ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;
     const nil=ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;
-    rows.push([div.name,le27,mit,nil,le27+mit+nil]);
+    rows.push([div.name,...FUTURE_REASONS.map(r=>cnt27[r]),t27,...FUTURE_REASONS.map(r=>cnt28[r]),t28,mit,nil]);
   });
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws["!cols"]=[14,10,10,10,8].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws,"2027 Pipeline");
-  XLSX.writeFile(wb,"2027_Closure_Pipeline.xlsx");
-}
-
-function exportTable2028(){
-  const wb=XLSX.utils.book_new();
-  const rows=[["Division","2028 LE","Mitigate","Not in LE","Total"]];
-  DIVISIONS.forEach(div=>{
-    const le28=ALL_DATA.filter(r=>r.division===div.name&&is2028(r)).length;
-    const mit=ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;
-    const nil=ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;
-    rows.push([div.name,le28,mit,nil,le28+mit+nil]);
-  });
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws["!cols"]=[14,10,10,10,8].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws,"2028 Pipeline");
-  XLSX.writeFile(wb,"2028_Closure_Pipeline.xlsx");
+  XLSX.utils.book_append_sheet(wb,ws,"2027-2028 Pipeline");XLSX.writeFile(wb,"2027_2028_Closure_Pipeline.xlsx");
 }
 
 // ── Fetch ────────────────────────────────────────────────────────────────────
@@ -922,8 +945,8 @@ async function fetchData(){
     renderTable2026();
     renderReasonCharts();
     renderCtrlGrid();
-    renderTable2027();
-    renderTable2028();
+    renderFZRollup();
+    renderFuturePipeline();
   }catch(e){
     document.getElementById("loading-overlay").style.display="none";
     alert("Error loading closure data: "+e.message);
