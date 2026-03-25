@@ -27,15 +27,55 @@ STRIPE_FILL = PatternFill("solid", fgColor="F3F4F6")
 WHITE_FILL  = PatternFill("solid", fgColor="FFFFFF")
 STATUSES    = ["Prospect", "SA", "PC", "Permitting", "UC", "Open"]
 
+# Required chartSpace namespaces — openpyxl omits xmlns:r which causes
+# Excel to drop the chart entirely when it "recovers" the file.
+CHART_NS_OLD = 'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart">'
+CHART_NS_NEW = (
+    'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
+    ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
+    ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+)
 
-def patch_chart_xml(xml, bar_labels, str_cache):
-    """Replace numRef with strRef in the category axis — defined at module level to avoid closure bugs."""
-    def _replace(m):
+
+def patch_chart_xml(xml, bar_labels, str_cache, n):
+    """
+    Two patches applied at module level (no closures):
+    1. numRef -> strRef for X-axis category labels
+    2. Inject xmlns:a and xmlns:r onto chartSpace root so Excel doesn't drop the chart
+    """
+    # Patch 1: strRef categories
+    def _replace_cat(m):
         inner = m.group(1)
         f_match = re.search(r'<f>(.*?)</f>', inner, re.DOTALL)
         f_tag = f_match.group(0) if f_match else ""
         return '<cat><strRef>' + f_tag + str_cache + '</strRef></cat>'
-    return re.sub(r'<cat>\s*<numRef>(.*?)</numRef>\s*</cat>', _replace, xml, flags=re.DOTALL)
+
+    xml = re.sub(
+        r'<cat>\s*<numRef>(.*?)</numRef>\s*</cat>',
+        _replace_cat, xml, flags=re.DOTALL
+    )
+
+    # Patch 2: add required namespaces to chartSpace root
+    # First remove any inline xmlns:a declarations (moved to root)
+    xml = xml.replace(
+        '<chartSpace ' + CHART_NS_OLD,
+        '<chartSpace ' + CHART_NS_NEW
+    )
+    # Remove redundant inline xmlns:a now that it's on root
+    xml = re.sub(
+        r' xmlns:a="http://schemas\.openxmlformats\.org/drawingml/2006/main"',
+        '', xml
+    )
+    # Re-add xmlns:a to root (the sub above removed it from root too)
+    xml = xml.replace(
+        'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
+        ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">',
+        'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
+        ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
+        ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    )
+
+    return xml
 
 
 def build_xlsx(payload):
@@ -51,7 +91,6 @@ def build_xlsx(payload):
     bar_labels = STATUSES + ["FY BU", "Upside", "Budget"]
     n = len(bar_labels)
 
-    # Build waterfall base (where bar starts) and # SIPs (bar height)
     waterfall_vals = []
     sip_vals = []
     cumulative = 0
@@ -61,15 +100,9 @@ def build_xlsx(payload):
         waterfall_vals.append(cumulative)
         sip_vals.append(v)
         cumulative += v
-    # FY BU — starts at 0
-    waterfall_vals.append(0)
-    sip_vals.append(fy_bu)
-    # Upside — stacks on top of FY BU
-    waterfall_vals.append(fy_bu)
-    sip_vals.append(upside)
-    # Budget — starts at 0
-    waterfall_vals.append(0)
-    sip_vals.append(budget)
+    waterfall_vals.append(0);     sip_vals.append(fy_bu)
+    waterfall_vals.append(fy_bu); sip_vals.append(upside)
+    waterfall_vals.append(0);     sip_vals.append(budget)
 
     wb = Workbook()
 
@@ -78,16 +111,14 @@ def build_xlsx(payload):
     ws.title = "Waterfall Chart"
     ws.sheet_view.showGridLines = False
 
-    # Title
     ws.merge_cells("A1:C1")
     t = ws["A1"]
-    t.value = f"{division_name} — 2026 Pipeline Waterfall"
+    t.value = division_name + " \u2014 2026 Pipeline Waterfall"
     t.font = Font(bold=True, size=14, color="E8521A")
     t.alignment = Alignment(horizontal="left", vertical="center")
     ws.row_dimensions[1].height = 28
     ws.row_dimensions[2].height = 6
 
-    # Header: Stage | Waterfall | # SIPs
     for col, hdr in enumerate(["Stage", "Waterfall", "# SIPs"], 1):
         c = ws.cell(row=3, column=col, value=hdr)
         c.font = Font(bold=True, color="FFFFFF", size=10)
@@ -95,7 +126,6 @@ def build_xlsx(payload):
         c.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[3].height = 18
 
-    # Data rows (rows 4 to 4+n-1)
     table_row = 4
     for i, lbl in enumerate(bar_labels):
         fill = STRIPE_FILL if i % 2 == 0 else WHITE_FILL
@@ -123,7 +153,6 @@ def build_xlsx(payload):
 
     table_end = table_row + n - 1
 
-    # Summary stats below table
     sr = table_end + 2
     gc = "059669" if gap >= 0 else "DC2626"
 
@@ -135,20 +164,20 @@ def build_xlsx(payload):
 
     stat_row(sr,   "FY BU",                  fy_bu)
     stat_row(sr+1, "Budget",                  budget)
-    stat_row(sr+2, "Gap (FY BU vs Budget)",   gap,                        "+0;-0;0", gc)
-    stat_row(sr+3, "Gap %",                   gap / budget if budget else 0, "0%",   gc)
+    stat_row(sr+2, "Gap (FY BU vs Budget)",   gap,                          "+0;-0;0", gc)
+    stat_row(sr+3, "Gap %",                   gap / budget if budget else 0, "0%",     gc)
     stat_row(sr+4, "FY BU + Upside",          fy_bu + upside)
 
     ws.column_dimensions["A"].width = 14
     ws.column_dimensions["B"].width = 12
     ws.column_dimensions["C"].width = 10
 
-    # ── Embedded waterfall chart (reads from cols A-C) ────
+    # ── Stacked waterfall chart ───────────────────────────
     chart = BarChart()
     chart.type     = "col"
     chart.grouping = "stacked"
     chart.overlap  = 100
-    chart.title    = f"{division_name} — 2026 Pipeline"
+    chart.title    = division_name + " \u2014 2026 Pipeline"
     chart.width    = 26
     chart.height   = 16
     chart.legend   = None
@@ -159,7 +188,7 @@ def build_xlsx(payload):
     chart.x_axis.numFmt         = "General"
     chart.x_axis.axPos          = "b"
 
-    # Series 1 — invisible base (col B = Waterfall)
+    # Series 1 — invisible base
     base_ref = Reference(ws, min_col=2, min_row=table_row, max_row=table_end)
     base_ser = Series(base_ref, title="base")
     base_ser.graphicalProperties.solidFill      = "FFFFFF"
@@ -167,7 +196,7 @@ def build_xlsx(payload):
     base_ser.graphicalProperties.line.width     = 0
     chart.append(base_ser)
 
-    # Series 2 — visible coloured bars (col C = # SIPs)
+    # Series 2 — visible coloured bars
     bar_ref = Reference(ws, min_col=3, min_row=table_row, max_row=table_end)
     bar_ser = Series(bar_ref, title="# SIPs")
     bar_ser.graphicalProperties.solidFill      = "E8521A"
@@ -191,11 +220,8 @@ def build_xlsx(payload):
     bar_ser.dLbls = dl
     chart.append(bar_ser)
 
-    # X-axis categories from col A (Stage names)
     cats = Reference(ws, min_col=1, min_row=table_row, max_row=table_end)
     chart.set_categories(cats)
-
-    # Place chart at E2 — visible column, right of table
     ws.add_chart(chart, "E2")
 
     # ── Sheet 2: Site Detail ──────────────────────────────
@@ -224,10 +250,10 @@ def build_xlsx(payload):
 
     for ri, s in enumerate(sites, 2):
         row_vals = [
-            s.get("sipId", ""),    s.get("restNum", ""),   s.get("fz", ""),
-            s.get("address", ""),  s.get("city", ""),       s.get("state", ""),
-            s.get("status", ""),   s.get("fzOpenDate", ""), s.get("plkOpenDate", ""),
-            s.get("riskLevel", ""), s.get("lastComment", ""),
+            s.get("sipId",""),    s.get("restNum",""),   s.get("fz",""),
+            s.get("address",""),  s.get("city",""),       s.get("state",""),
+            s.get("status",""),   s.get("fzOpenDate",""), s.get("plkOpenDate",""),
+            s.get("riskLevel",""), s.get("lastComment",""),
         ]
         for col, val in enumerate(row_vals, 1):
             cell = ws2.cell(row=ri, column=col, value=val)
@@ -238,17 +264,13 @@ def build_xlsx(payload):
             ws2.cell(row=ri, column=10).fill = PatternFill("solid", fgColor=rf)
 
     ws2.freeze_panes = "A2"
-    ws2.auto_filter.ref = f"A1:{get_column_letter(len(hdrs))}1"
+    ws2.auto_filter.ref = "A1:" + get_column_letter(len(hdrs)) + "1"
 
-    # ── Save to buffer ────────────────────────────────────
+    # ── Save then patch chart XML ─────────────────────────
     pre_buf = io.BytesIO()
     wb.save(pre_buf)
     pre_buf.seek(0)
 
-    # ── Patch chart XML: numRef → strRef for X-axis labels ─
-    # openpyxl writes <numRef> for category references even when cells contain
-    # strings. Excel then shows numbers on the axis instead of stage names.
-    # We patch the saved ZIP in-memory to replace it with <strRef>.
     pt_tags = "".join(
         '<pt idx="' + str(i) + '"><v>' + lbl + '</v></pt>'
         for i, lbl in enumerate(bar_labels)
@@ -262,7 +284,7 @@ def build_xlsx(payload):
             data = zin.read(item.filename)
             if item.filename == "xl/charts/chart1.xml":
                 xml = data.decode("utf-8")
-                xml = patch_chart_xml(xml, bar_labels, str_cache)
+                xml = patch_chart_xml(xml, bar_labels, str_cache, n)
                 data = xml.encode("utf-8")
             zout.writestr(item, data)
 
