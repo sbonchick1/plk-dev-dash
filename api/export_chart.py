@@ -198,10 +198,10 @@ def build_xlsx(payload: dict) -> bytes:
         "fill":       {"color": "#E8521A"},
         "border":     {"none": True},
         "points":     points,
-        # FIX 1: white labels positioned inside the top of each bar
+        # white labels centered within each bar
         "data_labels": {
             "value":    True,
-            "position": "inside_end",
+            "position": "center",
             "font":     {"bold": True, "size": 10, "color": "#FFFFFF"},
         },
     })
