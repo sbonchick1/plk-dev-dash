@@ -1,10 +1,5 @@
 {
   "version": 2,
-  "functions": {
-    "api/export_chart.py": {
-      "runtime": "vercel-python@3.0.7"
-    }
-  },
   "rewrites": [
     { "source": "/", "destination": "/index.html" },
     { "source": "/nro-hub", "destination": "/nro-hub.html" },
