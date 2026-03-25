@@ -11,7 +11,6 @@ module.exports = async function(req, res) {
   const BUDGET_SHEET_ID  = "7864670409936772";
 
   try {
-    // ── Closure sheet ───────────────────────────────────────────────────────
     const closureResp = await fetch(
       `https://api.smartsheet.com/2.0/sheets/${CLOSURE_SHEET_ID}`,
       { headers: { "Authorization": "Bearer " + TOKEN } }
@@ -20,11 +19,9 @@ module.exports = async function(req, res) {
     let closureData;
     try { closureData = JSON.parse(closureText); }
     catch(e) { return res.status(500).json({ error: "Failed to parse closure response", raw: closureText.slice(0,300) }); }
-    if (!closureData.columns || !closureData.rows) {
+    if (!closureData.columns || !closureData.rows)
       return res.status(500).json({ error: "Unexpected closure response", detail: closureData });
-    }
 
-    // ── Budget sheet ────────────────────────────────────────────────────────
     const budgetResp = await fetch(
       `https://api.smartsheet.com/2.0/sheets/${BUDGET_SHEET_ID}`,
       { headers: { "Authorization": "Bearer " + TOKEN } }
@@ -34,7 +31,6 @@ module.exports = async function(req, res) {
     try { budgetData = JSON.parse(budgetText); }
     catch(e) { return res.status(500).json({ error: "Failed to parse budget response", raw: budgetText.slice(0,300) }); }
 
-    // ── Column map ──────────────────────────────────────────────────────────
     const colMap = {};
     closureData.columns.forEach(function(col, i) { colMap[col.title] = i; });
 
@@ -56,37 +52,30 @@ module.exports = async function(req, res) {
       return isNaN(n) ? null : n;
     }
 
-    // ── Parse rows ──────────────────────────────────────────────────────────
     const rows = closureData.rows.map(function(row) {
       return {
-        division:       get(row, "Division"),
-        restNum:        get(row, "Rest. No"),
-        fz:             get(row, "FZ"),
-        address:        get(row, "Address"),
-        city:           get(row, "City"),
-        state:          get(row, "ST"),
-        dateOfClosure:  get(row, "Date of Closure"),
-        closureRisk:    get(row, "Closure Risk Level"),
-        closureBucket:  get(row, "Closure Bucket"),
-        closureReason:  get(row, "Closure Reason"),
-        plkControl:     get(row, "PLK Control?"),
-        ars2025:        parseNum(get(row, "2025 ARS")),
-        ttmEbitda:      parseNum(get(row, "TTM EBITDA")),
-        comments:       get(row, "Comments"),
+        division:      get(row, "Division"),
+        restNum:       get(row, "Rest No."),
+        fz:            get(row, "FZ"),
+        address:       get(row, "Address"),
+        city:          get(row, "City"),
+        state:         get(row, "ST"),
+        dateOfClosure: get(row, "Date of Closure (LE)"),
+        closureRisk:   get(row, "Closure Risk Level"),
+        closureBucket: get(row, "Closure Bucket"),
+        closureReason: get(row, "Closure Reason"),
+        plkControl:    get(row, "PLK Control?"),
+        ars2025:       parseNum(get(row, "2025 ARS")),
+        ttmEbitda:     parseNum(get(row, "TTM EBITDA")),
+        comments:      get(row, "Comments"),
       };
-    }).filter(function(r) {
-      return r.division && r.closureBucket;
-    });
+    }).filter(function(r) { return r.division && r.closureBucket; });
 
-    // ── Budget map — column C for closures ──────────────────────────────────
     const colA = budgetData.columns.find(function(c) { return c.title === "A"; });
     const colC = budgetData.columns.find(function(c) { return c.title === "C"; });
-    if (!colA || !colC) {
-      return res.status(500).json({
-        error: "Could not find budget columns A or C",
-        foundColumns: budgetData.columns.map(function(c) { return c.title; })
-      });
-    }
+    if (!colA || !colC)
+      return res.status(500).json({ error: "Could not find budget columns A or C",
+        foundColumns: budgetData.columns.map(function(c) { return c.title; }) });
 
     function getCellById(row, columnId) {
       const cell = row.cells.find(function(c) { return c.columnId === columnId; });
@@ -100,13 +89,11 @@ module.exports = async function(req, res) {
       const div       = getCellById(row, colA.id);
       const budgetRaw = getCellById(row, colC.id);
       const budget    = typeof budgetRaw === "number"
-        ? budgetRaw
-        : parseFloat(String(budgetRaw || "").replace(/[,$]/g, ""));
+        ? budgetRaw : parseFloat(String(budgetRaw || "").replace(/[,$]/g, ""));
       if (div && !isNaN(budget) && budget > 0) budgets[div] = budget;
     });
 
     res.status(200).json({ rows, budgets, lastUpdated: new Date().toISOString() });
-
   } catch(err) {
     res.status(500).json({ error: err.message });
   }
