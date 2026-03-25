@@ -693,15 +693,16 @@ function renderCtrlGrid(){
 
 // ── FZ Rollup — by bucket columns, accordion ─────────────────────────────────
 let fzExpanded = false;
-const FZ_TOP = 5;
+const FZ_TOP = 10;
 
 function toggleFZExpand() {
   fzExpanded = !fzExpanded;
-  document.querySelectorAll(".fz-row-hidden").forEach(row => {
-    row.style.display = fzExpanded ? "" : "none";
-  });
-  document.getElementById("fz-expand-icon").textContent  = fzExpanded ? "▲" : "▼";
-  document.getElementById("fz-expand-label").textContent = fzExpanded ? "Show top 5 only" : `Show all FZs`;
+  const hiddenRows = document.querySelectorAll("tr[data-fz-hidden]");
+  hiddenRows.forEach(row => { row.style.display = fzExpanded ? "" : "none"; });
+  document.getElementById("fz-expand-icon").textContent = fzExpanded ? "▲" : "▼";
+  document.getElementById("fz-expand-label").textContent = fzExpanded
+    ? "Show top 10 only"
+    : `Show all ${hiddenRows.length + FZ_TOP} FZs`;
 }
 
 function renderFZRollup(){
@@ -736,7 +737,7 @@ function renderFZRollup(){
     BUCKETS.forEach(b => totals[b.key] += fz[b.key]);
   });
 
-  // Update expand button label with total count
+  // Update expand button
   const hiddenCount = Math.max(0, fzList.length - FZ_TOP);
   const expandBtn = document.getElementById("fz-expand-btn");
   if (hiddenCount === 0) {
@@ -744,6 +745,7 @@ function renderFZRollup(){
   } else {
     expandBtn.style.display = "flex";
     document.getElementById("fz-expand-label").textContent = `Show all ${fzList.length} FZs`;
+    document.getElementById("fz-expand-icon").textContent = "▼";
   }
 
   // Header
@@ -753,7 +755,7 @@ function renderFZRollup(){
     <th style="background:#f9fafb;color:#374151;font-weight:700;">Total</th>
   </tr>`;
 
-  // Body — top 5 visible, rest hidden
+  // Body — top 10 visible, rest collapsed via data-fz-hidden + display:none
   let html = fzList.map((fz, idx) => {
     const ef = fz.fz.replace(/'/g,"\\'");
     const isHidden = idx >= FZ_TOP;
@@ -763,11 +765,9 @@ function renderFZRollup(){
       const ek = b.key.replace(/'/g,"\\'");
       return `<td class="number-cell clickable" onclick="openDrillDown({fz:'${ef}',bucket:'${ek}'},'${ef} · ${ek}','${ef}')"><span>${cnt}</span></td>`;
     });
-    // Rank badge for top 5
-    const rankBadge = !isHidden
-      ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#f3f4f6;font-size:10px;font-weight:700;color:#6b7280;margin-right:6px;flex-shrink:0;">${idx+1}</span>`
-      : "";
-    return `<tr class="${isHidden ? "fz-row-hidden" : ""}" style="${isHidden ? "display:none;" : ""}">
+    const rankBadge = `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#f3f4f6;font-size:10px;font-weight:700;color:#6b7280;margin-right:6px;flex-shrink:0;">${idx+1}</span>`;
+    const hiddenAttrs = isHidden ? `data-fz-hidden="1" style="display:none;"` : "";
+    return `<tr ${hiddenAttrs}>
       <td class="division-cell">${rankBadge}${fz.fz}</td>
       ${cells.join("")}
       <td class="number-cell" style="font-weight:700;color:#374151;">${fz.total}</td>
