@@ -26,7 +26,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans
 .export-btn svg { width: 15px; height: 15px; }
 .table-container { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-thead th { background: #f9fafb; padding: 12px 14px; text-align: left; font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
+thead th { background: #f9fafb; padding: 12px 14px; text-align: left; font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; vertical-align: bottom; line-height: 1.4; }
 thead th.center { text-align: center; }
 tbody tr { border-bottom: 1px solid #f3f4f6; transition: background 0.15s; }
 tbody tr:hover { background: #fef3ee; }
@@ -179,23 +179,19 @@ tbody td { padding: 13px 14px; color: #374151; }
         <table id="table-2026">
           <thead>
             <tr>
-              <th rowspan="2">Division</th>
-              <th rowspan="2">DDL</th>
-              <th colspan="6" class="center th-group-orange">2026 Bottom-Up Pipeline</th>
-              <th rowspan="2" class="center">Total 2026</th>
-              <th rowspan="2" class="center">Budget</th>
-              <th rowspan="2" class="center">Gap</th>
-              <th colspan="2" class="center th-group">Achievement</th>
-            </tr>
-            <tr>
+              <th>Division</th>
+              <th>DDL</th>
               <th class="center">Prospect</th>
               <th class="center">SA</th>
               <th class="center">PC</th>
               <th class="center">Permitting</th>
               <th class="center">UC</th>
               <th class="center">Open</th>
-              <th class="center" style="background:#eff6ff;color:#1d4ed8;font-size:9px;">Current<br>(Opened/Budget)</th>
-              <th class="center" style="background:#f0fdf4;color:#166534;font-size:9px;">Projected<br>(Pipeline/Budget)</th>
+              <th class="center">Total 2026</th>
+              <th class="center">Budget</th>
+              <th class="center">Gap</th>
+              <th class="center th-group" style="background:#eff6ff;color:#1d4ed8;">Current Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Opened / Budget)</span></th>
+              <th class="center th-group" style="background:#f0fdf4;color:#166534;">Projected Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Bottom-Up / Budget)</span></th>
             </tr>
           </thead>
           <tbody id="tbody-2026"></tbody>
