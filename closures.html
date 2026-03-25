@@ -86,8 +86,10 @@ td.border-l{border-left:2px solid #e5e7eb;}
 .ctrl-legend{display:flex;gap:12px;font-size:11px;color:#6b7280;margin-top:6px;}
 .ctrl-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;}
 
-/* FZ Rollup */
+/* FZ Rollup accordion */
 .fz-table thead th{background:#fafafa;}
+.fz-row-hidden{display:none;}
+#fz-expand-btn:hover{border-color:#C1272D;color:#C1272D;}
 
 /* Modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
@@ -327,7 +329,13 @@ td.border-l{border-left:2px solid #e5e7eb;}
           <tbody id="fz-tbody"></tbody>
         </table>
       </div>
-      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Shows franchisees with at least 1 site across LE, LE (Opp), 2027 LE, 2028 LE, or Mitigate. Click any count to drill down into those sites.</p>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:12px;">
+        <button id="fz-expand-btn" onclick="toggleFZExpand()" style="background:none;border:1px solid #e5e7eb;border-radius:6px;padding:6px 14px;font-size:12px;color:#6b7280;cursor:pointer;display:flex;align-items:center;gap:6px;transition:all 0.15s;">
+          <span id="fz-expand-icon">▼</span>
+          <span id="fz-expand-label">Show all FZs</span>
+        </button>
+        <p style="font-size:11px;color:#9ca3af;font-style:italic;">* Shows franchisees with at least 1 site across LE, LE (Opp), 2027 LE, 2028 LE, or Mitigate. Click any count to drill down.</p>
+      </div>
     </div>
 
     <!-- Combined 2027 / 2028 Pipeline Table -->
@@ -683,8 +691,21 @@ function renderCtrlGrid(){
   document.getElementById("ctrl-grid").innerHTML=html;
 }
 
-// ── FZ Rollup — by bucket columns ────────────────────────────────────────────
+// ── FZ Rollup — by bucket columns, accordion ─────────────────────────────────
+let fzExpanded = false;
+const FZ_TOP = 5;
+
+function toggleFZExpand() {
+  fzExpanded = !fzExpanded;
+  document.querySelectorAll(".fz-row-hidden").forEach(row => {
+    row.style.display = fzExpanded ? "" : "none";
+  });
+  document.getElementById("fz-expand-icon").textContent  = fzExpanded ? "▲" : "▼";
+  document.getElementById("fz-expand-label").textContent = fzExpanded ? "Show top 5 only" : `Show all FZs`;
+}
+
 function renderFZRollup(){
+  fzExpanded = false; // reset on re-render
   const BUCKETS = [
     {key:"LE",       label:"LE",       fn:isLE,       style:"background:#fee2e2;color:#991b1b;"},
     {key:"LE (Opp)", label:"LE (Opp)", fn:isLEOpp,    style:"background:#fef3c7;color:#92400e;"},
@@ -693,52 +714,61 @@ function renderFZRollup(){
     {key:"Mitigate", label:"Mitigate", fn:isMitigate, style:"background:#faf5ff;color:#6b21a8;"},
   ];
 
-  // Build FZ map across all relevant rows
   const relevantRows = ALL_DATA.filter(r =>
     isLE(r)||isLEOpp(r)||is2027(r)||is2028(r)||isMitigate(r));
 
   const fzMap = {};
   relevantRows.forEach(r => {
     const fz = r.fz || "Unknown";
-    if (!fzMap[fz]) {
-      fzMap[fz] = { fz, total: 0 };
-      BUCKETS.forEach(b => fzMap[fz][b.key] = 0);
-    }
+    if (!fzMap[fz]) { fzMap[fz] = {fz, total:0}; BUCKETS.forEach(b => fzMap[fz][b.key]=0); }
     BUCKETS.forEach(b => { if (b.fn(r)) fzMap[fz][b.key]++; });
     fzMap[fz].total++;
   });
 
-  // Sort by total desc, only include FZs with at least 1 site
   const fzList = Object.values(fzMap)
     .filter(f => f.total > 0)
-    .sort((a, b) => b.total - a.total);
+    .sort((a,b) => b.total - a.total);
 
-  // Totals row
-  const totals = { total: 0 };
-  BUCKETS.forEach(b => totals[b.key] = 0);
+  const totals = {total:0};
+  BUCKETS.forEach(b => totals[b.key]=0);
   fzList.forEach(fz => {
     totals.total += fz.total;
     BUCKETS.forEach(b => totals[b.key] += fz[b.key]);
   });
 
+  // Update expand button label with total count
+  const hiddenCount = Math.max(0, fzList.length - FZ_TOP);
+  const expandBtn = document.getElementById("fz-expand-btn");
+  if (hiddenCount === 0) {
+    expandBtn.style.display = "none";
+  } else {
+    expandBtn.style.display = "flex";
+    document.getElementById("fz-expand-label").textContent = `Show all ${fzList.length} FZs`;
+  }
+
   // Header
   document.getElementById("fz-thead").innerHTML = `<tr>
     <th class="left">Franchisee (FZ)</th>
-    ${BUCKETS.map(b => `<th style="${b.style}">${b.label}</th>`).join("")}
+    ${BUCKETS.map(b=>`<th style="${b.style}">${b.label}</th>`).join("")}
     <th style="background:#f9fafb;color:#374151;font-weight:700;">Total</th>
   </tr>`;
 
-  // Body
-  let html = fzList.map(fz => {
-    const ef = fz.fz.replace(/'/g, "\\'");
+  // Body — top 5 visible, rest hidden
+  let html = fzList.map((fz, idx) => {
+    const ef = fz.fz.replace(/'/g,"\\'");
+    const isHidden = idx >= FZ_TOP;
     const cells = BUCKETS.map(b => {
       const cnt = fz[b.key];
       if (!cnt) return `<td class="number-cell" style="color:#d1d5db;">—</td>`;
-      const ek = b.key.replace(/'/g, "\\'");
+      const ek = b.key.replace(/'/g,"\\'");
       return `<td class="number-cell clickable" onclick="openDrillDown({fz:'${ef}',bucket:'${ek}'},'${ef} · ${ek}','${ef}')"><span>${cnt}</span></td>`;
     });
-    return `<tr>
-      <td class="division-cell">${fz.fz}</td>
+    // Rank badge for top 5
+    const rankBadge = !isHidden
+      ? `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#f3f4f6;font-size:10px;font-weight:700;color:#6b7280;margin-right:6px;flex-shrink:0;">${idx+1}</span>`
+      : "";
+    return `<tr class="${isHidden ? "fz-row-hidden" : ""}" style="${isHidden ? "display:none;" : ""}">
+      <td class="division-cell">${rankBadge}${fz.fz}</td>
       ${cells.join("")}
       <td class="number-cell" style="font-weight:700;color:#374151;">${fz.total}</td>
     </tr>`;
@@ -746,12 +776,12 @@ function renderFZRollup(){
 
   html += `<tr class="total-row">
     <td class="division-cell">Total</td>
-    ${BUCKETS.map(b => `<td class="number-cell">${totals[b.key]}</td>`).join("")}
+    ${BUCKETS.map(b=>`<td class="number-cell">${totals[b.key]}</td>`).join("")}
     <td class="number-cell" style="font-weight:700;">${totals.total}</td>
   </tr>`;
 
   document.getElementById("fz-tbody").innerHTML = html;
-  FZ_REASONS = BUCKETS.map(b => b.key); // used by export
+  FZ_REASONS = BUCKETS.map(b => b.key);
 }
 
 // ── Combined 2027 / 2028 Table by Reason ─────────────────────────────────────
