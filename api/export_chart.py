@@ -27,21 +27,12 @@ STRIPE_FILL = PatternFill("solid", fgColor="F3F4F6")
 WHITE_FILL  = PatternFill("solid", fgColor="FFFFFF")
 STATUSES    = ["Prospect", "SA", "PC", "Permitting", "UC", "Open"]
 
-# Required chartSpace namespaces — openpyxl omits xmlns:r which causes
-# Excel to drop the chart entirely when it "recovers" the file.
-CHART_NS_OLD = 'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart">'
-CHART_NS_NEW = (
-    'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
-    ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
-    ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
-)
 
-
-def patch_chart_xml(xml, bar_labels, str_cache, n):
+def patch_chart_xml(xml, str_cache):
     """
-    Two patches applied at module level (no closures):
-    1. numRef -> strRef for X-axis category labels
-    2. Inject xmlns:a and xmlns:r onto chartSpace root so Excel doesn't drop the chart
+    1. numRef -> strRef for X-axis labels
+    2. Add xmlns:r + xmlns:a to chartSpace root (openpyxl omits xmlns:r,
+       causing Excel to drop the chart on recovery)
     """
     # Patch 1: strRef categories
     def _replace_cat(m):
@@ -55,27 +46,61 @@ def patch_chart_xml(xml, bar_labels, str_cache, n):
         _replace_cat, xml, flags=re.DOTALL
     )
 
-    # Patch 2: add required namespaces to chartSpace root
-    # First remove any inline xmlns:a declarations (moved to root)
-    xml = xml.replace(
-        '<chartSpace ' + CHART_NS_OLD,
-        '<chartSpace ' + CHART_NS_NEW
-    )
-    # Remove redundant inline xmlns:a now that it's on root
-    xml = re.sub(
-        r' xmlns:a="http://schemas\.openxmlformats\.org/drawingml/2006/main"',
-        '', xml
-    )
-    # Re-add xmlns:a to root (the sub above removed it from root too)
-    xml = xml.replace(
-        'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
-        ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">',
+    # Patch 2: inject required namespaces onto chartSpace root
+    old_root = 'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart">'
+    new_root = (
         'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
         ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
         ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
     )
+    xml = xml.replace('<chartSpace ' + old_root, '<chartSpace ' + new_root, 1)
+
+    # Remove redundant inline xmlns:a (now declared on root)
+    xml = re.sub(
+        r' xmlns:a="http://schemas\.openxmlformats\.org/drawingml/2006/main"',
+        '', xml
+    )
+    # Re-add xmlns:a to root if the sub above also stripped it from root
+    if 'xmlns:a' not in xml[:400]:
+        xml = xml.replace(
+            'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
+            ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">',
+            'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
+            ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
+            ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">',
+            1
+        )
 
     return xml
+
+
+def rezip_with_correct_order(raw_xlsx_bytes, chart_xml_patch_fn):
+    """
+    Re-package the xlsx ZIP with [Content_Types].xml and _rels/.rels FIRST.
+    Excel requires this specific entry ordering or it flags the file as corrupt.
+    Also applies chart_xml_patch_fn to xl/charts/chart1.xml.
+    """
+    # Read all files from original ZIP
+    with zipfile.ZipFile(io.BytesIO(raw_xlsx_bytes), 'r') as zin:
+        all_files = {}
+        for item in zin.infolist():
+            data = zin.read(item.filename)
+            if item.filename == 'xl/charts/chart1.xml':
+                data = chart_xml_patch_fn(data.decode('utf-8')).encode('utf-8')
+            all_files[item.filename] = data
+
+    # Write with mandatory ordering: [Content_Types].xml and _rels/.rels first
+    out_buf = io.BytesIO()
+    with zipfile.ZipFile(out_buf, 'w', zipfile.ZIP_DEFLATED) as zout:
+        for name in ['[Content_Types].xml', '_rels/.rels']:
+            if name in all_files:
+                zout.writestr(name, all_files[name])
+        for name, data in all_files.items():
+            if name not in ('[Content_Types].xml', '_rels/.rels'):
+                zout.writestr(name, data)
+
+    out_buf.seek(0)
+    return out_buf.read()
 
 
 def build_xlsx(payload):
@@ -162,11 +187,11 @@ def build_xlsx(payload):
         c.font = Font(bold=True, color=color)
         c.number_format = fmt
 
-    stat_row(sr,   "FY BU",                  fy_bu)
-    stat_row(sr+1, "Budget",                  budget)
-    stat_row(sr+2, "Gap (FY BU vs Budget)",   gap,                          "+0;-0;0", gc)
-    stat_row(sr+3, "Gap %",                   gap / budget if budget else 0, "0%",     gc)
-    stat_row(sr+4, "FY BU + Upside",          fy_bu + upside)
+    stat_row(sr,   "FY BU",                 fy_bu)
+    stat_row(sr+1, "Budget",                budget)
+    stat_row(sr+2, "Gap (FY BU vs Budget)", gap,                          "+0;-0;0", gc)
+    stat_row(sr+3, "Gap %",                 gap / budget if budget else 0, "0%",     gc)
+    stat_row(sr+4, "FY BU + Upside",        fy_bu + upside)
 
     ws.column_dimensions["A"].width = 14
     ws.column_dimensions["B"].width = 12
@@ -188,7 +213,6 @@ def build_xlsx(payload):
     chart.x_axis.numFmt         = "General"
     chart.x_axis.axPos          = "b"
 
-    # Series 1 — invisible base
     base_ref = Reference(ws, min_col=2, min_row=table_row, max_row=table_end)
     base_ser = Series(base_ref, title="base")
     base_ser.graphicalProperties.solidFill      = "FFFFFF"
@@ -196,7 +220,6 @@ def build_xlsx(payload):
     base_ser.graphicalProperties.line.width     = 0
     chart.append(base_ser)
 
-    # Series 2 — visible coloured bars
     bar_ref = Reference(ws, min_col=3, min_row=table_row, max_row=table_end)
     bar_ser = Series(bar_ref, title="# SIPs")
     bar_ser.graphicalProperties.solidFill      = "E8521A"
@@ -266,30 +289,23 @@ def build_xlsx(payload):
     ws2.freeze_panes = "A2"
     ws2.auto_filter.ref = "A1:" + get_column_letter(len(hdrs)) + "1"
 
-    # ── Save then patch chart XML ─────────────────────────
+    # ── Save openpyxl workbook to buffer ──────────────────
     pre_buf = io.BytesIO()
     wb.save(pre_buf)
     pre_buf.seek(0)
 
+    # Build strRef cache for X-axis labels
     pt_tags = "".join(
         '<pt idx="' + str(i) + '"><v>' + lbl + '</v></pt>'
         for i, lbl in enumerate(bar_labels)
     )
     str_cache = '<strCache><ptCount val="' + str(n) + '"/>' + pt_tags + '</strCache>'
 
-    out_buf = io.BytesIO()
-    with zipfile.ZipFile(pre_buf, "r") as zin, \
-         zipfile.ZipFile(out_buf, "w", zipfile.ZIP_DEFLATED) as zout:
-        for item in zin.infolist():
-            data = zin.read(item.filename)
-            if item.filename == "xl/charts/chart1.xml":
-                xml = data.decode("utf-8")
-                xml = patch_chart_xml(xml, bar_labels, str_cache, n)
-                data = xml.encode("utf-8")
-            zout.writestr(item, data)
+    # Re-zip with (1) chart XML patches and (2) correct ZIP entry order
+    def apply_patches(xml_str):
+        return patch_chart_xml(xml_str, str_cache)
 
-    out_buf.seek(0)
-    return out_buf.read()
+    return rezip_with_correct_order(pre_buf.read(), apply_patches)
 
 
 class handler(BaseHTTPRequestHandler):
