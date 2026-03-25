@@ -11,8 +11,8 @@ module.exports = async function(req, res) {
   }
 
   const TOKEN = process.env.SMARTSHEET_TOKEN;
-  const PIPELINE_SHEET_ID = "8717733601798020"; // 02. Opening sheet
-  const BUDGET_SHEET_ID = "7864670409936772"; // Budget sheet
+  const PIPELINE_SHEET_ID = "8717733601798020";
+  const BUDGET_SHEET_ID = "7864670409936772";
 
   try {
     // Fetch pipeline data
@@ -75,11 +75,10 @@ module.exports = async function(req, res) {
         riskLevel: get(row, "Risk Level"),
       };
     }).filter(function(r) {
-      // Only include rows with valid division and status
       return r.division && r.status;
     });
 
-    // Build budget map from budget sheet
+    // Build budget column map
     const budgetColMap = {};
     budgetData.columns.forEach(function(col, i) { budgetColMap[col.title] = i; });
 
@@ -92,11 +91,18 @@ module.exports = async function(req, res) {
       return null;
     }
 
+    // Parse budget rows 2-10 (0-based index 0-8)
     const budgets = {};
-    budgetData.rows.forEach(function(row) {
+    budgetData.rows.forEach(function(row, index) {
+      if (index < 0 || index > 8) return;
+
       const div = getBudget(row, "Division");
-      const budget = getBudget(row, "Openings Budget");
-      if (div && budget && typeof budget === 'number') {
+      const budgetRaw = getBudget(row, "B");
+      const budget = typeof budgetRaw === 'number'
+        ? budgetRaw
+        : parseFloat(String(budgetRaw || "").replace(/[,$]/g, ""));
+
+      if (div && !isNaN(budget) && budget > 0) {
         budgets[div] = budget;
       }
     });
