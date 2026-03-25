@@ -593,11 +593,11 @@ function createWaterfallChart(canvasId, divisionName, data, budget) {
         const cCtx=chart.ctx;
         cCtx.save();
         cCtx.font="bold 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-        cCtx.fillStyle="#374151";cCtx.textAlign="center";cCtx.textBaseline="bottom";
+        cCtx.fillStyle="#FFFFFF";cCtx.textAlign="center";cCtx.textBaseline="middle";
         displayValues.forEach((val,i)=>{
           if(!val&&val!==0) return;
           const bar=meta.data[i]; if(!bar) return;
-          cCtx.fillText(val,bar.x,bar.y-4);
+          const barH=bar.base-bar.y; if(barH>=14) cCtx.fillText(val,bar.x,(bar.y+bar.base)/2);
         });
         cCtx.restore();
       }
