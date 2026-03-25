@@ -312,19 +312,10 @@ td.border-l{border-left:2px solid #e5e7eb;}
       </div>
     </div>
 
-    <!-- Controllable by Division -->
-    <div class="section">
-      <div class="section-header">
-        <div class="section-title"><span>🎯</span>Controllable vs Non-Controllable by Division</div>
-      </div>
-      <div class="ctrl-grid" id="ctrl-grid"></div>
-      <p style="margin-top:14px;font-size:11px;color:#9ca3af;font-style:italic;">* Based on 2026 LE closures. PLK Control = Yes means the closure is within PLK/franchisor influence.</p>
-    </div>
-
     <!-- FZ Rollup -->
     <div class="section">
       <div class="section-header">
-        <div class="section-title"><span>🏢</span>2026 LE Pipeline — Rollup by Franchisee (FZ)</div>
+        <div class="section-title"><span>🏢</span>Closure Pipeline — Rollup by Franchisee (FZ)</div>
         <button class="export-btn" onclick="exportFZRollup()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
           Export to Excel
@@ -336,7 +327,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
           <tbody id="fz-tbody"></tbody>
         </table>
       </div>
-      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Shows franchisees with 1+ 2026 LE sites. Click any count to drill down into those sites.</p>
+      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Shows franchisees with at least 1 site across LE, LE (Opp), 2027 LE, 2028 LE, or Mitigate. Click any count to drill down into those sites.</p>
     </div>
 
     <!-- Combined 2027 / 2028 Pipeline Table -->
@@ -692,65 +683,75 @@ function renderCtrlGrid(){
   document.getElementById("ctrl-grid").innerHTML=html;
 }
 
-// ── FZ Rollup ─────────────────────────────────────────────────────────────────
+// ── FZ Rollup — by bucket columns ────────────────────────────────────────────
 function renderFZRollup(){
-  const leRows=ALL_DATA.filter(r=>isLE(r));
+  const BUCKETS = [
+    {key:"LE",       label:"LE",       fn:isLE,       style:"background:#fee2e2;color:#991b1b;"},
+    {key:"LE (Opp)", label:"LE (Opp)", fn:isLEOpp,    style:"background:#fef3c7;color:#92400e;"},
+    {key:"2027 LE",  label:"2027 LE",  fn:is2027,     style:"background:#eff6ff;color:#1d4ed8;"},
+    {key:"2028 LE",  label:"2028 LE",  fn:is2028,     style:"background:#f0fdf4;color:#166534;"},
+    {key:"Mitigate", label:"Mitigate", fn:isMitigate, style:"background:#faf5ff;color:#6b21a8;"},
+  ];
 
-  // Get active reasons for FZ table
-  const reasonCounts={};
-  ALL_REASONS.forEach(r=>reasonCounts[r]=0);
-  leRows.forEach(r=>{const reason=normalizeReason(r);reasonCounts[reason]++;});
-  FZ_REASONS=ALL_REASONS.filter(r=>reasonCounts[r]>0);
+  // Build FZ map across all relevant rows
+  const relevantRows = ALL_DATA.filter(r =>
+    isLE(r)||isLEOpp(r)||is2027(r)||is2028(r)||isMitigate(r));
 
-  // Build FZ map
-  const fzMap={};
-  leRows.forEach(r=>{
-    const fz=r.fz||"Unknown";
-    if(!fzMap[fz]) fzMap[fz]={fz,total:0,reasons:{}};
+  const fzMap = {};
+  relevantRows.forEach(r => {
+    const fz = r.fz || "Unknown";
+    if (!fzMap[fz]) {
+      fzMap[fz] = { fz, total: 0 };
+      BUCKETS.forEach(b => fzMap[fz][b.key] = 0);
+    }
+    BUCKETS.forEach(b => { if (b.fn(r)) fzMap[fz][b.key]++; });
     fzMap[fz].total++;
-    const reason=normalizeReason(r);
-    fzMap[fz].reasons[reason]=(fzMap[fz].reasons[reason]||0)+1;
   });
 
-  // Sort by total desc
-  const fzList=Object.values(fzMap).sort((a,b)=>b.total-a.total);
+  // Sort by total desc, only include FZs with at least 1 site
+  const fzList = Object.values(fzMap)
+    .filter(f => f.total > 0)
+    .sort((a, b) => b.total - a.total);
 
-  // Build totals row
-  const totalsRow={fz:"Total",total:0,reasons:{}};
-  FZ_REASONS.forEach(r=>totalsRow.reasons[r]=0);
-  fzList.forEach(fz=>{
-    totalsRow.total+=fz.total;
-    FZ_REASONS.forEach(r=>totalsRow.reasons[r]+=(fz.reasons[r]||0));
+  // Totals row
+  const totals = { total: 0 };
+  BUCKETS.forEach(b => totals[b.key] = 0);
+  fzList.forEach(fz => {
+    totals.total += fz.total;
+    BUCKETS.forEach(b => totals[b.key] += fz[b.key]);
   });
 
   // Header
-  const thead=document.getElementById("fz-thead");
-  thead.innerHTML=`<tr>
+  document.getElementById("fz-thead").innerHTML = `<tr>
     <th class="left">Franchisee (FZ)</th>
-    ${FZ_REASONS.map(r=>`<th style="max-width:80px;white-space:normal;line-height:1.3;">${r}</th>`).join("")}
-    <th style="background:#fee2e2;color:#991b1b;">Total LE</th>
+    ${BUCKETS.map(b => `<th style="${b.style}">${b.label}</th>`).join("")}
+    <th style="background:#f9fafb;color:#374151;font-weight:700;">Total</th>
   </tr>`;
 
   // Body
-  const tbody=document.getElementById("fz-tbody");
-  let html=fzList.map(fz=>`<tr>
-    <td class="division-cell">${fz.fz}</td>
-    ${FZ_REASONS.map(r=>{
-      const cnt=fz.reasons[r]||0;
-      if(cnt===0)return`<td class="number-cell">—</td>`;
-      const esc=fz.fz.replace(/'/g,"\\'"),er=r.replace(/'/g,"\\'");
-      return`<td class="number-cell clickable" onclick="openDrillDown({fz:'${esc}',bucket:'LE',reason:'${er}'},'${esc} · ${er}','${esc}')"><span>${cnt}</span></td>`;
-    }).join("")}
-    <td class="number-cell" style="font-weight:700;color:#C1272D;">${fz.total}</td>
-  </tr>`).join("");
+  let html = fzList.map(fz => {
+    const ef = fz.fz.replace(/'/g, "\\'");
+    const cells = BUCKETS.map(b => {
+      const cnt = fz[b.key];
+      if (!cnt) return `<td class="number-cell" style="color:#d1d5db;">—</td>`;
+      const ek = b.key.replace(/'/g, "\\'");
+      return `<td class="number-cell clickable" onclick="openDrillDown({fz:'${ef}',bucket:'${ek}'},'${ef} · ${ek}','${ef}')"><span>${cnt}</span></td>`;
+    });
+    return `<tr>
+      <td class="division-cell">${fz.fz}</td>
+      ${cells.join("")}
+      <td class="number-cell" style="font-weight:700;color:#374151;">${fz.total}</td>
+    </tr>`;
+  }).join("");
 
-  // Totals row
-  html+=`<tr class="total-row">
+  html += `<tr class="total-row">
     <td class="division-cell">Total</td>
-    ${FZ_REASONS.map(r=>`<td class="number-cell">${totalsRow.reasons[r]||0}</td>`).join("")}
-    <td class="number-cell" style="font-weight:700;color:#C1272D;">${totalsRow.total}</td>
+    ${BUCKETS.map(b => `<td class="number-cell">${totals[b.key]}</td>`).join("")}
+    <td class="number-cell" style="font-weight:700;">${totals.total}</td>
   </tr>`;
-  tbody.innerHTML=html;
+
+  document.getElementById("fz-tbody").innerHTML = html;
+  FZ_REASONS = BUCKETS.map(b => b.key); // used by export
 }
 
 // ── Combined 2027 / 2028 Table by Reason ─────────────────────────────────────
@@ -972,20 +973,25 @@ function exportTable2026(){
   XLSX.utils.book_append_sheet(wb,ws,"2026 Closures");XLSX.writeFile(wb,"2026_Closure_Pipeline.xlsx");
 }
 function exportFZRollup(){
-  const wb=XLSX.utils.book_new();
-  const leRows=ALL_DATA.filter(r=>isLE(r));
+  const BUCKETS=["LE","LE (Opp)","2027 LE","2028 LE","Mitigate"];
+  const bucketFns={
+    "LE":isLE,"LE (Opp)":isLEOpp,"2027 LE":is2027,"2028 LE":is2028,"Mitigate":isMitigate
+  };
+  const relevantRows=ALL_DATA.filter(r=>isLE(r)||isLEOpp(r)||is2027(r)||is2028(r)||isMitigate(r));
   const fzMap={};
-  leRows.forEach(r=>{
-    const fz=r.fz||"Unknown"; if(!fzMap[fz]){fzMap[fz]={fz,total:0,reasons:{}};}
+  relevantRows.forEach(r=>{
+    const fz=r.fz||"Unknown"; if(!fzMap[fz]){fzMap[fz]={fz,total:0};BUCKETS.forEach(b=>fzMap[fz][b]=0);}
+    BUCKETS.forEach(b=>{if(bucketFns[b](r))fzMap[fz][b]++;});
     fzMap[fz].total++;
-    const reason=normalizeReason(r); fzMap[fz].reasons[reason]=(fzMap[fz].reasons[reason]||0)+1;
   });
-  const fzList=Object.values(fzMap).sort((a,b)=>b.total-a.total);
-  const rows=[["Franchisee (FZ)",...FZ_REASONS,"Total LE"]];
-  fzList.forEach(fz=>rows.push([fz.fz,...FZ_REASONS.map(r=>fz.reasons[r]||0),fz.total]));
+  const fzList=Object.values(fzMap).filter(f=>f.total>0).sort((a,b)=>b.total-a.total);
+  const wb=XLSX.utils.book_new();
+  const rows=[["Franchisee (FZ)",...BUCKETS,"Total"]];
+  fzList.forEach(fz=>rows.push([fz.fz,...BUCKETS.map(b=>fz[b]||0),fz.total]));
   const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws["!cols"]=[24,...FZ_REASONS.map(()=>14),10].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws,"FZ Rollup");XLSX.writeFile(wb,"FZ_Rollup_2026_LE.xlsx");
+  ws["!cols"]=[28,...BUCKETS.map(()=>12),10].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"FZ Rollup");
+  XLSX.writeFile(wb,"FZ_Rollup_Closures.xlsx");
 }
 function exportFuturePipeline(){
   const wb=XLSX.utils.book_new();
@@ -1018,7 +1024,6 @@ async function fetchData(){
     renderKPIBanner();
     renderTable2026();
     renderReasonCharts();
-    renderCtrlGrid();
     renderFZRollup();
     renderFuturePipeline();
   }catch(e){
