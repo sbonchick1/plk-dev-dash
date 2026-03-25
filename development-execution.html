@@ -235,8 +235,8 @@ tbody td{padding:13px 14px;color:#374151;}
               <th class="left">DDL</th>
               <th>Prospect</th><th>SA</th><th>PC</th><th>Permitting</th><th>UC</th><th>Open</th>
               <th>Total 2026</th><th>Budget</th><th>Gap</th>
-              <th style="background:#eff6ff;color:#1d4ed8;">Current Ach.<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Opened / Budget)</span></th>
-              <th style="background:#f0fdf4;color:#166534;">Projected Ach.<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Bottom-Up / Budget)</span></th>
+              <th style="background:#eff6ff;color:#1d4ed8;">Current Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Opened / Budget)</span></th>
+              <th style="background:#f0fdf4;color:#166534;">Projected Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Bottom-Up / Budget)</span></th>
               <th style="background:#faf5ff;color:#6b21a8;">Risk Mix</th>
             </tr>
           </thead>
@@ -367,9 +367,13 @@ function renderKPIBanner() {
       color:"#F7941D", extra:"", cls:"" },
     { label:"Total 2026 Pipeline",     value:total2026,sub:"BU low + med + high",
       color:"#00A99D", extra:"", cls:"" },
-    { label:"Projected Achievement",   value:projAch+"%", sub:"Bottom-up vs budget",
+    { label:"Current Achievement",    value:currAch+"%",  sub:"Opened vs budget",
       color:"#1d4ed8",
-      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#1d4ed8;width:${Math.min(100,projAch)}%"></div></div>`,
+      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#1d4ed8;width:${Math.min(100,currAch)}%"></div></div>`,
+      cls: currAch>=90?"kpi-good":currAch<70?"kpi-urgent":"" },
+    { label:"Projected Achievement",   value:projAch+"%", sub:"Bottom-up vs budget",
+      color:"#166534",
+      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#166534;width:${Math.min(100,projAch)}%"></div></div>`,
       cls: projAch>=90?"kpi-good":projAch<70?"kpi-urgent":"" },
   ];
 
