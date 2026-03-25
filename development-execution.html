@@ -26,7 +26,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans
 .export-btn svg { width: 15px; height: 15px; }
 .table-container { overflow-x: auto; }
 table { width: 100%; border-collapse: collapse; font-size: 13px; }
-thead th { background: #f9fafb; padding: 12px 14px; text-align: left; font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; vertical-align: bottom; line-height: 1.4; }
+thead th { background: #f9fafb; padding: 12px 14px; text-align: center; font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; vertical-align: middle; line-height: 1.4; }
+thead th.left { text-align: left; }
 thead th.center { text-align: center; }
 tbody tr { border-bottom: 1px solid #f3f4f6; transition: background 0.15s; }
 tbody tr:hover { background: #fef3ee; }
@@ -179,24 +180,25 @@ tbody td { padding: 13px 14px; color: #374151; }
         <table id="table-2026">
           <thead>
             <tr>
-              <th>Division</th>
-              <th>DDL</th>
-              <th class="center">Prospect</th>
-              <th class="center">SA</th>
-              <th class="center">PC</th>
-              <th class="center">Permitting</th>
-              <th class="center">UC</th>
-              <th class="center">Open</th>
-              <th class="center">Total 2026</th>
-              <th class="center">Budget</th>
-              <th class="center">Gap</th>
-              <th class="center th-group" style="background:#eff6ff;color:#1d4ed8;">Current Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Opened / Budget)</span></th>
-              <th class="center th-group" style="background:#f0fdf4;color:#166534;">Projected Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Bottom-Up / Budget)</span></th>
+              <th class="left">Division</th>
+              <th class="left">DDL</th>
+              <th>Prospect</th>
+              <th>SA</th>
+              <th>PC</th>
+              <th>Permitting</th>
+              <th>UC</th>
+              <th>Open</th>
+              <th>Total 2026</th>
+              <th>Budget</th>
+              <th>Gap</th>
+              <th class="th-group" style="background:#eff6ff;color:#1d4ed8;">Current Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Opened / Budget)</span></th>
+              <th class="th-group" style="background:#f0fdf4;color:#166534;">Projected Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Bottom-Up / Budget)</span></th>
             </tr>
           </thead>
           <tbody id="tbody-2026"></tbody>
         </table>
       </div>
+      <p style="margin-top:14px;font-size:11px;color:#9ca3af;font-style:italic;">* Pipeline figures reflect bottom-up submissions only. Sites not included in the bottom-up are excluded from Total 2026 and achievement calculations.</p>
     </div>
 
     <!-- Waterfall Charts -->
@@ -243,14 +245,14 @@ tbody td { padding: 13px 14px; color: #374151; }
         <table id="table-2027">
           <thead>
             <tr>
-              <th>Division</th>
-              <th>DDL</th>
-              <th class="center">Prospect</th>
-              <th class="center">SA</th>
-              <th class="center">PC</th>
-              <th class="center">Permitting</th>
-              <th class="center">UC</th>
-              <th class="center">Total 2027+</th>
+              <th class="left">Division</th>
+              <th class="left">DDL</th>
+              <th>Prospect</th>
+              <th>SA</th>
+              <th>PC</th>
+              <th>Permitting</th>
+              <th>UC</th>
+              <th>Total 2027+</th>
             </tr>
           </thead>
           <tbody id="tbody-2027"></tbody>
@@ -497,88 +499,68 @@ function createWaterfallChart(canvasId, divisionName, data, budget) {
     ? ALL_DATA.filter(r => isUpside(r)).length
     : ALL_DATA.filter(r => r.division === divisionName && isUpside(r)).length;
 
-  const labels   = [...STATUSES, "FY BU", "Upside", "Budget"];
-  const barColors= [...STATUSES.map(() => PLK.orange), PLK.purple, PLK.red, PLK.teal];
+  const labels        = [...STATUSES, "FY BU", "Upside", "Budget"];
+  const displayValues = [...values, fyBU, upsideCount, budget];
 
-  // For stacked invisible bases
-  const datasets = [];
+  // Build two parallel arrays: base (invisible) and bar (visible)
+  // Status bars stack cumulatively; FY BU, Upside, Budget start from 0
+  const baseData = [];
+  const barData  = [];
+  const barColors = [];
+
   let cumulative = 0;
-  STATUSES.forEach((status, i) => {
-    // invisible base
-    datasets.push({
-      label: status + "_base",
-      data: labels.map((_,idx) => idx === i ? cumulative : null),
-      backgroundColor: "transparent",
-      borderWidth: 0,
-      stack: "stack",
-    });
-    // visible bar
-    datasets.push({
-      label: status,
-      data: labels.map((_,idx) => idx === i ? values[i] : null),
-      backgroundColor: PLK.orange,
-      borderRadius: 4,
-      stack: "stack",
-    });
+  STATUSES.forEach((s, i) => {
+    baseData.push(cumulative);
+    barData.push(values[i]);
+    barColors.push(PLK.orange);
     cumulative += values[i];
   });
 
-  // FY BU
-  datasets.push({
-    label: "FY BU",
-    data: labels.map((_,idx) => idx === STATUSES.length ? fyBU : null),
-    backgroundColor: PLK.purple,
-    borderRadius: 4,
-    stack: "stack2",
-  });
+  // FY BU — starts from 0
+  baseData.push(0);
+  barData.push(fyBU);
+  barColors.push(PLK.purple);
 
-  // Upside base on top of fyBU
-  datasets.push({
-    label: "Upside_base",
-    data: labels.map((_,idx) => idx === STATUSES.length+1 ? fyBU : null),
-    backgroundColor: "transparent",
-    borderWidth: 0,
-    stack: "stack3",
-  });
-  datasets.push({
-    label: "Upside",
-    data: labels.map((_,idx) => idx === STATUSES.length+1 ? upsideCount : null),
-    backgroundColor: PLK.red,
-    borderRadius: 4,
-    stack: "stack3",
-  });
+  // Upside — starts from 0
+  baseData.push(0);
+  barData.push(upsideCount);
+  barColors.push(PLK.red);
 
-  // Budget
-  datasets.push({
-    label: "Budget",
-    data: labels.map((_,idx) => idx === labels.length-1 ? budget : null),
-    backgroundColor: PLK.teal,
-    borderRadius: 4,
-    stack: "stack4",
-  });
-
-  // Build display values for data labels
-  const displayValues = [
-    ...values,
-    fyBU,
-    upsideCount,
-    budget
-  ];
+  // Budget — starts from 0
+  baseData.push(0);
+  barData.push(budget);
+  barColors.push(PLK.teal);
 
   // Store for Excel export
   CHART_DATA_MAP[canvasId] = {
-    division: divisionName,
-    labels,
-    displayValues,
-    budget,
-    fyBU,
-    upsideCount,
-    gap: fyBU - budget,
+    division: divisionName, labels, displayValues, budget, fyBU, upsideCount, gap: fyBU - budget,
   };
 
   new Chart(ctx, {
     type: "bar",
-    data: { labels, datasets },
+    data: {
+      labels,
+      datasets: [
+        {
+          // Invisible base — pushes status bars up cumulatively
+          label: "_base",
+          data: baseData,
+          backgroundColor: "rgba(0,0,0,0)",
+          borderColor: "rgba(0,0,0,0)",
+          borderWidth: 0,
+          stack: "waterfall",
+        },
+        {
+          // Visible bars
+          label: "_bars",
+          data: barData,
+          backgroundColor: barColors,
+          borderRadius: 4,
+          barPercentage: 0.6,
+          stack: "waterfall",
+        }
+      ]
+    },
     options: {
       responsive: true,
       maintainAspectRatio: true,
@@ -588,6 +570,7 @@ function createWaterfallChart(canvasId, divisionName, data, budget) {
           backgroundColor: "#1f2937",
           titleColor: "white",
           bodyColor: "white",
+          filter: (item) => item.datasetIndex === 1, // only show tooltip for visible bars
           callbacks: {
             label: (ctx) => {
               const lbl = labels[ctx.dataIndex];
@@ -597,14 +580,13 @@ function createWaterfallChart(canvasId, divisionName, data, budget) {
               const idx = STATUSES.indexOf(lbl);
               if (idx >= 0) {
                 let run = 0;
-                for (let i=0;i<=idx;i++) run += values[i];
+                for (let i = 0; i <= idx; i++) run += values[i];
                 return `${lbl}: ${values[idx]}  |  Running Total: ${run}`;
               }
               return "";
             }
           }
         },
-        // Data labels plugin (inline — using afterDraw)
       },
       scales: {
         x: {
@@ -617,11 +599,12 @@ function createWaterfallChart(canvasId, divisionName, data, budget) {
           stacked: true,
           grid: { display: false },
           border: { display: false },
-          ticks: { display: false }
+          ticks: { display: false },
+          beginAtZero: true,
         }
       },
       layout: { padding: { top: 32 } },
-      animation: { onComplete: () => drawLabels(ctx, canvasId, displayValues, labels, fyBU, upsideCount, budget, values) },
+      animation: { onComplete: () => drawLabels(ctx, displayValues) },
     }
   });
 
@@ -648,65 +631,23 @@ function createWaterfallChart(canvasId, divisionName, data, budget) {
 }
 
 // Draw value labels above each bar
-function drawLabels(ctx, canvasId, displayValues, labels, fyBU, upsideCount, budget, statusValues) {
+function drawLabels(ctx, displayValues) {
   const chart = Chart.getChart(ctx);
   if (!chart) return;
   const cCtx = chart.ctx;
+  const meta = chart.getDatasetMeta(1); // index 1 = visible bars (index 0 is transparent base)
+  if (!meta || !meta.data) return;
   cCtx.save();
   cCtx.font = "bold 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
   cCtx.fillStyle = "#374151";
   cCtx.textAlign = "center";
   cCtx.textBaseline = "bottom";
-
-  const meta0 = chart.getDatasetMeta(1); // first visible dataset (index 1 = first status bar)
-  if (!meta0 || !meta0.data) { cCtx.restore(); return; }
-
-  labels.forEach((lbl, i) => {
-    const val = displayValues[i];
-    if (val === 0 || val == null) return;
-
-    let x, yTop;
-
-    if (i < statusValues.length) {
-      // Status bars — find the actual visible dataset for this index
-      // Each status has 2 datasets (base + visible), so dataset index = i*2+1
-      const dsIdx = i * 2 + 1;
-      const meta = chart.getDatasetMeta(dsIdx);
-      if (!meta || !meta.data || !meta.data[i]) return;
-      const bar = meta.data[i];
-      x    = bar.x;
-      yTop = bar.y;
-    } else if (lbl === "FY BU") {
-      // FY BU dataset — find it
-      let fyMeta = null;
-      for (let d=0; d<chart.data.datasets.length; d++) {
-        if (chart.data.datasets[d].label === "FY BU") { fyMeta = chart.getDatasetMeta(d); break; }
-      }
-      if (!fyMeta || !fyMeta.data[i]) return;
-      x    = fyMeta.data[i].x;
-      yTop = fyMeta.data[i].y;
-    } else if (lbl === "Upside") {
-      let upMeta = null;
-      for (let d=0; d<chart.data.datasets.length; d++) {
-        if (chart.data.datasets[d].label === "Upside") { upMeta = chart.getDatasetMeta(d); break; }
-      }
-      if (!upMeta || !upMeta.data[i]) return;
-      x    = upMeta.data[i].x;
-      yTop = upMeta.data[i].y;
-    } else if (lbl === "Budget") {
-      let bMeta = null;
-      for (let d=0; d<chart.data.datasets.length; d++) {
-        if (chart.data.datasets[d].label === "Budget") { bMeta = chart.getDatasetMeta(d); break; }
-      }
-      if (!bMeta || !bMeta.data[i]) return;
-      x    = bMeta.data[i].x;
-      yTop = bMeta.data[i].y;
-    }
-
-    if (x == null || yTop == null) return;
-    cCtx.fillText(val, x, yTop - 4);
+  displayValues.forEach((val, i) => {
+    if (!val && val !== 0) return;
+    const bar = meta.data[i];
+    if (!bar) return;
+    cCtx.fillText(val, bar.x, bar.y - 4);
   });
-
   cCtx.restore();
 }
 
