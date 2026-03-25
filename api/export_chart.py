@@ -34,6 +34,9 @@ RISK_BG = {
     "2027+":  "#E0F2FE",
 }
 
+# Risk levels that belong in the Site Detail tab
+SITE_DETAIL_RISKS = {"low", "medium", "high", "upside"}
+
 
 def build_xlsx(payload: dict) -> bytes:
     division_name = payload.get("divisionName", "Division")
@@ -43,7 +46,10 @@ def build_xlsx(payload: dict) -> bytes:
     fy_bu         = int(payload.get("fyBU", 0))
     upside_count  = int(payload.get("upsideCount", 0))
     gap           = int(payload.get("gap", 0))
-    sites         = payload.get("sites", [])
+    # FIX 2: filter to only low/medium/high/upside sites for the Site Detail tab
+    all_sites = payload.get("sites", [])
+    sites = [s for s in all_sites
+             if s.get("riskLevel", "").strip().lower() in SITE_DETAIL_RISKS]
 
     bar_labels = STATUSES + ["FY BU", "Upside", "Budget"]
     n = len(bar_labels)
@@ -55,8 +61,6 @@ def build_xlsx(payload: dict) -> bytes:
         status_vals.append(int(values[idx]) if idx >= 0 else 0)
 
     # ── Build waterfall base / visible-bar data ─────────────────────────────
-    # Classic waterfall trick: stacked column with an invisible base series
-    # that "lifts" each visible bar to the correct position.
     base_data = []
     bar_data  = []
     cumulative = 0
@@ -87,13 +91,12 @@ def build_xlsx(payload: dict) -> bytes:
         defaults.update(kw)
         return wb.add_format(defaults)
 
-    hdr_fmt    = fmt(bold=True, font_color="#FFFFFF", bg_color="#374151", align="center", border=0)
-    title_fmt  = fmt(bold=True, font_color="#E8521A", font_size=14)
-    stat_lbl   = fmt(font_color="#6B7280", align="left")
-    stat_val   = fmt(bold=True, font_color="#374151", align="center", num_format="0")
-    gray_num   = fmt(font_color="#9CA3AF", align="center", num_format="0")
-    cell_fmt   = fmt()
-    wrap_fmt   = fmt(text_wrap=True)
+    hdr_fmt   = fmt(bold=True, font_color="#FFFFFF", bg_color="#374151", align="center", border=0)
+    title_fmt = fmt(bold=True, font_color="#E8521A", font_size=14)
+    stat_lbl  = fmt(font_color="#6B7280", align="left")
+    stat_val  = fmt(bold=True, font_color="#374151", align="center", num_format="0")
+    cell_fmt  = fmt()
+    wrap_fmt  = fmt(text_wrap=True)
 
     def gap_num_fmt(positive):
         color = "#059669" if positive else "#DC2626"
@@ -135,33 +138,29 @@ def build_xlsx(payload: dict) -> bytes:
     ws.set_column("B:B", 12)
     ws.set_column("C:C", 10)
 
-    # Row 0: title
     ws.merge_range("A1:C1", f"{division_name} \u2014 2026 Pipeline Waterfall", title_fmt)
     ws.set_row(0, 28)
-    ws.set_row(1, 6)  # spacer
+    ws.set_row(1, 6)
 
-    # Row 2: column headers
     ws.write(2, 0, "Stage",  hdr_fmt)
     ws.write(2, 1, "Base",   hdr_fmt)
     ws.write(2, 2, "# SIPs", hdr_fmt)
     ws.set_row(2, 18)
 
-    # Rows 3 … 3+n-1: data
     DATA_ROW0 = 3
     for i, lbl in enumerate(bar_labels):
-        r         = DATA_ROW0 + i
-        even      = (i % 2 == 0)
-        color     = BAR_COLORS.get(lbl, "#6B7280")
-        special   = lbl in ("FY BU", "Budget", "Upside")
+        r       = DATA_ROW0 + i
+        even    = (i % 2 == 0)
+        color   = BAR_COLORS.get(lbl, "#6B7280")
+        special = lbl in ("FY BU", "Budget", "Upside")
         ws.write(r, 0, lbl,          row_label_fmt(color, special, even))
         ws.write(r, 1, base_data[i], row_base_fmt(even))
         ws.write(r, 2, bar_data[i],  row_val_fmt(color, even))
         ws.set_row(r, 17)
 
-    DATA_ROW_LAST = DATA_ROW0 + n - 1  # inclusive, 0-indexed
+    DATA_ROW_LAST = DATA_ROW0 + n - 1
 
-    # Stats block below table
-    sr = DATA_ROW_LAST + 2
+    sr    = DATA_ROW_LAST + 2
     g_pos = gap >= 0
     ws.write(sr,   0, "FY BU",                 stat_lbl)
     ws.write(sr,   1, fy_bu,                   stat_val)
@@ -177,7 +176,7 @@ def build_xlsx(payload: dict) -> bytes:
     # ── Chart ───────────────────────────────────────────────────────────────
     chart = wb.add_chart({"type": "column", "subtype": "stacked"})
 
-    # Series 0 — invisible base (lifts bars to the right height)
+    # Series 0 — invisible base
     chart.add_series({
         "name":       "_base",
         "categories": ["Waterfall Chart", DATA_ROW0, 0, DATA_ROW_LAST, 0],
@@ -186,7 +185,7 @@ def build_xlsx(payload: dict) -> bytes:
         "border":     {"none": True},
     })
 
-    # Series 1 — visible bars, each with its own color via `points`
+    # Series 1 — visible bars with per-bar colors
     points = [
         {"fill": {"color": BAR_COLORS.get(lbl, "#9CA3AF")}, "border": {"none": True}}
         for lbl in bar_labels
@@ -199,33 +198,25 @@ def build_xlsx(payload: dict) -> bytes:
         "fill":       {"color": "#E8521A"},
         "border":     {"none": True},
         "points":     points,
+        # FIX 1: white labels positioned inside the top of each bar
         "data_labels": {
             "value":    True,
-            "position": "outside_end",
-            "font":     {"bold": True, "size": 10, "color": "#374151"},
+            "position": "inside_end",
+            "font":     {"bold": True, "size": 10, "color": "#FFFFFF"},
         },
     })
 
-    chart.set_title({
-        "name":    f"{division_name} \u2014 2026 Pipeline",
-        "overlay": False,
-    })
+    chart.set_title({"name": f"{division_name} \u2014 2026 Pipeline", "overlay": False})
     chart.set_legend({"none": True})
     chart.set_size({"width": 680, "height": 400})
-    chart.set_y_axis({
-        "visible":         False,
-        "major_gridlines": {"visible": False},
-    })
-    chart.set_x_axis({
-        "major_gridlines": {"visible": False},
-        "line":            {"none": True},
-    })
+    chart.set_y_axis({"visible": False, "major_gridlines": {"visible": False}})
+    chart.set_x_axis({"major_gridlines": {"visible": False}, "line": {"none": True}})
     chart.set_chartarea({"border": {"none": True}})
     chart.set_plotarea({"border": {"none": True}})
 
     ws.insert_chart("E2", chart)
 
-    # ── Sheet 2: Site Detail ────────────────────────────────────────────────
+    # ── Sheet 2: Site Detail (low + medium + high + upside) ─────────────────
     ws2 = wb.add_worksheet("Site Detail")
     ws2.hide_gridlines(2)
     ws2.freeze_panes(1, 0)
@@ -255,16 +246,13 @@ def build_xlsx(payload: dict) -> bytes:
             s.get("lastComment",""),
         ]
         for col, val in enumerate(row_vals):
-            if col == 10:
-                ws2.write(ri, col, val, wrap_fmt)
-            else:
-                ws2.write(ri, col, val, cell_fmt)
+            ws2.write(ri, col, val, wrap_fmt if col == 10 else cell_fmt)
         ws2.set_row(ri, 16)
 
-        # Risk-level background on column 9
+        # Risk-level background on the Risk Level column
         rl = s.get("riskLevel", "").strip().lower()
         if rl in RISK_BG:
-            risk_fmt = fmt(bg_color=RISK_BG[rl], bold=False)
+            risk_fmt = fmt(bg_color=RISK_BG[rl])
             ws2.write(ri, 9, s.get("riskLevel", ""), risk_fmt)
 
     wb.close()
