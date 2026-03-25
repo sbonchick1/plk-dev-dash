@@ -5,302 +5,102 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Development Execution Performance</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<!-- SheetJS for Excel export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif; background: #f9fafb; min-height: 100vh; color: #1a1a1a; }
+.container { max-width: 1700px; margin: 0 auto; padding: 40px; }
+.header { margin-bottom: 40px; }
+.breadcrumb { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 14px; color: #9b9b9b; }
+.breadcrumb a { color: #9b9b9b; text-decoration: none; transition: color 0.2s; }
+.breadcrumb a:hover { color: #E8521A; }
+.page-title { font-size: 36px; font-weight: 700; color: #1a1a1a; margin-bottom: 12px; letter-spacing: -1px; }
+.page-subtitle { font-size: 16px; color: #6b6b6b; line-height: 1.6; }
+.section { background: white; border-radius: 16px; padding: 32px; margin-bottom: 32px; border: 1px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 2px solid #f0f0f0; flex-wrap: wrap; gap: 12px; }
+.section-title { font-size: 20px; font-weight: 700; color: #1a1a1a; display: flex; align-items: center; gap: 10px; }
+.section-badge { font-size: 28px; }
+.export-btn { display: inline-flex; align-items: center; gap: 6px; background: #f0fdf4; color: #16a34a; border: 1px solid #86efac; border-radius: 8px; padding: 8px 16px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.export-btn:hover { background: #dcfce7; border-color: #4ade80; }
+.export-btn svg { width: 15px; height: 15px; }
+.table-container { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+thead th { background: #f9fafb; padding: 12px 14px; text-align: left; font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 10px; letter-spacing: 0.5px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; }
+thead th.center { text-align: center; }
+tbody tr { border-bottom: 1px solid #f3f4f6; transition: background 0.15s; }
+tbody tr:hover { background: #fef3ee; }
+tbody tr.total-row { background: #FFF5F0; font-weight: 700; border-top: 2px solid #E8521A; border-bottom: 2px solid #E8521A; }
+tbody tr.total-row:hover { background: #FFF5F0; }
+tbody td { padding: 13px 14px; color: #374151; }
+.division-cell { font-weight: 600; color: #1a1a1a; }
+.ddl-cell { color: #6b7280; font-size: 12px; }
+.number-cell { text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+.number-cell.clickable { cursor: pointer; }
+.number-cell.clickable:hover span { text-decoration: underline; color: #E8521A; }
+.total-cell { font-weight: 700; color: #E8521A; font-size: 15px; }
+.achievement-badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 12px; text-align: center; min-width: 54px; }
+.achievement-high { background: #D1FAE5; color: #065F46; }
+.achievement-medium { background: #FEF3C7; color: #92400E; }
+.achievement-low { background: #FEE2E2; color: #991B1B; }
+.gap-positive { color: #059669; font-weight: 700; }
+.gap-negative { color: #DC2626; font-weight: 700; }
+.gap-zero { color: #6b7280; font-weight: 600; }
+.th-group { background: #e8f0ff !important; color: #3730a3 !important; }
+.th-group-orange { background: #fff5f0 !important; color: #c2410c !important; }
+/* Achievement split columns */
+.ach-current { background: #eff6ff; color: #1d4ed8; }
+.ach-projected { background: #f0fdf4; color: #166534; }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', sans-serif;
-  background: #f9fafb;
-  min-height: 100vh;
-  color: #1a1a1a;
-}
+/* Waterfall charts */
+.charts-grid { display: grid; grid-template-columns: 1fr; gap: 24px; }
+.chart-card { background: white; border-radius: 12px; padding: 24px; border: 1px solid #e5e7eb; }
+.chart-card.featured { border: 2px solid #E8521A; background: linear-gradient(135deg, #FFF5F0 0%, #ffffff 100%); }
+.chart-header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 20px; gap: 12px; }
+.chart-header-left { flex: 1; }
+.chart-title { font-size: 16px; font-weight: 700; color: #1a1a1a; margin-bottom: 4px; }
+.chart-subtitle { font-size: 13px; color: #6b7280; }
+.chart-canvas-wrap { position: relative; }
+.chart-canvas { max-height: 320px; }
+.division-charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(500px, 1fr)); gap: 24px; margin-top: 24px; }
 
-.container {
-  max-width: 1600px;
-  margin: 0 auto;
-  padding: 40px;
-}
+/* Drill-down modal */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; display: flex; align-items: center; justify-content: center; padding: 24px; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal { background: white; border-radius: 16px; width: 100%; max-width: 1100px; max-height: 85vh; display: flex; flex-direction: column; box-shadow: 0 24px 80px rgba(0,0,0,0.2); transform: translateY(20px); transition: transform 0.2s; }
+.modal-overlay.open .modal { transform: translateY(0); }
+.modal-header { padding: 20px 24px 16px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
+.modal-title { font-size: 17px; font-weight: 700; color: #1a1a1a; }
+.modal-subtitle { font-size: 13px; color: #6b7280; margin-top: 2px; }
+.modal-actions { display: flex; gap: 8px; align-items: center; }
+.modal-close { background: #f3f4f6; border: none; border-radius: 8px; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; color: #6b7280; transition: all 0.15s; }
+.modal-close:hover { background: #fee2e2; color: #dc2626; }
+.modal-body { overflow-y: auto; padding: 20px 24px; }
+.modal-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.modal-table thead th { background: #f9fafb; padding: 9px 12px; text-align: left; font-weight: 600; color: #6b7280; text-transform: uppercase; font-size: 10px; letter-spacing: 0.4px; border-bottom: 2px solid #e5e7eb; white-space: nowrap; position: sticky; top: 0; }
+.modal-table tbody tr { border-bottom: 1px solid #f3f4f6; }
+.modal-table tbody tr:hover { background: #fef3ee; }
+.modal-table tbody td { padding: 10px 12px; color: #374151; }
+.modal-empty { text-align: center; padding: 40px; color: #9ca3af; font-size: 14px; }
+.risk-badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+.risk-low { background: #D1FAE5; color: #065F46; }
+.risk-medium { background: #FEF3C7; color: #92400E; }
+.risk-high { background: #FEE2E2; color: #991B1B; }
+.risk-upside { background: #EDE9FE; color: #5B21B6; }
+.risk-2027 { background: #E0F2FE; color: #0369A1; }
+.risk-default { background: #F3F4F6; color: #374151; }
 
-.header {
-  margin-bottom: 40px;
-}
-
-.breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 20px;
-  font-size: 14px;
-  color: #9b9b9b;
-}
-
-.breadcrumb a {
-  color: #9b9b9b;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.breadcrumb a:hover {
-  color: #E8521A;
-}
-
-.breadcrumb-separator {
-  color: #d0d0d0;
-}
-
-.page-title {
-  font-size: 36px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 12px;
-  letter-spacing: -1px;
-}
-
-.page-subtitle {
-  font-size: 16px;
-  color: #6b6b6b;
-  line-height: 1.6;
-}
-
-.section {
-  background: white;
-  border-radius: 16px;
-  padding: 32px;
-  margin-bottom: 32px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 24px;
-  padding-bottom: 16px;
-  border-bottom: 2px solid #f0f0f0;
-}
-
-.section-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1a1a;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.section-badge {
-  font-size: 28px;
-}
-
-.table-container {
-  overflow-x: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 13px;
-}
-
-thead th {
-  background: #f9fafb;
-  padding: 12px 16px;
-  text-align: left;
-  font-weight: 600;
-  color: #6b7280;
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid #e5e7eb;
-  white-space: nowrap;
-}
-
-tbody tr {
-  border-bottom: 1px solid #f3f4f6;
-  transition: background 0.15s;
-}
-
-tbody tr:hover {
-  background: #fef3ee;
-}
-
-tbody tr.total-row {
-  background: #FFF5F0;
-  font-weight: 700;
-  border-top: 2px solid #E8521A;
-  border-bottom: 2px solid #E8521A;
-}
-
-tbody tr.total-row:hover {
-  background: #FFF5F0;
-}
-
-tbody td {
-  padding: 14px 16px;
-  color: #374151;
-}
-
-.division-cell {
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.ddl-cell {
-  color: #6b7280;
-  font-size: 12px;
-}
-
-.number-cell {
-  text-align: center;
-  font-weight: 600;
-  font-variant-numeric: tabular-nums;
-}
-
-.total-cell {
-  font-weight: 700;
-  color: #E8521A;
-  font-size: 15px;
-}
-
-.achievement-badge {
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 6px;
-  font-weight: 700;
-  font-size: 12px;
-  text-align: center;
-  min-width: 60px;
-}
-
-.achievement-high {
-  background: #D1FAE5;
-  color: #065F46;
-}
-
-.achievement-medium {
-  background: #FEF3C7;
-  color: #92400E;
-}
-
-.achievement-low {
-  background: #FEE2E2;
-  color: #991B1B;
-}
-
-.gap-positive {
-  color: #059669;
-  font-weight: 700;
-}
-
-.gap-negative {
-  color: #DC2626;
-  font-weight: 700;
-}
-
-.gap-zero {
-  color: #6b7280;
-  font-weight: 600;
-}
-
-.charts-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 24px;
-}
-
-.chart-card {
-  background: white;
-  border-radius: 12px;
-  padding: 24px;
-  border: 1px solid #e5e7eb;
-}
-
-.chart-card.featured {
-  border: 2px solid #E8521A;
-  background: linear-gradient(135deg, #FFF5F0 0%, #ffffff 100%);
-}
-
-.chart-header {
-  margin-bottom: 20px;
-}
-
-.chart-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 4px;
-}
-
-.chart-subtitle {
-  font-size: 13px;
-  color: #6b7280;
-}
-
-.chart-canvas {
-  max-height: 300px;
-}
-
-.division-charts-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-  gap: 24px;
-  margin-top: 24px;
-}
-
-.overlay {
-  position: fixed;
-  inset: 0;
-  background: #f9fafb;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-.spinner {
-  width: 48px;
-  height: 48px;
-  border: 4px solid #E8521A;
-  border-top: 4px solid transparent;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 20px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-.overlay-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #374151;
-}
-
-.overlay-sub {
-  font-size: 14px;
-  color: #9ca3af;
-  margin-top: 8px;
-}
+/* Loading overlay */
+.overlay { position: fixed; inset: 0; background: #f9fafb; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 999; }
+.spinner { width: 48px; height: 48px; border: 4px solid #E8521A; border-top: 4px solid transparent; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.overlay-title { font-size: 18px; font-weight: 600; color: #374151; }
+.overlay-sub { font-size: 14px; color: #9ca3af; margin-top: 8px; }
 
 @media (max-width: 768px) {
-  .container {
-    padding: 24px;
-  }
-  
-  .page-title {
-    font-size: 28px;
-  }
-  
-  .division-charts-grid {
-    grid-template-columns: 1fr;
-  }
+  .container { padding: 24px; }
+  .page-title { font-size: 28px; }
+  .division-charts-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -312,47 +112,90 @@ tbody td {
   <div class="overlay-sub">Fetching from Smartsheet</div>
 </div>
 
+<!-- Drill-down Modal -->
+<div class="modal-overlay" id="drill-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Sites</div>
+        <div class="modal-subtitle" id="modal-subtitle"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="export-btn" id="modal-export-btn" onclick="exportModalToExcel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <table class="modal-table" id="modal-table">
+        <thead>
+          <tr>
+            <th>Rest #</th>
+            <th>SIP ID</th>
+            <th>FZ Name</th>
+            <th>FZ POD</th>
+            <th>PLK POD</th>
+            <th>Status</th>
+            <th>Risk Level</th>
+            <th>Last Comment</th>
+          </tr>
+        </thead>
+        <tbody id="modal-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
 <div id="app" style="display:none;">
   <div class="container">
     <div class="header">
       <div class="breadcrumb">
         <a href="/">Home</a>
-        <span class="breadcrumb-separator">/</span>
+        <span style="color:#d0d0d0">/</span>
         <span>Development Execution Performance</span>
       </div>
       <h1 class="page-title">Development Execution Performance</h1>
       <p class="page-subtitle">New restaurant pipeline analysis by division with budget tracking and accountability</p>
     </div>
 
-    <!-- Executive Summary - 2026 Pipeline -->
+    <!-- 2026 Pipeline Table -->
     <div class="section">
       <div class="section-header">
         <div class="section-title">
           <span class="section-badge">📊</span>
           2026 Pipeline vs. Budget
         </div>
+        <button class="export-btn" onclick="exportTable2026()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
       </div>
       <div class="table-container">
         <table id="table-2026">
           <thead>
             <tr>
-              <th>Division</th>
-              <th>DDL</th>
-              <th>Prospect</th>
-              <th>SA</th>
-              <th>PC</th>
-              <th>Permitting</th>
-              <th>UC</th>
-              <th>Open</th>
-              <th>Total 2026</th>
-              <th>Budget</th>
-              <th>Gap</th>
-              <th>Achievement</th>
+              <th rowspan="2">Division</th>
+              <th rowspan="2">DDL</th>
+              <th colspan="6" class="center th-group-orange">2026 Bottom-Up Pipeline</th>
+              <th rowspan="2" class="center">Total 2026</th>
+              <th rowspan="2" class="center">Budget</th>
+              <th rowspan="2" class="center">Gap</th>
+              <th colspan="2" class="center th-group">Achievement</th>
+            </tr>
+            <tr>
+              <th class="center">Prospect</th>
+              <th class="center">SA</th>
+              <th class="center">PC</th>
+              <th class="center">Permitting</th>
+              <th class="center">UC</th>
+              <th class="center">Open</th>
+              <th class="center" style="background:#eff6ff;color:#1d4ed8;font-size:9px;">Current<br>(Opened/Budget)</th>
+              <th class="center" style="background:#f0fdf4;color:#166534;font-size:9px;">Projected<br>(Pipeline/Budget)</th>
             </tr>
           </thead>
-          <tbody id="tbody-2026">
-            <!-- Populated by JS -->
-          </tbody>
+          <tbody id="tbody-2026"></tbody>
         </table>
       </div>
     </div>
@@ -366,28 +209,36 @@ tbody td {
         </div>
       </div>
       
-      <!-- US&C Consolidated Chart -->
       <div class="chart-card featured">
         <div class="chart-header">
-          <div class="chart-title">US&C Consolidated - 2026 Pipeline</div>
-          <div class="chart-subtitle">All divisions combined vs. total budget</div>
+          <div class="chart-header-left">
+            <div class="chart-title">US&amp;C Consolidated — 2026 Pipeline</div>
+            <div class="chart-subtitle">All divisions combined vs. total budget</div>
+          </div>
+          <button class="export-btn" onclick="exportChartToExcel('usc','US&C Consolidated')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Export to Excel
+          </button>
         </div>
-        <canvas id="chart-usc" class="chart-canvas"></canvas>
+        <div class="chart-canvas-wrap">
+          <canvas id="chart-usc" class="chart-canvas"></canvas>
+        </div>
       </div>
 
-      <!-- Individual Division Charts -->
-      <div class="division-charts-grid" id="division-charts">
-        <!-- Populated by JS -->
-      </div>
+      <div class="division-charts-grid" id="division-charts"></div>
     </div>
 
-    <!-- 2027+ Pipeline -->
+    <!-- 2027+ Pipeline Table -->
     <div class="section">
       <div class="section-header">
         <div class="section-title">
           <span class="section-badge">🔮</span>
           2027+ Pipeline Visibility
         </div>
+        <button class="export-btn" onclick="exportTable2027()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
       </div>
       <div class="table-container">
         <table id="table-2027">
@@ -395,17 +246,15 @@ tbody td {
             <tr>
               <th>Division</th>
               <th>DDL</th>
-              <th>Prospect</th>
-              <th>SA</th>
-              <th>PC</th>
-              <th>Permitting</th>
-              <th>UC</th>
-              <th>Total 2027+</th>
+              <th class="center">Prospect</th>
+              <th class="center">SA</th>
+              <th class="center">PC</th>
+              <th class="center">Permitting</th>
+              <th class="center">UC</th>
+              <th class="center">Total 2027+</th>
             </tr>
           </thead>
-          <tbody id="tbody-2027">
-            <!-- Populated by JS -->
-          </tbody>
+          <tbody id="tbody-2027"></tbody>
         </table>
       </div>
     </div>
@@ -416,245 +265,311 @@ tbody td {
 const API = "/api/pipeline";
 
 const DIVISIONS = [
-  { name: "Northeast", ddl: "Shanda O'Kelly" },
-  { name: "Southeast", ddl: "Shanda O'Kelly" },
-  { name: "Central", ddl: "Rita Sterling" },
-  { name: "West", ddl: "Rita Sterling" },
-  { name: "Canada", ddl: "Kevin Fitzgerald" },
-  { name: "Non-Trad", ddl: "Sean Davis" }
+  { name: "Northeast",  ddl: "Shanda O'Kelly" },
+  { name: "Southeast",  ddl: "Shanda O'Kelly" },
+  { name: "Central",    ddl: "Rita Sterling" },
+  { name: "West",       ddl: "Rita Sterling" },
+  { name: "Canada",     ddl: "Kevin Fitzgerald" },
+  { name: "Non-Trad",   ddl: "Sean Davis" }
 ];
 
-const STATUSES = ["Prospect", "SA", "PC", "Permitting", "UC", "Open"];
-const RISK_2026 = ["Low", "Medium", "High"];
-const RISK_UPSIDE = ["Upside"]; // Only exact "Upside" for waterfall Upside bar
-const RISK_2027_TABLE = ["2027+", "Upside 100", "Upside"]; // For 2027+ table display
+const STATUSES  = ["Prospect","SA","PC","Permitting","UC","Open"];
+const RISK_2026 = ["low","medium","high"];
+const RISK_2027_TABLE = ["2027+","upside 100","upside"];
 
 let ALL_DATA = [];
-let BUDGETS = {};
+let BUDGETS  = {};
+// Store chart data for Excel export keyed by canvasId
+let CHART_DATA_MAP = {};
+// Current modal sites
+let MODAL_SITES = [];
+let MODAL_TITLE_TEXT = "";
 
-const PLK = {
-  orange: "#E8521A",
-  teal: "#00A99D",
-  purple: "#7B2D8B",
-  yellow: "#FFC20E",
-  green: "#4CAF50",
-  red: "#C1272D",
-  gray: "#9CA3AF"
-};
+const PLK = { orange:"#E8521A", teal:"#00A99D", purple:"#7B2D8B", yellow:"#FFC20E", green:"#4CAF50", red:"#C1272D", gray:"#9CA3AF" };
 
-function is2026(row) {
-  if (!row.riskLevel) return false;
-  const risk = row.riskLevel.trim();
-  return RISK_2026.some(r => risk.toLowerCase() === r.toLowerCase());
+// ── Risk helpers ───────────────────────────────────────────
+function is2026(r) {
+  if (!r.riskLevel) return false;
+  return RISK_2026.includes(r.riskLevel.trim().toLowerCase());
+}
+function isUpside(r) {
+  if (!r.riskLevel) return false;
+  return r.riskLevel.trim().toLowerCase() === "upside";
+}
+function is2027PlusTable(r) {
+  if (!r.riskLevel) return false;
+  return RISK_2027_TABLE.includes(r.riskLevel.trim().toLowerCase());
 }
 
-function isUpside(row) {
-  if (!row.riskLevel) return false;
-  const risk = row.riskLevel.trim();
-  return risk.toLowerCase() === "upside";
-}
-
-function is2027PlusTable(row) {
-  if (!row.riskLevel) return false;
-  const risk = row.riskLevel.trim();
-  return RISK_2027_TABLE.some(r => risk.toLowerCase() === r.toLowerCase());
-}
-
+// ── Status counts ─────────────────────────────────────────
 function countByStatus(rows) {
-  const counts = {};
-  STATUSES.forEach(s => counts[s] = 0);
-  rows.forEach(r => {
-    if (r.status && counts.hasOwnProperty(r.status)) {
-      counts[r.status]++;
-    }
-  });
-  return counts;
+  const c = {};
+  STATUSES.forEach(s => c[s] = 0);
+  rows.forEach(r => { if (r.status && c.hasOwnProperty(r.status)) c[r.status]++; });
+  return c;
 }
 
+// ── Achievement helpers ────────────────────────────────────
+function achieveClass(pct) {
+  if (pct >= 90) return "achievement-high";
+  if (pct >= 70) return "achievement-medium";
+  return "achievement-low";
+}
+function gapClass(g) {
+  if (g > 0) return "gap-positive";
+  if (g < 0) return "gap-negative";
+  return "gap-zero";
+}
+
+// ── Drill-down ─────────────────────────────────────────────
+function openDrillDown(divisionName, status, riskFilter, title, subtitle) {
+  let sites;
+  if (riskFilter === "2026") {
+    sites = ALL_DATA.filter(r => (divisionName === "US&C" || r.division === divisionName) && is2026(r) && (status === null || r.status === status));
+  } else if (riskFilter === "upside") {
+    sites = ALL_DATA.filter(r => (divisionName === "US&C" || r.division === divisionName) && isUpside(r) && (status === null || r.status === status));
+  } else if (riskFilter === "2027") {
+    sites = ALL_DATA.filter(r => (divisionName === "US&C" || r.division === divisionName) && is2027PlusTable(r) && (status === null || r.status === status));
+  } else {
+    sites = ALL_DATA.filter(r => (divisionName === "US&C" || r.division === divisionName) && (status === null || r.status === status));
+  }
+
+  MODAL_SITES = sites;
+  MODAL_TITLE_TEXT = title;
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-subtitle").textContent = subtitle + " · " + sites.length + " site" + (sites.length !== 1 ? "s" : "");
+
+  const tbody = document.getElementById("modal-tbody");
+  if (!sites.length) {
+    tbody.innerHTML = `<tr><td colspan="8" class="modal-empty">No sites found for this selection.</td></tr>`;
+  } else {
+    tbody.innerHTML = sites.map(s => {
+      const rl = (s.riskLevel || "").trim().toLowerCase();
+      let rClass = "risk-default";
+      if (rl === "low") rClass = "risk-low";
+      else if (rl === "medium") rClass = "risk-medium";
+      else if (rl === "high") rClass = "risk-high";
+      else if (rl === "upside") rClass = "risk-upside";
+      else if (rl.startsWith("2027")) rClass = "risk-2027";
+      return `<tr>
+        <td><strong>${s.restNum || "—"}</strong></td>
+        <td>${s.sipId || "—"}</td>
+        <td>${s.fzName || "—"}</td>
+        <td>${s.fzPod || "—"}</td>
+        <td>${s.plkPod || "—"}</td>
+        <td>${s.status || "—"}</td>
+        <td><span class="risk-badge ${rClass}">${s.riskLevel || "—"}</span></td>
+        <td style="max-width:280px;white-space:normal;font-size:11px;color:#6b7280;">${s.lastComment || "—"}</td>
+      </tr>`;
+    }).join("");
+  }
+
+  document.getElementById("drill-modal").classList.add("open");
+}
+
+function closeModal() {
+  document.getElementById("drill-modal").classList.remove("open");
+}
+document.getElementById("drill-modal").addEventListener("click", function(e) {
+  if (e.target === this) closeModal();
+});
+
+// ── Excel export: Modal ────────────────────────────────────
+function exportModalToExcel() {
+  if (!MODAL_SITES.length) return;
+  const wb = XLSX.utils.book_new();
+  const rows = [["Rest #","SIP ID","FZ Name","FZ POD","PLK POD","Status","Risk Level","Last Comment"]];
+  MODAL_SITES.forEach(s => rows.push([s.restNum||"",s.sipId||"",s.fzName||"",s.fzPod||"",s.plkPod||"",s.status||"",s.riskLevel||"",s.lastComment||""]));
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"] = [10,12,20,12,12,12,12,40].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws, "Sites");
+  XLSX.writeFile(wb, MODAL_TITLE_TEXT.replace(/[^a-zA-Z0-9 ]/g,"_") + ".xlsx");
+}
+
+// ── Clickable number cell ──────────────────────────────────
+function clickableCell(count, divName, status, riskFilter, label) {
+  if (count === 0) return `<td class="number-cell">0</td>`;
+  const escapedDiv = divName.replace(/'/g, "\\'");
+  const escapedStatus = status ? `'${status.replace(/'/g,"\\'")}'` : "null";
+  const escapedLabel = label.replace(/'/g,"\\'");
+  return `<td class="number-cell clickable" onclick="openDrillDown('${escapedDiv}',${escapedStatus},'${riskFilter}','${escapedLabel}','${escapedDiv}${status ? " · " + status : ""}')"><span>${count}</span></td>`;
+}
+
+// ── Render 2026 Table ──────────────────────────────────────
 function renderTable2026() {
   const tbody = document.getElementById("tbody-2026");
   let html = "";
-
-  const totals = { status: {}, total: 0, budget: 0 };
-  STATUSES.forEach(s => totals.status[s] = 0);
+  const totals = { s: {}, total: 0, budget: 0, opened: 0 };
+  STATUSES.forEach(s => totals.s[s] = 0);
 
   DIVISIONS.forEach(div => {
     const divRows = ALL_DATA.filter(r => r.division === div.name && is2026(r));
     const counts = countByStatus(divRows);
-    const total = Object.values(counts).reduce((a, b) => a + b, 0);
+    const total = STATUSES.reduce((a,s)=>a+counts[s], 0);
+    const opened = counts["Open"];
     const budget = BUDGETS[div.name] || 0;
     const gap = total - budget;
-    const achievement = budget > 0 ? (total / budget * 100) : 0;
+    const currentAch = budget > 0 ? (opened / budget * 100) : 0;
+    const projAch    = budget > 0 ? (total  / budget * 100) : 0;
 
-    let achievementClass = "achievement-low";
-    if (achievement >= 90) achievementClass = "achievement-high";
-    else if (achievement >= 70) achievementClass = "achievement-medium";
+    html += `<tr>
+      <td class="division-cell">${div.name}</td>
+      <td class="ddl-cell">${div.ddl}</td>
+      ${STATUSES.map(s => clickableCell(counts[s], div.name, s, "2026", `${div.name} · ${s}`)).join("")}
+      ${clickableCell(total, div.name, null, "2026", `${div.name} · All 2026 Pipeline`)}
+      <td class="number-cell">${budget}</td>
+      <td class="number-cell ${gapClass(gap)}">${gap >= 0 ? "+" : ""}${gap}</td>
+      <td class="number-cell"><span class="achievement-badge ${achieveClass(currentAch)} ach-current">${currentAch.toFixed(0)}%</span></td>
+      <td class="number-cell"><span class="achievement-badge ${achieveClass(projAch)} ach-projected">${projAch.toFixed(0)}%</span></td>
+    </tr>`;
 
-    let gapClass = "gap-zero";
-    if (gap > 0) gapClass = "gap-positive";
-    else if (gap < 0) gapClass = "gap-negative";
-
-    html += `
-      <tr>
-        <td class="division-cell">${div.name}</td>
-        <td class="ddl-cell">${div.ddl}</td>
-        ${STATUSES.map(s => `<td class="number-cell">${counts[s]}</td>`).join("")}
-        <td class="number-cell total-cell">${total}</td>
-        <td class="number-cell">${budget}</td>
-        <td class="number-cell ${gapClass}">${gap >= 0 ? '+' : ''}${gap}</td>
-        <td class="number-cell"><span class="achievement-badge ${achievementClass}">${achievement.toFixed(0)}%</span></td>
-      </tr>
-    `;
-
-    STATUSES.forEach(s => totals.status[s] += counts[s]);
-    totals.total += total;
+    STATUSES.forEach(s => totals.s[s] += counts[s]);
+    totals.total  += total;
     totals.budget += budget;
+    totals.opened += opened;
   });
 
-  const totalGap = totals.total - totals.budget;
-  const totalAchievement = totals.budget > 0 ? (totals.total / totals.budget * 100) : 0;
-  let totalAchievementClass = "achievement-low";
-  if (totalAchievement >= 90) totalAchievementClass = "achievement-high";
-  else if (totalAchievement >= 70) totalAchievementClass = "achievement-medium";
+  const totalGap     = totals.total  - totals.budget;
+  const totalCurrent = totals.budget > 0 ? (totals.opened / totals.budget * 100) : 0;
+  const totalProj    = totals.budget > 0 ? (totals.total  / totals.budget * 100) : 0;
 
-  let totalGapClass = "gap-zero";
-  if (totalGap > 0) totalGapClass = "gap-positive";
-  else if (totalGap < 0) totalGapClass = "gap-negative";
-
-  html += `
-    <tr class="total-row">
-      <td class="division-cell">US&C Total</td>
-      <td class="ddl-cell">—</td>
-      ${STATUSES.map(s => `<td class="number-cell">${totals.status[s]}</td>`).join("")}
-      <td class="number-cell total-cell">${totals.total}</td>
-      <td class="number-cell">${totals.budget}</td>
-      <td class="number-cell ${totalGapClass}">${totalGap >= 0 ? '+' : ''}${totalGap}</td>
-      <td class="number-cell"><span class="achievement-badge ${totalAchievementClass}">${totalAchievement.toFixed(0)}%</span></td>
-    </tr>
-  `;
+  html += `<tr class="total-row">
+    <td class="division-cell">US&amp;C Total</td>
+    <td class="ddl-cell">—</td>
+    ${STATUSES.map(s => clickableCell(totals.s[s], "US&C", s, "2026", `US&C · ${s}`)).join("")}
+    ${clickableCell(totals.total, "US&C", null, "2026", "US&C · All 2026 Pipeline")}
+    <td class="number-cell">${totals.budget}</td>
+    <td class="number-cell ${gapClass(totalGap)}">${totalGap >= 0 ? "+" : ""}${totalGap}</td>
+    <td class="number-cell"><span class="achievement-badge ${achieveClass(totalCurrent)} ach-current">${totalCurrent.toFixed(0)}%</span></td>
+    <td class="number-cell"><span class="achievement-badge ${achieveClass(totalProj)} ach-projected">${totalProj.toFixed(0)}%</span></td>
+  </tr>`;
 
   tbody.innerHTML = html;
 }
 
+// ── Render 2027 Table ──────────────────────────────────────
 function renderTable2027() {
   const tbody = document.getElementById("tbody-2027");
   let html = "";
-
-  const totals = { status: {} };
-  STATUSES.filter(s => s !== "Open").forEach(s => totals.status[s] = 0);
+  const s2027 = STATUSES.filter(s => s !== "Open");
+  const totals = {};
+  s2027.forEach(s => totals[s] = 0);
 
   DIVISIONS.forEach(div => {
     const divRows = ALL_DATA.filter(r => r.division === div.name && is2027PlusTable(r));
     const counts = countByStatus(divRows);
-    const total = STATUSES.filter(s => s !== "Open").map(s => counts[s]).reduce((a, b) => a + b, 0);
+    const total = s2027.reduce((a,s)=>a+counts[s],0);
 
-    html += `
-      <tr>
-        <td class="division-cell">${div.name}</td>
-        <td class="ddl-cell">${div.ddl}</td>
-        ${STATUSES.filter(s => s !== "Open").map(s => `<td class="number-cell">${counts[s]}</td>`).join("")}
-        <td class="number-cell total-cell">${total}</td>
-      </tr>
-    `;
+    html += `<tr>
+      <td class="division-cell">${div.name}</td>
+      <td class="ddl-cell">${div.ddl}</td>
+      ${s2027.map(s => clickableCell(counts[s], div.name, s, "2027", `${div.name} · ${s} (2027+)`)).join("")}
+      ${clickableCell(total, div.name, null, "2027", `${div.name} · All 2027+ Pipeline`)}
+    </tr>`;
 
-    STATUSES.filter(s => s !== "Open").forEach(s => totals.status[s] += counts[s]);
+    s2027.forEach(s => totals[s] += counts[s]);
   });
 
-  const total2027 = Object.values(totals.status).reduce((a, b) => a + b, 0);
-
-  html += `
-    <tr class="total-row">
-      <td class="division-cell">US&C Total</td>
-      <td class="ddl-cell">—</td>
-      ${STATUSES.filter(s => s !== "Open").map(s => `<td class="number-cell">${totals.status[s]}</td>`).join("")}
-      <td class="number-cell total-cell">${total2027}</td>
-    </tr>
-  `;
+  const grandTotal = s2027.reduce((a,s)=>a+totals[s],0);
+  html += `<tr class="total-row">
+    <td class="division-cell">US&amp;C Total</td>
+    <td class="ddl-cell">—</td>
+    ${s2027.map(s => clickableCell(totals[s], "US&C", s, "2027", `US&C · ${s} (2027+)`)).join("")}
+    ${clickableCell(grandTotal, "US&C", null, "2027", "US&C · All 2027+ Pipeline")}
+  </tr>`;
 
   tbody.innerHTML = html;
 }
 
-function createWaterfallChart(canvasId, divisionName, subtitle, data, budget) {
+// ── Waterfall Chart ────────────────────────────────────────
+function createWaterfallChart(canvasId, divisionName, data, budget) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
 
-  // Calculate values
   const values = STATUSES.map(s => data[s]);
-  const fyBU = values.reduce((a, b) => a + b, 0); // FY BU is sum of all 2026 pipeline
-  
-  // Calculate Upside (only sites with "Upside" risk level) for this division
-  let upsideCount = 0;
-  if (divisionName === "US&C Consolidated") {
-    // For consolidated view, count all Upside projects
-    upsideCount = ALL_DATA.filter(r => isUpside(r)).length;
-  } else {
-    // For specific division
-    upsideCount = ALL_DATA.filter(r => r.division === divisionName && isUpside(r)).length;
-  }
+  const fyBU   = values.reduce((a,b) => a+b, 0);
+  const upsideCount = divisionName === "US&C Consolidated"
+    ? ALL_DATA.filter(r => isUpside(r)).length
+    : ALL_DATA.filter(r => r.division === divisionName && isUpside(r)).length;
 
-  // Labels
-  const labels = [...STATUSES, "FY BU", "Upside", "Opening Budget"];
-  
-  // Build stacked datasets
+  const labels   = [...STATUSES, "FY BU", "Upside", "Budget"];
+  const barColors= [...STATUSES.map(() => PLK.orange), PLK.purple, PLK.red, PLK.teal];
+
+  // For stacked invisible bases
   const datasets = [];
-  
-  // Create stacking for Prospect -> Open (all orange)
   let cumulative = 0;
   STATUSES.forEach((status, i) => {
-    // Invisible base bar for stacking
-    if (i > 0) {
-      datasets.push({
-        label: status + "_base",
-        data: labels.map((lbl, idx) => idx === i ? cumulative : null),
-        backgroundColor: 'transparent',
-        borderWidth: 0,
-      });
-    }
-    
-    // Visible bar (orange)
+    // invisible base
+    datasets.push({
+      label: status + "_base",
+      data: labels.map((_,idx) => idx === i ? cumulative : null),
+      backgroundColor: "transparent",
+      borderWidth: 0,
+      stack: "stack",
+    });
+    // visible bar
     datasets.push({
       label: status,
-      data: labels.map((lbl, idx) => idx === i ? values[i] : null),
+      data: labels.map((_,idx) => idx === i ? values[i] : null),
       backgroundColor: PLK.orange,
       borderRadius: 4,
+      stack: "stack",
     });
-    
     cumulative += values[i];
   });
 
-  // FY BU bar (purple) - starts at 0
+  // FY BU
   datasets.push({
     label: "FY BU",
-    data: labels.map((lbl, idx) => idx === STATUSES.length ? fyBU : null),
+    data: labels.map((_,idx) => idx === STATUSES.length ? fyBU : null),
     backgroundColor: PLK.purple,
     borderRadius: 4,
+    stack: "stack2",
   });
 
-  // Upside stack on top of FY BU (red)
+  // Upside base on top of fyBU
   datasets.push({
     label: "Upside_base",
-    data: labels.map((lbl, idx) => idx === STATUSES.length + 1 ? fyBU : null),
-    backgroundColor: 'transparent',
+    data: labels.map((_,idx) => idx === STATUSES.length+1 ? fyBU : null),
+    backgroundColor: "transparent",
     borderWidth: 0,
+    stack: "stack3",
   });
-  
   datasets.push({
     label: "Upside",
-    data: labels.map((lbl, idx) => idx === STATUSES.length + 1 ? upsideCount : null),
+    data: labels.map((_,idx) => idx === STATUSES.length+1 ? upsideCount : null),
     backgroundColor: PLK.red,
     borderRadius: 4,
+    stack: "stack3",
   });
 
-  // Opening Budget bar (teal) - starts at 0
+  // Budget
   datasets.push({
-    label: "Opening Budget",
-    data: labels.map((lbl, idx) => idx === labels.length - 1 ? budget : null),
+    label: "Budget",
+    data: labels.map((_,idx) => idx === labels.length-1 ? budget : null),
     backgroundColor: PLK.teal,
     borderRadius: 4,
+    stack: "stack4",
   });
 
-  const gap = fyBU - budget;
-  const totalWithUpside = fyBU + upsideCount;
+  // Build display values for data labels
+  const displayValues = [
+    ...values,
+    fyBU,
+    upsideCount,
+    budget
+  ];
+
+  // Store for Excel export
+  CHART_DATA_MAP[canvasId] = {
+    division: divisionName,
+    labels,
+    displayValues,
+    budget,
+    fyBU,
+    upsideCount,
+    gap: fyBU - budget,
+  };
 
   new Chart(ctx, {
     type: "bar",
@@ -670,110 +585,299 @@ function createWaterfallChart(canvasId, divisionName, subtitle, data, budget) {
           bodyColor: "white",
           callbacks: {
             label: (ctx) => {
-              const label = labels[ctx.dataIndex];
-              if (label === "FY BU") {
-                return `FY BU: ${fyBU} (Gap: ${gap >= 0 ? '+' : ''}${gap})`;
-              }
-              if (label === "Upside") {
-                return `Upside: ${upsideCount} (Total with Upside: ${totalWithUpside})`;
-              }
-              if (label === "Opening Budget") {
-                return `Opening Budget: ${budget}`;
-              }
-              const idx = STATUSES.indexOf(label);
+              const lbl = labels[ctx.dataIndex];
+              if (lbl === "FY BU")  return `FY BU: ${fyBU}  |  Gap vs Budget: ${fyBU - budget >= 0 ? "+" : ""}${fyBU - budget}`;
+              if (lbl === "Upside") return `Upside: ${upsideCount}  |  FY BU + Upside: ${fyBU + upsideCount}`;
+              if (lbl === "Budget") return `Budget: ${budget}`;
+              const idx = STATUSES.indexOf(lbl);
               if (idx >= 0) {
-                let runningTotal = 0;
-                for (let i = 0; i <= idx; i++) runningTotal += values[i];
-                return `${label}: ${values[idx]} (Running Total: ${runningTotal})`;
+                let run = 0;
+                for (let i=0;i<=idx;i++) run += values[i];
+                return `${lbl}: ${values[idx]}  |  Running Total: ${run}`;
               }
-              return '';
+              return "";
             }
           }
-        }
+        },
+        // Data labels plugin (inline — using afterDraw)
       },
       scales: {
         x: {
           stacked: true,
           grid: { display: false },
+          border: { display: false },
           ticks: { color: "#6b7280", font: { size: 11 } }
         },
         y: {
           stacked: true,
-          grid: { color: "#f0f0f0" },
-          ticks: { color: "#6b7280", font: { size: 11 } },
-          beginAtZero: true
+          grid: { display: false },
+          border: { display: false },
+          ticks: { display: false }
         }
-      }
+      },
+      layout: { padding: { top: 32 } },
+      animation: { onComplete: () => drawLabels(ctx, canvasId, displayValues, labels, fyBU, upsideCount, budget, values) },
     }
   });
+
+  // Make bars clickable
+  ctx.addEventListener("click", function(e) {
+    const chart = Chart.getChart(ctx);
+    if (!chart) return;
+    const points = chart.getElementsAtEventForMode(e, "nearest", { intersect: true }, false);
+    if (!points.length) return;
+    const idx = points[0].index;
+    if (idx < STATUSES.length) {
+      const status = STATUSES[idx];
+      const divFilter = divisionName === "US&C Consolidated" ? "US&C" : divisionName;
+      openDrillDown(divFilter, status, "2026", `${divisionName} · ${status}`, `${divisionName} · ${status}`);
+    } else if (idx === STATUSES.length) {
+      const divFilter = divisionName === "US&C Consolidated" ? "US&C" : divisionName;
+      openDrillDown(divFilter, null, "2026", `${divisionName} · Full BU Pipeline`, divisionName);
+    } else if (idx === STATUSES.length + 1) {
+      const divFilter = divisionName === "US&C Consolidated" ? "US&C" : divisionName;
+      openDrillDown(divFilter, null, "upside", `${divisionName} · Upside Sites`, divisionName);
+    }
+  });
+  ctx.style.cursor = "pointer";
 }
 
-function renderWaterfallCharts() {
-  // US&C Consolidated
-  const usc2026 = ALL_DATA.filter(r => is2026(r));
-  const uscCounts = countByStatus(usc2026);
-  const uscBudget = Object.values(BUDGETS).reduce((a, b) => a + b, 0);
-  createWaterfallChart("chart-usc", "US&C Consolidated", "All divisions", uscCounts, uscBudget);
+// Draw value labels above each bar
+function drawLabels(ctx, canvasId, displayValues, labels, fyBU, upsideCount, budget, statusValues) {
+  const chart = Chart.getChart(ctx);
+  if (!chart) return;
+  const cCtx = chart.ctx;
+  cCtx.save();
+  cCtx.font = "bold 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+  cCtx.fillStyle = "#374151";
+  cCtx.textAlign = "center";
+  cCtx.textBaseline = "bottom";
 
-  // Individual divisions
+  const meta0 = chart.getDatasetMeta(1); // first visible dataset (index 1 = first status bar)
+  if (!meta0 || !meta0.data) { cCtx.restore(); return; }
+
+  labels.forEach((lbl, i) => {
+    const val = displayValues[i];
+    if (val === 0 || val == null) return;
+
+    let x, yTop;
+
+    if (i < statusValues.length) {
+      // Status bars — find the actual visible dataset for this index
+      // Each status has 2 datasets (base + visible), so dataset index = i*2+1
+      const dsIdx = i * 2 + 1;
+      const meta = chart.getDatasetMeta(dsIdx);
+      if (!meta || !meta.data || !meta.data[i]) return;
+      const bar = meta.data[i];
+      x    = bar.x;
+      yTop = bar.y;
+    } else if (lbl === "FY BU") {
+      // FY BU dataset — find it
+      let fyMeta = null;
+      for (let d=0; d<chart.data.datasets.length; d++) {
+        if (chart.data.datasets[d].label === "FY BU") { fyMeta = chart.getDatasetMeta(d); break; }
+      }
+      if (!fyMeta || !fyMeta.data[i]) return;
+      x    = fyMeta.data[i].x;
+      yTop = fyMeta.data[i].y;
+    } else if (lbl === "Upside") {
+      let upMeta = null;
+      for (let d=0; d<chart.data.datasets.length; d++) {
+        if (chart.data.datasets[d].label === "Upside") { upMeta = chart.getDatasetMeta(d); break; }
+      }
+      if (!upMeta || !upMeta.data[i]) return;
+      x    = upMeta.data[i].x;
+      yTop = upMeta.data[i].y;
+    } else if (lbl === "Budget") {
+      let bMeta = null;
+      for (let d=0; d<chart.data.datasets.length; d++) {
+        if (chart.data.datasets[d].label === "Budget") { bMeta = chart.getDatasetMeta(d); break; }
+      }
+      if (!bMeta || !bMeta.data[i]) return;
+      x    = bMeta.data[i].x;
+      yTop = bMeta.data[i].y;
+    }
+
+    if (x == null || yTop == null) return;
+    cCtx.fillText(val, x, yTop - 4);
+  });
+
+  cCtx.restore();
+}
+
+// ── Render all waterfall charts ────────────────────────────
+function renderWaterfallCharts() {
+  const usc2026  = ALL_DATA.filter(r => is2026(r));
+  const uscCounts = countByStatus(usc2026);
+  const uscBudget = Object.values(BUDGETS).reduce((a,b)=>a+b, 0);
+  createWaterfallChart("chart-usc", "US&C Consolidated", uscCounts, uscBudget);
+
   const container = document.getElementById("division-charts");
   let html = "";
-
   DIVISIONS.forEach(div => {
-    const divRows = ALL_DATA.filter(r => r.division === div.name && is2026(r));
-    const counts = countByStatus(divRows);
+    const id = `chart-${div.name.toLowerCase().replace(/\s/g,"-").replace(/[^a-z0-9-]/g,"")}`;
     const budget = BUDGETS[div.name] || 0;
-
-    const canvasId = `chart-${div.name.toLowerCase().replace(/\s/g, "-").replace(/[^a-z0-9-]/g, "")}`;
-    
     html += `
       <div class="chart-card">
         <div class="chart-header">
-          <div class="chart-title">${div.name}</div>
-          <div class="chart-subtitle">${div.ddl} • Budget: ${budget}</div>
+          <div class="chart-header-left">
+            <div class="chart-title">${div.name}</div>
+            <div class="chart-subtitle">${div.ddl} · Budget: ${budget}</div>
+          </div>
+          <button class="export-btn" onclick="exportChartToExcel('${id}','${div.name}')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+            Export
+          </button>
         </div>
-        <canvas id="${canvasId}" class="chart-canvas"></canvas>
-      </div>
-    `;
+        <div class="chart-canvas-wrap">
+          <canvas id="${id}" class="chart-canvas"></canvas>
+        </div>
+      </div>`;
   });
-
   container.innerHTML = html;
 
-  // Render each division chart
   DIVISIONS.forEach(div => {
+    const id = `chart-${div.name.toLowerCase().replace(/\s/g,"-").replace(/[^a-z0-9-]/g,"")}`;
     const divRows = ALL_DATA.filter(r => r.division === div.name && is2026(r));
-    const counts = countByStatus(divRows);
-    const budget = BUDGETS[div.name] || 0;
-    const canvasId = `chart-${div.name.toLowerCase().replace(/\s/g, "-").replace(/[^a-z0-9-]/g, "")}`;
-    createWaterfallChart(canvasId, div.name, div.ddl, counts, budget);
+    const counts  = countByStatus(divRows);
+    const budget  = BUDGETS[div.name] || 0;
+    createWaterfallChart(id, div.name, counts, budget);
   });
 }
 
+// ── Excel export: Table 2026 ───────────────────────────────
+function exportTable2026() {
+  const wb = XLSX.utils.book_new();
+  const header1 = ["Division","DDL","Prospect","SA","PC","Permitting","UC","Open","Total 2026","Budget","Gap","Current Achievement (Open/Budget)","Projected Achievement (Pipeline/Budget)"];
+  const rows = [header1];
+
+  DIVISIONS.forEach(div => {
+    const divRows = ALL_DATA.filter(r => r.division === div.name && is2026(r));
+    const counts  = countByStatus(divRows);
+    const total   = STATUSES.reduce((a,s)=>a+counts[s],0);
+    const opened  = counts["Open"];
+    const budget  = BUDGETS[div.name] || 0;
+    const gap     = total - budget;
+    rows.push([
+      div.name, div.ddl,
+      counts["Prospect"], counts["SA"], counts["PC"], counts["Permitting"], counts["UC"], counts["Open"],
+      total, budget, gap,
+      budget > 0 ? (opened / budget) : 0,
+      budget > 0 ? (total  / budget) : 0,
+    ]);
+  });
+
+  // Totals row
+  const totals = { s:{}, total:0, budget:0, opened:0 };
+  STATUSES.forEach(s => totals.s[s]=0);
+  DIVISIONS.forEach(div => {
+    const divRows = ALL_DATA.filter(r => r.division === div.name && is2026(r));
+    const counts  = countByStatus(divRows);
+    STATUSES.forEach(s => totals.s[s] += counts[s]);
+    totals.total  += STATUSES.reduce((a,s)=>a+counts[s],0);
+    totals.budget += BUDGETS[div.name] || 0;
+    totals.opened += counts["Open"];
+  });
+  rows.push([
+    "US&C Total","—",
+    totals.s["Prospect"],totals.s["SA"],totals.s["PC"],totals.s["Permitting"],totals.s["UC"],totals.s["Open"],
+    totals.total, totals.budget, totals.total - totals.budget,
+    totals.budget > 0 ? (totals.opened / totals.budget) : 0,
+    totals.budget > 0 ? (totals.total  / totals.budget) : 0,
+  ]);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  // Format percentage columns (L, M = col 12, 13 → index 11, 12)
+  const range = XLSX.utils.decode_range(ws["!ref"]);
+  for (let R=1; R<=range.e.r; R++) {
+    ["L","M"].forEach(col => {
+      const cell = ws[col+(R+1)];
+      if (cell) { cell.t = "n"; cell.z = "0%"; }
+    });
+  }
+  ws["!cols"] = [14,16,9,7,7,10,7,7,10,8,7,16,16].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws, "2026 Pipeline");
+  XLSX.writeFile(wb, "2026_Pipeline_vs_Budget.xlsx");
+}
+
+// ── Excel export: Table 2027 ───────────────────────────────
+function exportTable2027() {
+  const wb   = XLSX.utils.book_new();
+  const s27  = STATUSES.filter(s => s !== "Open");
+  const rows = [["Division","DDL",...s27,"Total 2027+"]];
+
+  DIVISIONS.forEach(div => {
+    const divRows = ALL_DATA.filter(r => r.division === div.name && is2027PlusTable(r));
+    const counts  = countByStatus(divRows);
+    const total   = s27.reduce((a,s)=>a+counts[s],0);
+    rows.push([div.name, div.ddl, ...s27.map(s=>counts[s]), total]);
+  });
+
+  const totals = {};
+  s27.forEach(s => totals[s]=0);
+  DIVISIONS.forEach(div => {
+    const divRows = ALL_DATA.filter(r => r.division === div.name && is2027PlusTable(r));
+    const counts  = countByStatus(divRows);
+    s27.forEach(s => totals[s] += counts[s]);
+  });
+  rows.push(["US&C Total","—",...s27.map(s=>totals[s]), s27.reduce((a,s)=>a+totals[s],0)]);
+
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"] = [14,16,9,7,7,10,7,10].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws, "2027+ Pipeline");
+  XLSX.writeFile(wb, "2027_Pipeline.xlsx");
+}
+
+// ── Excel export: Waterfall Chart ─────────────────────────
+function exportChartToExcel(canvasId, divisionName) {
+  const cd = CHART_DATA_MAP[canvasId];
+  if (!cd) return;
+
+  const wb = XLSX.utils.book_new();
+
+  // Summary sheet
+  const summaryRows = [
+    ["Division", divisionName],
+    [],
+    ["Category", "Value"],
+    ...STATUSES.map((s,i) => [s, cd.displayValues[i]]),
+    ["FY BU (Total Pipeline)", cd.fyBU],
+    ["Upside", cd.upsideCount],
+    ["FY BU + Upside", cd.fyBU + cd.upsideCount],
+    ["Opening Budget", cd.budget],
+    ["Gap (FY BU vs Budget)", cd.gap],
+    ["Gap %", cd.budget > 0 ? cd.gap / cd.budget : 0],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(summaryRows);
+  // Format gap %
+  const gapPctCell = ws[`B${summaryRows.length}`];
+  if (gapPctCell) { gapPctCell.t = "n"; gapPctCell.z = "0%"; }
+  ws["!cols"] = [{wch:30},{wch:14}];
+  XLSX.utils.book_append_sheet(wb, ws, "Waterfall Data");
+
+  // Detail sheet — all 2026 sites for this division
+  const siteRows = [["Rest #","SIP ID","FZ Name","FZ POD","PLK POD","Status","Risk Level","Last Comment"]];
+  const sites = divisionName === "US&C Consolidated"
+    ? ALL_DATA.filter(r => is2026(r))
+    : ALL_DATA.filter(r => r.division === divisionName && is2026(r));
+  sites.forEach(s => siteRows.push([s.restNum||"",s.sipId||"",s.fzName||"",s.fzPod||"",s.plkPod||"",s.status||"",s.riskLevel||"",s.lastComment||""]));
+  const ws2 = XLSX.utils.aoa_to_sheet(siteRows);
+  ws2["!cols"] = [10,12,20,12,12,12,12,40].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb, ws2, "Site Detail");
+
+  XLSX.writeFile(wb, `Waterfall_${divisionName.replace(/[^a-zA-Z0-9 ]/g,"_")}.xlsx`);
+}
+
+// ── Data fetch ─────────────────────────────────────────────
 async function fetchData() {
   try {
-    console.log("Fetching pipeline data from API...");
     const res = await fetch(API);
-    console.log("Response status:", res.status);
-    
-    if (!res.ok) {
-      const errorText = await res.text();
-      console.error("Server error:", errorText);
-      throw new Error(`Server responded with ${res.status}: ${errorText}`);
-    }
-    
+    if (!res.ok) throw new Error(`Server responded with ${res.status}`);
     const data = await res.json();
-    console.log("Received data:", data);
-    
-    if (!data.rows || !data.budgets) {
-      console.error("Invalid data structure:", data);
-      throw new Error("Invalid data structure returned from API");
-    }
+    if (!data.rows || !data.budgets) throw new Error("Invalid data structure returned from API");
 
     ALL_DATA = data.rows;
-    BUDGETS = data.budgets;
-    
-    console.log("Total rows:", ALL_DATA.length);
-    console.log("Budgets:", BUDGETS);
+    BUDGETS  = data.budgets;
 
     document.getElementById("loading-overlay").style.display = "none";
     document.getElementById("app").style.display = "block";
@@ -781,15 +885,13 @@ async function fetchData() {
     renderTable2026();
     renderTable2027();
     renderWaterfallCharts();
-  } catch (e) {
+  } catch(e) {
     document.getElementById("loading-overlay").style.display = "none";
-    alert("Error loading pipeline data: " + e.message + "\n\nCheck browser console (F12) for details.");
-    console.error("Full error:", e);
+    alert("Error loading pipeline data: " + e.message);
   }
 }
 
 fetchData();
 </script>
-
 </body>
 </html>
