@@ -12,7 +12,7 @@ ORANGE  = "E8521A"  # status stages
 PURPLE  = "7B2D8B"  # FY BU
 RED     = "C1272D"  # Upside
 TEAL    = "00A99D"  # Budget
-NO_FILL = "00FFFFFF"  # fully transparent (invisible base series)
+WHITE   = "FFFFFF"    # chart background — makes base series invisible
 
 HEADER_FILL = PatternFill("solid", fgColor="374151")
 STRIPE_FILL = PatternFill("solid", fgColor="F3F4F6")
@@ -149,14 +149,13 @@ def build_xlsx(payload):
     chart.y_axis.delete         = True
     chart.x_axis.tickLblPos     = "low"
 
-    # Series 1: invisible base
+    # Series 1: base series — white fill makes it invisible against chart background
     base_ref = Reference(ws, min_col=2, min_row=data_start, max_row=data_end)
     chart.add_data(base_ref)
     base_ser = chart.series[0]
     base_ser.title = None
-    base_ser.graphicalProperties.solidFill        = NO_FILL
-    base_ser.graphicalProperties.line.solidFill   = NO_FILL
-    base_ser.graphicalProperties.line.noFill      = True
+    base_ser.graphicalProperties.solidFill      = "FFFFFF"
+    base_ser.graphicalProperties.line.solidFill = "FFFFFF"
 
     # Series 2: visible bars
     val_ref = Reference(ws, min_col=3, min_row=data_start, max_row=data_end)
