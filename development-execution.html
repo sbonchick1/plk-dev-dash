@@ -604,8 +604,27 @@ function createWaterfallChart(canvasId, divisionName, data, budget) {
         }
       },
       layout: { padding: { top: 32 } },
-      animation: { onComplete: () => drawLabels(ctx, displayValues) },
-    }
+    },
+    plugins: [{
+      id: "datalabels_" + canvasId,
+      afterDraw(chart) {
+        const meta = chart.getDatasetMeta(1);
+        if (!meta || !meta.data) return;
+        const cCtx = chart.ctx;
+        cCtx.save();
+        cCtx.font = "bold 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
+        cCtx.fillStyle = "#374151";
+        cCtx.textAlign = "center";
+        cCtx.textBaseline = "bottom";
+        displayValues.forEach((val, i) => {
+          if (!val && val !== 0) return;
+          const bar = meta.data[i];
+          if (!bar) return;
+          cCtx.fillText(val, bar.x, bar.y - 4);
+        });
+        cCtx.restore();
+      }
+    }]
   });
 
   // Make bars clickable
@@ -630,26 +649,6 @@ function createWaterfallChart(canvasId, divisionName, data, budget) {
   ctx.style.cursor = "pointer";
 }
 
-// Draw value labels above each bar
-function drawLabels(ctx, displayValues) {
-  const chart = Chart.getChart(ctx);
-  if (!chart) return;
-  const cCtx = chart.ctx;
-  const meta = chart.getDatasetMeta(1); // index 1 = visible bars (index 0 is transparent base)
-  if (!meta || !meta.data) return;
-  cCtx.save();
-  cCtx.font = "bold 12px -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
-  cCtx.fillStyle = "#374151";
-  cCtx.textAlign = "center";
-  cCtx.textBaseline = "bottom";
-  displayValues.forEach((val, i) => {
-    if (!val && val !== 0) return;
-    const bar = meta.data[i];
-    if (!bar) return;
-    cCtx.fillText(val, bar.x, bar.y - 4);
-  });
-  cCtx.restore();
-}
 
 // ── Render all waterfall charts ────────────────────────────
 function renderWaterfallCharts() {
@@ -775,46 +774,70 @@ function exportTable2027() {
 }
 
 // ── Excel export: Waterfall Chart ─────────────────────────
-function exportChartToExcel(canvasId, divisionName) {
+async function exportChartToExcel(canvasId, divisionName) {
   const cd = CHART_DATA_MAP[canvasId];
   if (!cd) return;
 
-  const wb = XLSX.utils.book_new();
-
-  // Summary sheet
-  const summaryRows = [
-    ["Division", divisionName],
-    [],
-    ["Category", "Value"],
-    ...STATUSES.map((s,i) => [s, cd.displayValues[i]]),
-    ["FY BU (Total Pipeline)", cd.fyBU],
-    ["Upside", cd.upsideCount],
-    ["FY BU + Upside", cd.fyBU + cd.upsideCount],
-    ["Opening Budget", cd.budget],
-    ["Gap (FY BU vs Budget)", cd.gap],
-    ["Gap %", cd.budget > 0 ? cd.gap / cd.budget : 0],
-  ];
-  const ws = XLSX.utils.aoa_to_sheet(summaryRows);
-  // Format gap %
-  const gapPctCell = ws[`B${summaryRows.length}`];
-  if (gapPctCell) { gapPctCell.t = "n"; gapPctCell.z = "0%"; }
-  ws["!cols"] = [{wch:30},{wch:14}];
-  XLSX.utils.book_append_sheet(wb, ws, "Waterfall Data");
-
-  // Detail sheet — all 2026 sites for this division
-  const siteRows = [["SIP ID","Rest No","FZ","Address","City","ST","Status","FZ Proj Open Date","PLK Proj Open Date","Risk Level","Last Comments"]];
   const sites = divisionName === "US&C Consolidated"
     ? ALL_DATA.filter(r => is2026(r))
     : ALL_DATA.filter(r => r.division === divisionName && is2026(r));
-  sites.forEach(s => siteRows.push([
-    s.sipId||"", s.restNum||"", s.fz||"", s.address||"", s.city||"", s.state||"",
-    s.status||"", s.fzOpenDate||"", s.plkOpenDate||"", s.riskLevel||"", s.lastComment||""
-  ]));
-  const ws2 = XLSX.utils.aoa_to_sheet(siteRows);
-  ws2["!cols"] = [12,10,20,24,16,6,12,16,16,12,40].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb, ws2, "Site Detail");
 
-  XLSX.writeFile(wb, `Waterfall_${divisionName.replace(/[^a-zA-Z0-9 ]/g,"_")}.xlsx`);
+  const payload = {
+    divisionName,
+    labels:        cd.labels,
+    displayValues: cd.displayValues,
+    budget:        cd.budget,
+    fyBU:          cd.fyBU,
+    upsideCount:   cd.upsideCount,
+    gap:           cd.gap,
+    sites: sites.map(s => ({
+      sipId:       s.sipId      || "",
+      restNum:     s.restNum    || "",
+      fz:          s.fz         || "",
+      address:     s.address    || "",
+      city:        s.city       || "",
+      state:       s.state      || "",
+      status:      s.status     || "",
+      fzOpenDate:  s.fzOpenDate || "",
+      plkOpenDate: s.plkOpenDate|| "",
+      riskLevel:   s.riskLevel  || "",
+      lastComment: s.lastComment|| "",
+    }))
+  };
+
+  // Show loading state on the button
+  const btn = event.currentTarget;
+  const origText = btn.innerHTML;
+  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="15" height="15"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Exporting…';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch("/api/export-chart", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: "Unknown error" }));
+      throw new Error(err.error || `Server error ${res.status}`);
+    }
+
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `Waterfall_${divisionName.replace(/[^a-zA-Z0-9 ]/g,"_")}.xlsx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    alert("Export failed: " + e.message);
+  } finally {
+    btn.innerHTML = origText;
+    btn.disabled  = false;
+  }
 }
 
 // ── Data fetch ─────────────────────────────────────────────
