@@ -44,11 +44,73 @@ module.exports = async function(req, res) {
       return res.status(500).json({ error: "Failed to parse budget response", raw: budgetText.slice(0, 300) }); 
     }
 
-    // Return the RAW budget sheet so we can see exactly what Smartsheet gives us
-    return res.status(200).json({
-      budgetSheetName: budgetData.name,
-      budgetColumns: budgetData.columns,
-      budgetRows: budgetData.rows.slice(0, 15)
+    // Build column map for pipeline
+    const colMap = {};
+    pipelineData.columns.forEach(function(col, i) { colMap[col.title] = i; });
+
+    function get(row, title) {
+      const idx = colMap[title];
+      if (idx === undefined) return null;
+      const cell = row.cells[idx];
+      if (!cell) return null;
+      if (cell.displayValue !== undefined) return cell.displayValue;
+      if (cell.value !== undefined) return cell.value;
+      return null;
+    }
+
+    // Parse pipeline rows
+    const rows = pipelineData.rows.map(function(row) {
+      return {
+        division: get(row, "Division"),
+        status: get(row, "Status"),
+        riskLevel: get(row, "Risk Level"),
+      };
+    }).filter(function(r) {
+      return r.division && r.status;
+    });
+
+    // Get column IDs for "A" (division) and "B" (openings budget) by title
+    const colA = budgetData.columns.find(function(c) { return c.title === "A"; });
+    const colB = budgetData.columns.find(function(c) { return c.title === "B"; });
+
+    if (!colA || !colB) {
+      return res.status(500).json({ 
+        error: "Could not find budget columns A or B",
+        foundColumns: budgetData.columns.map(function(c) { return c.title; })
+      });
+    }
+
+    const colAId = colA.id;
+    const colBId = colB.id;
+
+    // Look up a cell value by columnId (handles sparse rows correctly)
+    function getCellById(row, columnId) {
+      const cell = row.cells.find(function(c) { return c.columnId === columnId; });
+      if (!cell) return null;
+      if (cell.value !== undefined) return cell.value;
+      return null;
+    }
+
+    // Budget data rows 3-8 = API index 2-7
+    const budgets = {};
+    budgetData.rows.forEach(function(row, index) {
+      if (index < 2 || index > 7) return;
+
+      const div = getCellById(row, colAId);
+      const budgetRaw = getCellById(row, colBId);
+      const budget = typeof budgetRaw === 'number'
+        ? budgetRaw
+        : parseFloat(String(budgetRaw || "").replace(/[,$]/g, ""));
+
+      if (div && !isNaN(budget) && budget > 0) {
+        budgets[div] = budget;
+      }
+    });
+
+    res.status(200).json({ 
+      rows: rows, 
+      budgets: budgets,
+      lastUpdated: new Date().toISOString()
     });
 
   } catch(err) {
