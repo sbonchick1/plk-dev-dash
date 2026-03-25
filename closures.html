@@ -284,13 +284,14 @@ td.border-l{border-left:2px solid #e5e7eb;}
           <div class="chart-header">
             <div class="chart-header-left">
               <div class="chart-title-main">Closure LE</div>
-              <div class="chart-subtitle">2026 LE by reason · stacked by PLK control · click to drill down</div>
+              <div class="chart-subtitle">2026 LE by reason · waterfall · PLK controlled vs non-controlled · click to drill down</div>
             </div>
           </div>
           <canvas id="chart-le-reasons" class="chart-canvas"></canvas>
           <div class="chart-legend">
             <div class="legend-item"><div class="legend-swatch" style="background:#7B2D8B;"></div>PLK Controlled</div>
             <div class="legend-item"><div class="legend-swatch" style="background:#C1272D;"></div>Non-Controlled</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#00A99D;"></div>Total</div>
           </div>
         </div>
         <!-- RIGHT: Additional Closure Risk (LE Opp) -->
@@ -298,13 +299,14 @@ td.border-l{border-left:2px solid #e5e7eb;}
           <div class="chart-header">
             <div class="chart-header-left">
               <div class="chart-title-main">Additional Closure Risk</div>
-              <div class="chart-subtitle">2026 LE (Opp) by reason · stacked by PLK control · click to drill down</div>
+              <div class="chart-subtitle">2026 LE (Opp) by reason · waterfall · PLK controlled vs non-controlled · click to drill down</div>
             </div>
           </div>
           <canvas id="chart-opp-reasons" class="chart-canvas"></canvas>
           <div class="chart-legend">
             <div class="legend-item"><div class="legend-swatch" style="background:#7B2D8B;"></div>PLK Controlled</div>
             <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Non-Controlled</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#00A99D;"></div>Total</div>
           </div>
         </div>
       </div>
@@ -510,8 +512,11 @@ function renderTable2026() {
   document.getElementById("tbody-2026").innerHTML=html;
 }
 
-// ── Reason Charts (side by side, stacked PLK Controlled vs Non-Controlled) ──
-function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor) {
+// ── Reason Charts — waterfall, split PLK Controlled / Non-Controlled ─────────
+// Each bar builds cumulatively on the previous (waterfall stacking).
+// Within each bar: bottom = PLK Controlled (purple), top = Non-Controlled (red/orange).
+// A standalone "Total" bar on the far right shows the grand total in a distinct color.
+function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const reasonCounts={};
   ALL_REASONS.forEach(r=>reasonCounts[r]={ctrl:0,nonCtrl:0});
   rows.forEach(r=>{
@@ -520,69 +525,136 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor) {
     else reasonCounts[reason].nonCtrl++;
   });
 
-  // Only show reasons with data
   const activeReasons=ALL_REASONS.filter(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl>0);
-  const ctrlData=activeReasons.map(r=>reasonCounts[r].ctrl);
-  const nonCtrlData=activeReasons.map(r=>reasonCounts[r].nonCtrl);
-  const totals=activeReasons.map(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl);
+  const grandTotal=rows.length;
+
+  // All labels including the trailing "Total" bar
+  const labels=[...activeReasons,"Total"];
+  const n=labels.length;
+
+  // Build waterfall base + ctrl portion + nonCtrl portion for each reason bar,
+  // then the standalone Total bar (base=0, full height = grandTotal)
+  const baseData=[], ctrlData=[], nonCtrlData=[];
+  let cumulative=0;
+  activeReasons.forEach(reason=>{
+    const ctrl=reasonCounts[reason].ctrl;
+    const nonCtrl=reasonCounts[reason].nonCtrl;
+    baseData.push(cumulative);       // invisible lift
+    ctrlData.push(ctrl);             // PLK Controlled portion (bottom of visible)
+    nonCtrlData.push(nonCtrl);       // Non-Controlled portion (top of visible)
+    cumulative+=ctrl+nonCtrl;
+  });
+  // Total bar — standalone from 0
+  baseData.push(0);
+  ctrlData.push(0);                  // no ctrl split on total bar
+  nonCtrlData.push(0);               // handled separately
+
+  // Per-bar display labels (shown above each bar)
+  // For reason bars: individual count; for Total: grandTotal
+  const displayVals=[...activeReasons.map(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl), grandTotal];
 
   const ctx=document.getElementById(canvasId);
   new Chart(ctx,{
     type:"bar",
     data:{
-      labels:activeReasons,
+      labels,
       datasets:[
-        {label:"PLK Controlled",data:ctrlData,backgroundColor:ctrlColor,stack:"s"},
-        {label:"Non-Controlled", data:nonCtrlData,backgroundColor:nonCtrlColor,stack:"s"}
+        // Dataset 0: invisible base (waterfall lift)
+        {label:"_base", data:baseData,
+         backgroundColor:"rgba(0,0,0,0)", borderColor:"rgba(0,0,0,0)",
+         borderWidth:0, stack:"wf"},
+        // Dataset 1: PLK Controlled (bottom visible portion)
+        {label:"PLK Controlled", data:ctrlData,
+         backgroundColor:labels.map((_,i)=>i===n-1?totalColor:ctrlColor),
+         borderRadius:0, stack:"wf"},
+        // Dataset 2: Non-Controlled (top visible portion)
+        {label:"Non-Controlled", data:nonCtrlData,
+         backgroundColor:labels.map((_,i)=>i===n-1?"rgba(0,0,0,0)":nonCtrlColor),
+         borderRadius:4, stack:"wf"},
+        // Dataset 3: Total bar value (standalone, base=0, starts fresh)
+        {label:"_total", data:labels.map((_,i)=>i===n-1?grandTotal:0),
+         backgroundColor:totalColor, borderRadius:4, stack:"wf2"},
       ]
     },
     options:{
-      responsive:true,maintainAspectRatio:true,
+      responsive:true, maintainAspectRatio:true,
       plugins:{
         legend:{display:false},
-        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
+        tooltip:{
+          backgroundColor:"#1f2937", titleColor:"white", bodyColor:"white",
+          filter:item=>item.datasetIndex>=1 && item.datasetIndex<=3,
           callbacks:{
-            title:ctx=>[ctx[0].label],
-            label:ctx=>`${ctx.dataset.label}: ${ctx.raw}`,
+            title:ctx=>[labels[ctx[0].dataIndex]],
+            label:ctx=>{
+              const i=ctx.dataIndex, lbl=labels[i];
+              if(lbl==="Total") return `Total: ${grandTotal}`;
+              if(ctx.datasetIndex===1) return `PLK Controlled: ${reasonCounts[lbl]?.ctrl||0}`;
+              if(ctx.datasetIndex===2) return `Non-Controlled: ${reasonCounts[lbl]?.nonCtrl||0}`;
+              return "";
+            },
             afterBody:ctx=>{
-              const idx=ctx[0].dataIndex;
-              return[`Total: ${totals[idx]}`];
+              const i=ctx[0].dataIndex, lbl=labels[i];
+              if(lbl==="Total") return[];
+              const barTotal=reasonCounts[lbl]?.ctrl+reasonCounts[lbl]?.nonCtrl||0;
+              let run=0;
+              for(let j=0;j<=i;j++) run+=reasonCounts[activeReasons[j]]?.ctrl+reasonCounts[activeReasons[j]]?.nonCtrl||0;
+              return[`Bar Total: ${barTotal}`, `Running Total: ${run}`];
             }
           }
         }
       },
       scales:{
-        x:{stacked:true,grid:{display:false},border:{display:false},
+        x:{stacked:true, grid:{display:false}, border:{display:false},
            ticks:{color:"#374151",font:{size:10},maxRotation:35}},
-        y:{stacked:true,grid:{color:"#f0f0f0"},border:{display:false},
-           ticks:{color:"#9ca3af",font:{size:10},stepSize:1}}
+        y:{stacked:true, grid:{display:false}, border:{display:false},
+           ticks:{display:false}, beginAtZero:true}
       },
-      layout:{padding:{top:24}}
+      layout:{padding:{top:28}}
     },
     plugins:[{
-      id:"totals_"+canvasId,
+      id:"labels_"+canvasId,
       afterDraw(chart){
-        const ds0=chart.getDatasetMeta(0),ds1=chart.getDatasetMeta(1);
-        if(!ds0?.data||!ds1?.data)return;
+        // Draw value above each bar
+        // For reason bars use meta of dataset 2 (top of stacked ctrl+nonCtrl)
+        // For Total bar use dataset 3
         const cCtx=chart.ctx; cCtx.save();
         cCtx.font="bold 11px -apple-system,sans-serif";
         cCtx.fillStyle="#374151"; cCtx.textAlign="center"; cCtx.textBaseline="bottom";
-        totals.forEach((val,i)=>{
-          if(!val)return;
-          // use the top of the non-ctrl bar (second dataset) if it has data, else ctrl bar
-          const bar=ds1.data[i]&&nonCtrlData[i]>0?ds1.data[i]:ds0.data[i];
-          if(bar) cCtx.fillText(val,bar.x,bar.y-3);
+
+        const meta2=chart.getDatasetMeta(2); // non-ctrl (top of reason bars)
+        const meta3=chart.getDatasetMeta(3); // total bar
+
+        displayVals.forEach((val,i)=>{
+          if(!val) return;
+          let bar;
+          if(i===n-1) {
+            // Total bar: use dataset 3
+            bar=meta3?.data[i];
+          } else {
+            // Reason bar: use whichever dataset is on top
+            // If nonCtrl > 0 use meta2, else use meta1 (ctrl bar)
+            const meta1=chart.getDatasetMeta(1);
+            bar=nonCtrlData[i]>0 ? meta2?.data[i] : meta1?.data[i];
+          }
+          if(bar) cCtx.fillText(val, bar.x, bar.y-3);
         });
         cCtx.restore();
       }
     }]
   });
 
-  // Click to drill down by reason
+  // Click drill-down — ignore Total bar and base dataset
   ctx.addEventListener("click",function(e){
-    const chart=Chart.getChart(ctx); if(!chart)return;
-    const pts=chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false); if(!pts.length)return;
-    const reason=activeReasons[pts[0].index];
+    const ch=Chart.getChart(ctx); if(!ch)return;
+    const pts=ch.getElementsAtEventForMode(e,"nearest",{intersect:true},false); if(!pts.length)return;
+    const i=pts[0].index;
+    if(i===n-1){
+      // Clicked Total bar — open all rows for this bucket
+      const bucket=canvasId.includes("opp")?"LE (Opp)":"LE";
+      openDrillDown({bucket},`US&C · ${bucket} · All Reasons`,`All divisions`);
+      return;
+    }
+    const reason=activeReasons[i];
     const bucket=canvasId.includes("opp")?"LE (Opp)":"LE";
     openDrillDown({bucket,reason},`US&C · ${bucket} · ${reason}`,`All divisions · ${bucket}`);
   });
@@ -590,8 +662,10 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor) {
 }
 
 function renderReasonCharts(){
-  buildReasonChart("chart-le-reasons",  ALL_DATA.filter(r=>isLE(r)),    "#7B2D8B","#C1272D");
-  buildReasonChart("chart-opp-reasons", ALL_DATA.filter(r=>isLEOpp(r)), "#7B2D8B","#E8521A");
+  // LE chart: ctrl=purple, nonCtrl=dark red, total=teal (distinct from both)
+  buildReasonChart("chart-le-reasons",  ALL_DATA.filter(r=>isLE(r)),    "#7B2D8B","#C1272D","#00A99D");
+  // LE Opp chart: ctrl=purple, nonCtrl=orange, total=teal
+  buildReasonChart("chart-opp-reasons", ALL_DATA.filter(r=>isLEOpp(r)), "#7B2D8B","#E8521A","#00A99D");
 }
 
 // ── Controllable by Division ─────────────────────────────────────────────────
