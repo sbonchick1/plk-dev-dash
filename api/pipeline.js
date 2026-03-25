@@ -91,10 +91,11 @@ module.exports = async function(req, res) {
       return null;
     }
 
-    // Parse budget rows 2-10 (0-based index 0-8)
+    // Smartsheet rows are 0-indexed in the API
+    // Sheet rows 3-8 = API index 2-7
     const budgets = {};
     budgetData.rows.forEach(function(row, index) {
-      if (index < 0 || index > 8) return;
+      if (index < 2 || index > 7) return;
 
       const div = getBudget(row, "Division");
       const budgetRaw = getBudget(row, "B");
@@ -110,7 +111,7 @@ module.exports = async function(req, res) {
     res.status(200).json({ 
       rows: rows, 
       budgets: budgets,
-      lastUpdated: new Date().toISOString() 
+      lastUpdated: new Date().toISOString()
     });
   } catch(err) {
     res.status(500).json({ error: err.message });
