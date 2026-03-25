@@ -30,8 +30,8 @@ STATUSES    = ["Prospect", "SA", "PC", "Permitting", "UC", "Open"]
 
 def build_xlsx(payload):
     division_name = payload.get("divisionName", "Division")
-    labels  = payload.get("labels", [])
-    values  = payload.get("displayValues", [])
+    labels  = payload.get("labels", [])          # ["Prospect","SA",…,"FY BU","Upside","Budget"]
+    values  = payload.get("displayValues", [])   # raw bar heights (individual counts)
     budget  = payload.get("budget", 0)
     fy_bu   = payload.get("fyBU", 0)
     upside  = payload.get("upsideCount", 0)
@@ -41,22 +41,41 @@ def build_xlsx(payload):
     bar_labels = STATUSES + ["FY BU", "Upside", "Budget"]
     n = len(bar_labels)
 
-    # Build waterfall base & bar values (mirrors JS logic)
-    base_vals = []
-    bar_vals  = []
+    # ── Build Waterfall (base) and # SIPs (count) for each stage ─────────────
+    # Waterfall = where the bar starts (the invisible lift value)
+    # # SIPs    = the actual count for that stage (bar height)
+    #
+    # Rules:
+    #   Prospect → starts at 0
+    #   SA       → starts at sum(Prospect)
+    #   PC       → starts at sum(Prospect + SA)
+    #   ...each status builds on previous cumulative
+    #   FY BU    → starts at 0 (standalone)
+    #   Upside   → starts at FY BU (stacks on top of FY BU)
+    #   Budget   → starts at 0 (standalone)
+
+    waterfall_vals = []   # invisible base (where bar starts)
+    sip_vals       = []   # visible bar height (# SIPs / count)
+
     cumulative = 0
     for lbl in STATUSES:
         idx = labels.index(lbl) if lbl in labels else -1
         v = values[idx] if idx >= 0 else 0
-        base_vals.append(cumulative)
-        bar_vals.append(v)
+        waterfall_vals.append(cumulative)   # starts where previous ended
+        sip_vals.append(v)
         cumulative += v
-    # FY BU — standalone from 0
-    base_vals.append(0);      bar_vals.append(fy_bu)
-    # Upside — base is fy_bu, stacks on top
-    base_vals.append(fy_bu);  bar_vals.append(upside)
-    # Budget — standalone from 0
-    base_vals.append(0);      bar_vals.append(budget)
+
+    # FY BU — starts at 0
+    waterfall_vals.append(0)
+    sip_vals.append(fy_bu)
+
+    # Upside — starts at FY BU (stacks on top)
+    waterfall_vals.append(fy_bu)
+    sip_vals.append(upside)
+
+    # Budget — starts at 0
+    waterfall_vals.append(0)
+    sip_vals.append(budget)
 
     wb = Workbook()
 
@@ -76,46 +95,41 @@ def build_xlsx(payload):
     ws.row_dimensions[1].height = 28
     ws.row_dimensions[2].height = 6
 
-    # ── Summary table header (cols A-C) ───────────────────
-    for col, hdr in enumerate(["Stage", "Count", "Running Total"], 1):
+    # ── Table header: Stage | Waterfall | # SIPs ──────────
+    headers = ["Stage", "Waterfall", "# SIPs"]
+    for col, hdr in enumerate(headers, 1):
         c = ws.cell(row=3, column=col, value=hdr)
         c.font      = Font(bold=True, color="FFFFFF", size=10)
         c.fill      = HEADER_FILL
         c.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[3].height = 18
 
+    # ── Data rows ─────────────────────────────────────────
     table_row = 4
-    running = 0
     for i, lbl in enumerate(bar_labels):
         fill = STRIPE_FILL if i % 2 == 0 else WHITE_FILL
         hc   = COLOR_MAP.get(lbl, "6B7280")
-        v    = bar_vals[i]
-
-        # Running total: statuses accumulate; FY BU = fy_bu; Upside = fy_bu+upside; Budget = budget
-        if lbl in STATUSES:
-            running += v
-            rt = running
-        elif lbl == "FY BU":
-            rt = fy_bu
-        elif lbl == "Upside":
-            rt = fy_bu + upside
-        else:  # Budget
-            rt = budget
+        wf   = waterfall_vals[i]   # where bar starts
+        sip  = sip_vals[i]         # bar height / count
 
         r = table_row + i
+
+        # Col A: Stage
         c1 = ws.cell(row=r, column=1, value=lbl)
         c1.font      = Font(bold=(lbl in ("FY BU", "Budget", "Upside")), color=hc)
         c1.fill      = fill
         c1.alignment = Alignment(horizontal="left", vertical="center")
 
-        c2 = ws.cell(row=r, column=2, value=v)
-        c2.font          = Font(bold=True, color=hc)
+        # Col B: Waterfall (base / where bar starts)
+        c2 = ws.cell(row=r, column=2, value=wf)
+        c2.font          = Font(color="9CA3AF")   # grey — this is metadata not a headline number
         c2.fill          = fill
         c2.alignment     = Alignment(horizontal="center", vertical="center")
         c2.number_format = "0"
 
-        c3 = ws.cell(row=r, column=3, value=rt)
-        c3.font          = Font(color="6B7280")
+        # Col C: # SIPs (actual count)
+        c3 = ws.cell(row=r, column=3, value=sip)
+        c3.font          = Font(bold=True, color=hc)
         c3.fill          = fill
         c3.alignment     = Alignment(horizontal="center", vertical="center")
         c3.number_format = "0"
@@ -124,7 +138,7 @@ def build_xlsx(payload):
 
     table_end = table_row + n - 1
 
-    # ── Summary stats below table ─────────────────────────
+    # ── Summary stats ─────────────────────────────────────
     sr = table_end + 2
     gc = "059669" if gap >= 0 else "DC2626"
 
@@ -133,38 +147,47 @@ def build_xlsx(payload):
         c = ws.cell(row=row, column=2, value=value)
         c.font = Font(bold=True, color=color)
         c.number_format = fmt
+        # Also show in col C for clarity
+        c3 = ws.cell(row=row, column=3, value=value)
+        c3.font = Font(color="9CA3AF")
+        c3.number_format = fmt
 
-    stat_row(sr,   "FY BU",              fy_bu)
-    stat_row(sr+1, "Budget",             budget)
-    stat_row(sr+2, "Gap (FY BU vs Budget)", gap,          "+0;-0;0", gc)
-    stat_row(sr+3, "Gap %",              gap/budget if budget else 0, "0%", gc)
-    stat_row(sr+4, "FY BU + Upside",     fy_bu + upside)
+    stat_row(sr,   "FY BU",                 fy_bu)
+    stat_row(sr+1, "Budget",                budget)
+    stat_row(sr+2, "Gap (FY BU vs Budget)", gap,                  "+0;-0;0", gc)
+    stat_row(sr+3, "Gap %",                 gap/budget if budget else 0, "0%", gc)
+    stat_row(sr+4, "FY BU + Upside",        fy_bu + upside)
 
-    ws.column_dimensions["A"].width = 16
-    ws.column_dimensions["B"].width = 10
-    ws.column_dimensions["C"].width = 14
+    ws.column_dimensions["A"].width = 14
+    ws.column_dimensions["B"].width = 12
+    ws.column_dimensions["C"].width = 10
 
-    # ── Chart data block in cols E/F/G — HIDDEN ───────────
-    # E = labels, F = base (invisible lift), G = bar (visible)
-    # These columns are hidden so they don't show in the sheet
+    # ══════════════════════════════════════════════════════
+    # Chart data block — hidden columns E/F/G
+    # E = labels, F = waterfall base, G = SIP count
+    # ══════════════════════════════════════════════════════
     LABEL_COL = 5   # E
-    BASE_COL  = 6   # F
-    BAR_COL   = 7   # G
+    BASE_COL  = 6   # F  (invisible lift)
+    BAR_COL   = 7   # G  (visible bar = # SIPs)
+
     chart_row_start = 3
     chart_row_end   = chart_row_start + n - 1
 
     for i, lbl in enumerate(bar_labels):
         r = chart_row_start + i
         ws.cell(row=r, column=LABEL_COL, value=lbl)
-        ws.cell(row=r, column=BASE_COL,  value=base_vals[i])
-        ws.cell(row=r, column=BAR_COL,   value=bar_vals[i])
+        ws.cell(row=r, column=BASE_COL,  value=waterfall_vals[i])
+        ws.cell(row=r, column=BAR_COL,   value=sip_vals[i])
 
-    # Hide columns E, F, G completely
     ws.column_dimensions["E"].hidden = True
     ws.column_dimensions["F"].hidden = True
     ws.column_dimensions["G"].hidden = True
 
-    # ── Build the stacked waterfall chart ─────────────────
+    # ══════════════════════════════════════════════════════
+    # Build stacked waterfall chart
+    # Series 1: invisible base (lifts bars to correct position)
+    # Series 2: visible coloured bars (# SIPs)
+    # ══════════════════════════════════════════════════════
     chart = BarChart()
     chart.type      = "col"
     chart.grouping  = "stacked"
@@ -180,7 +203,7 @@ def build_xlsx(payload):
     chart.x_axis.numFmt         = "General"
     chart.x_axis.axPos          = "b"
 
-    # Series 1 — invisible base (white, no labels)
+    # Series 1 — invisible base (white)
     base_ref = Reference(ws, min_col=BASE_COL, min_row=chart_row_start, max_row=chart_row_end)
     base_ser = Series(base_ref, title="base")
     base_ser.graphicalProperties.solidFill      = "FFFFFF"
@@ -190,11 +213,12 @@ def build_xlsx(payload):
 
     # Series 2 — visible coloured bars
     bar_ref = Reference(ws, min_col=BAR_COL, min_row=chart_row_start, max_row=chart_row_end)
-    bar_ser = Series(bar_ref, title="pipeline")
+    bar_ser = Series(bar_ref, title="# SIPs")
     bar_ser.graphicalProperties.solidFill      = "E8521A"
     bar_ser.graphicalProperties.line.solidFill = "FFFFFF"
     bar_ser.graphicalProperties.line.width     = 6350
 
+    # Colour each bar individually
     for i, lbl in enumerate(bar_labels):
         dp = DataPoint(idx=i)
         hc = COLOR_MAP.get(lbl, "9CA3AF")
@@ -202,18 +226,18 @@ def build_xlsx(payload):
         dp.graphicalProperties.line.solidFill = hc
         bar_ser.dPt.append(dp)
 
-    # Data labels above bars
+    # Value labels above bars (show # SIPs)
     dl = DataLabelList()
     dl.showVal = True; dl.showCatName = False; dl.showSerName = False
     dl.showPercent = False; dl.showLegendKey = False; dl.position = "outEnd"
     bar_ser.dLbls = dl
     chart.append(bar_ser)
 
-    # X-axis categories from label column
+    # X-axis categories
     cats = Reference(ws, min_col=LABEL_COL, min_row=chart_row_start, max_row=chart_row_end)
     chart.set_categories(cats)
 
-    # Place chart immediately to the right of the table, starting at row 1
+    # Place chart to the right of the table
     ws.add_chart(chart, "E2")
 
     # ══════════════════════════════════════════════════════
@@ -238,9 +262,9 @@ def build_xlsx(payload):
 
     for ri, s in enumerate(sites, 2):
         row_vals = [
-            s.get("sipId",""),   s.get("restNum",""),  s.get("fz",""),
-            s.get("address",""), s.get("city",""),      s.get("state",""),
-            s.get("status",""),  s.get("fzOpenDate",""),s.get("plkOpenDate",""),
+            s.get("sipId",""),    s.get("restNum",""),   s.get("fz",""),
+            s.get("address",""),  s.get("city",""),       s.get("state",""),
+            s.get("status",""),   s.get("fzOpenDate",""), s.get("plkOpenDate",""),
             s.get("riskLevel",""),s.get("lastComment",""),
         ]
         for col, val in enumerate(row_vals, 1):
@@ -255,7 +279,7 @@ def build_xlsx(payload):
     ws2.auto_filter.ref = f"A1:{get_column_letter(len(hdrs))}1"
 
     # ══════════════════════════════════════════════════════
-    # Save → patch chart XML: numRef → strRef for X-axis
+    # Save → patch chart XML: numRef → strRef for X-axis labels
     # ══════════════════════════════════════════════════════
     pre_buf = io.BytesIO()
     wb.save(pre_buf)
@@ -265,9 +289,7 @@ def build_xlsx(payload):
         f'<pt idx="{i}"><v>{lbl}</v></pt>'
         for i, lbl in enumerate(bar_labels)
     )
-    str_cache = (
-        f'<strCache><ptCount val="{n}"/>{pt_tags}</strCache>'
-    )
+    str_cache = f'<strCache><ptCount val="{n}"/>{pt_tags}</strCache>'
 
     out_buf = io.BytesIO()
     with zipfile.ZipFile(pre_buf, "r") as zin, \
