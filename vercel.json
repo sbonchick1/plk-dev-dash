@@ -1,21 +1,9 @@
 {
   "version": 2,
   "rewrites": [
-    {
-      "source": "/",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/nro-hub",
-      "destination": "/nro-hub.html"
-    },
-    {
-      "source": "/dashboard",
-      "destination": "/dashboard.html"
-    },
-    {
-      "source": "/development-execution",
-      "destination": "/development-execution.html"
-    }
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/nro-hub", "destination": "/nro-hub.html" },
+    { "source": "/dashboard", "destination": "/dashboard.html" },
+    { "source": "/development-execution", "destination": "/development-execution.html" }
   ]
 }
