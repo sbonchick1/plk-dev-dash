@@ -1,11 +1,13 @@
 import json
 import io
-import base64
+import zipfile
+import re
 from http.server import BaseHTTPRequestHandler
 from openpyxl import Workbook
-from openpyxl.chart import BarChart, Reference
+from openpyxl.chart import BarChart, Reference, Series
 from openpyxl.chart.series import DataPoint
-from openpyxl.styles import Font, PatternFill, Alignment, numbers
+from openpyxl.chart.label import DataLabelList
+from openpyxl.styles import Font, PatternFill, Alignment
 from openpyxl.utils import get_column_letter
 
 COLOR_MAP = {
@@ -20,263 +22,336 @@ COLOR_MAP = {
     "Budget":     "00A99D",
 }
 
-HEADER_FILL  = PatternFill("solid", fgColor="374151")
-STRIPE_FILL  = PatternFill("solid", fgColor="F3F4F6")
-WHITE_FILL   = PatternFill("solid", fgColor="FFFFFF")
-ORANGE_COLOR = "E8521A"
-
-STAGE_LABELS = ["Prospect", "SA", "PC", "Permitting", "UC", "Open"]
+HEADER_FILL = PatternFill("solid", fgColor="374151")
+STRIPE_FILL = PatternFill("solid", fgColor="F3F4F6")
+WHITE_FILL  = PatternFill("solid", fgColor="FFFFFF")
+STATUSES    = ["Prospect", "SA", "PC", "Permitting", "UC", "Open"]
 
 
-def build_waterfall_rows(labels, display_values, fy_bu, upside_count, budget):
+def patch_chart_xml(xml, str_cache):
     """
-    Returns (labels, base_values, bar_values) for the waterfall.
-    - Status stages: base = cumulative of prior stages, bar = that stage's count
-    - FY BU:  base = 0, bar = fyBU  (standalone)
-    - Upside: base = fyBU, bar = upsideCount  (stacks on FY BU)
-    - Budget: base = 0, bar = budget  (standalone)
+    1. numRef -> strRef for X-axis labels
+    2. Add xmlns:r + xmlns:a to chartSpace root (openpyxl omits xmlns:r,
+       causing Excel to drop the chart on recovery)
     """
-    stage_vals = display_values[:6]
-    bases = []
-    bars  = []
-    cumulative = 0
-    for val in stage_vals:
-        bases.append(cumulative)
-        bars.append(val)
-        cumulative += val
+    # Patch 1: strRef categories
+    def _replace_cat(m):
+        inner = m.group(1)
+        f_match = re.search(r'<f>(.*?)</f>', inner, re.DOTALL)
+        f_tag = f_match.group(0) if f_match else ""
+        return '<cat><strRef>' + f_tag + str_cache + '</strRef></cat>'
 
-    bases.append(0);     bars.append(fy_bu)
-    bases.append(fy_bu); bars.append(upside_count)
-    bases.append(0);     bars.append(budget)
+    xml = re.sub(
+        r'<cat>\s*<numRef>(.*?)</numRef>\s*</cat>',
+        _replace_cat, xml, flags=re.DOTALL
+    )
 
-    return labels, bases, bars
+    # Patch 2: inject required namespaces onto chartSpace root
+    old_root = 'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart">'
+    new_root = (
+        'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
+        ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
+        ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    )
+    xml = xml.replace('<chartSpace ' + old_root, '<chartSpace ' + new_root, 1)
+
+    # Remove redundant inline xmlns:a (now declared on root)
+    xml = re.sub(
+        r' xmlns:a="http://schemas\.openxmlformats\.org/drawingml/2006/main"',
+        '', xml
+    )
+    # Re-add xmlns:a to root if the sub above also stripped it from root
+    if 'xmlns:a' not in xml[:400]:
+        xml = xml.replace(
+            'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
+            ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">',
+            'xmlns="http://schemas.openxmlformats.org/drawingml/2006/chart"'
+            ' xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"'
+            ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">',
+            1
+        )
+
+    return xml
+
+
+def rezip_with_correct_order(raw_xlsx_bytes, chart_xml_patch_fn):
+    """
+    Re-package the xlsx ZIP with [Content_Types].xml and _rels/.rels FIRST.
+    Excel requires this specific entry ordering or it flags the file as corrupt.
+    Also applies chart_xml_patch_fn to xl/charts/chart1.xml.
+    """
+    # Read all files from original ZIP
+    with zipfile.ZipFile(io.BytesIO(raw_xlsx_bytes), 'r') as zin:
+        all_files = {}
+        for item in zin.infolist():
+            data = zin.read(item.filename)
+            if item.filename == 'xl/charts/chart1.xml':
+                data = chart_xml_patch_fn(data.decode('utf-8')).encode('utf-8')
+            all_files[item.filename] = data
+
+    # Write with mandatory ordering: [Content_Types].xml and _rels/.rels first
+    out_buf = io.BytesIO()
+    with zipfile.ZipFile(out_buf, 'w', zipfile.ZIP_DEFLATED) as zout:
+        for name in ['[Content_Types].xml', '_rels/.rels']:
+            if name in all_files:
+                zout.writestr(name, all_files[name])
+        for name, data in all_files.items():
+            if name not in ('[Content_Types].xml', '_rels/.rels'):
+                zout.writestr(name, data)
+
+    out_buf.seek(0)
+    return out_buf.read()
 
 
 def build_xlsx(payload):
     division_name = payload.get("divisionName", "Division")
-    labels        = payload.get("labels", [])
-    values        = payload.get("displayValues", [])
-    budget        = payload.get("budget", 0)
-    fy_bu         = payload.get("fyBU", 0)
-    upside        = payload.get("upsideCount", 0)
-    gap           = payload.get("gap", 0)
-    sites         = payload.get("sites", [])
+    labels  = payload.get("labels", [])
+    values  = payload.get("displayValues", [])
+    budget  = payload.get("budget", 0)
+    fy_bu   = payload.get("fyBU", 0)
+    upside  = payload.get("upsideCount", 0)
+    gap     = payload.get("gap", 0)
+    sites   = payload.get("sites", [])
 
-    labels, bases, bars = build_waterfall_rows(labels, values, fy_bu, upside, budget)
+    bar_labels = STATUSES + ["FY BU", "Upside", "Budget"]
+    n = len(bar_labels)
+
+    waterfall_vals = []
+    sip_vals = []
+    cumulative = 0
+    for lbl in STATUSES:
+        idx = labels.index(lbl) if lbl in labels else -1
+        v = values[idx] if idx >= 0 else 0
+        waterfall_vals.append(cumulative)
+        sip_vals.append(v)
+        cumulative += v
+    waterfall_vals.append(0);     sip_vals.append(fy_bu)
+    waterfall_vals.append(fy_bu); sip_vals.append(upside)
+    waterfall_vals.append(0);     sip_vals.append(budget)
 
     wb = Workbook()
 
-    # ── Sheet 1: Waterfall Chart ──────────────────────────────
+    # ── Sheet 1: Waterfall Chart ──────────────────────────
     ws = wb.active
     ws.title = "Waterfall Chart"
     ws.sheet_view.showGridLines = False
 
-    # Title
-    ws.merge_cells("A1:H1")
-    title_cell = ws["A1"]
-    title_cell.value = f"{division_name} — 2026 Pipeline Waterfall"
-    title_cell.font  = Font(bold=True, size=14, color=ORANGE_COLOR)
-    title_cell.alignment = Alignment(horizontal="left", vertical="center")
-    ws.row_dimensions[1].height = 24
-
-    # Blank row
+    ws.merge_cells("A1:C1")
+    t = ws["A1"]
+    t.value = division_name + " \u2014 2026 Pipeline Waterfall"
+    t.font = Font(bold=True, size=14, color="E8521A")
+    t.alignment = Alignment(horizontal="left", vertical="center")
+    ws.row_dimensions[1].height = 28
     ws.row_dimensions[2].height = 6
 
-    # Column headers (row 3)
-    for col, header in enumerate(["Category", "Base", "# SIPs"], 1):
-        cell = ws.cell(row=3, column=col, value=header)
-        cell.font      = Font(bold=True, color="FFFFFF", size=10)
-        cell.fill      = HEADER_FILL
-        cell.alignment = Alignment(horizontal="center", vertical="center")
+    for col, hdr in enumerate(["Stage", "Waterfall", "# SIPs"], 1):
+        c = ws.cell(row=3, column=col, value=hdr)
+        c.font = Font(bold=True, color="FFFFFF", size=10)
+        c.fill = HEADER_FILL
+        c.alignment = Alignment(horizontal="center", vertical="center")
     ws.row_dimensions[3].height = 18
 
-    # Data rows (rows 4+)
-    data_start_row = 4
-    for i, (lbl, base, bar) in enumerate(zip(labels, bases, bars)):
-        row_num = data_start_row + i
-        fill    = STRIPE_FILL if i % 2 == 0 else WHITE_FILL
-        hex_col = COLOR_MAP.get(lbl, "6B7280")
+    table_row = 4
+    for i, lbl in enumerate(bar_labels):
+        fill = STRIPE_FILL if i % 2 == 0 else WHITE_FILL
+        hc = COLOR_MAP.get(lbl, "6B7280")
+        r = table_row + i
 
-        lbl_cell = ws.cell(row=row_num, column=1, value=lbl)
-        lbl_cell.font      = Font(bold=(lbl in ("FY BU", "Budget")), color=hex_col)
-        lbl_cell.fill      = fill
-        lbl_cell.alignment = Alignment(horizontal="left", vertical="center")
+        c1 = ws.cell(row=r, column=1, value=lbl)
+        c1.font = Font(bold=(lbl in ("FY BU", "Budget", "Upside")), color=hc)
+        c1.fill = fill
+        c1.alignment = Alignment(horizontal="left", vertical="center")
 
-        base_cell = ws.cell(row=row_num, column=2, value=base)
-        base_cell.font      = Font(color="9CA3AF")
-        base_cell.fill      = fill
-        base_cell.alignment = Alignment(horizontal="center", vertical="center")
-        base_cell.number_format = "0"
+        c2 = ws.cell(row=r, column=2, value=waterfall_vals[i])
+        c2.font = Font(color="9CA3AF")
+        c2.fill = fill
+        c2.alignment = Alignment(horizontal="center", vertical="center")
+        c2.number_format = "0"
 
-        bar_cell = ws.cell(row=row_num, column=3, value=bar)
-        bar_cell.font      = Font(bold=True, color=hex_col)
-        bar_cell.fill      = fill
-        bar_cell.alignment = Alignment(horizontal="center", vertical="center")
-        bar_cell.number_format = "0"
+        c3 = ws.cell(row=r, column=3, value=sip_vals[i])
+        c3.font = Font(bold=True, color=hc)
+        c3.fill = fill
+        c3.alignment = Alignment(horizontal="center", vertical="center")
+        c3.number_format = "0"
 
-        ws.row_dimensions[row_num].height = 17
+        ws.row_dimensions[r].height = 17
 
-    data_end_row = data_start_row + len(labels) - 1
+    table_end = table_row + n - 1
 
-    # Summary block
-    sum_row = data_end_row + 3
-    ws.cell(sum_row, 1, "Summary").font = Font(bold=True, size=11, color="374151")
+    sr = table_end + 2
+    gc = "059669" if gap >= 0 else "DC2626"
 
-    gap_color = "059669" if gap >= 0 else "DC2626"
+    def stat_row(row, label, value, fmt="0", color="374151"):
+        ws.cell(row=row, column=1, value=label).font = Font(color="6B7280")
+        c = ws.cell(row=row, column=2, value=value)
+        c.font = Font(bold=True, color=color)
+        c.number_format = fmt
 
-    ws.cell(sum_row+1, 1, "FY BU vs Budget Gap").font = Font(color="6B7280")
-    ws.cell(sum_row+1, 2, gap).font                   = Font(bold=True, color=gap_color)
-    ws.cell(sum_row+1, 2).number_format               = '+0;-0;0'
+    stat_row(sr,   "FY BU",                 fy_bu)
+    stat_row(sr+1, "Budget",                budget)
+    stat_row(sr+2, "Gap (FY BU vs Budget)", gap,                          "+0;-0;0", gc)
+    stat_row(sr+3, "Gap %",                 gap / budget if budget else 0, "0%",     gc)
+    stat_row(sr+4, "FY BU + Upside",        fy_bu + upside)
 
-    ws.cell(sum_row+2, 1, "Gap %").font               = Font(color="6B7280")
-    pct_cell = ws.cell(sum_row+2, 2, gap / budget if budget else 0)
-    pct_cell.font          = Font(bold=True, color=gap_color)
-    pct_cell.number_format = "0%"
-
-    ws.cell(sum_row+3, 1, "FY BU + Upside").font  = Font(color="6B7280")
-    ws.cell(sum_row+3, 2, fy_bu + upside).font     = Font(bold=True, color="374151")
-
-    # Column widths
-    ws.column_dimensions["A"].width = 17
-    ws.column_dimensions["B"].width = 10
+    ws.column_dimensions["A"].width = 14
+    ws.column_dimensions["B"].width = 12
     ws.column_dimensions["C"].width = 10
 
-    # ── Embedded Stacked Bar Chart (waterfall) ────────────────
+    # ── Stacked waterfall chart ───────────────────────────
     chart = BarChart()
-    chart.type      = "col"
-    chart.grouping  = "stacked"
-    chart.overlap   = 100
-    chart.title     = f"{division_name} — 2026 Pipeline"
-    chart.width     = 24
-    chart.height    = 15
-    chart.legend    = None
-
+    chart.type     = "col"
+    chart.grouping = "stacked"
+    chart.overlap  = 100
+    chart.title    = division_name + " \u2014 2026 Pipeline"
+    chart.width    = 26
+    chart.height   = 16
+    chart.legend   = None
     chart.y_axis.majorGridlines = None
     chart.y_axis.delete         = True
+    chart.x_axis.delete         = False
     chart.x_axis.tickLblPos     = "low"
+    chart.x_axis.numFmt         = "General"
+    chart.x_axis.axPos          = "b"
 
-    # Base series (col B) — white fill makes it invisible
-    base_ref = Reference(ws, min_col=2, min_row=data_start_row, max_row=data_end_row)
-    chart.add_data(base_ref, titles_from_data=False)
-    base_ser = chart.series[0]
+    base_ref = Reference(ws, min_col=2, min_row=table_row, max_row=table_end)
+    base_ser = Series(base_ref, title="base")
     base_ser.graphicalProperties.solidFill      = "FFFFFF"
     base_ser.graphicalProperties.line.solidFill = "FFFFFF"
+    base_ser.graphicalProperties.line.width     = 0
+    chart.append(base_ser)
 
-    # Visible bar series (col C)
-    bar_ref = Reference(ws, min_col=3, min_row=data_start_row, max_row=data_end_row)
-    chart.add_data(bar_ref, titles_from_data=False)
-    ser = chart.series[1]
-    ser.graphicalProperties.solidFill      = "E8521A"
-    ser.graphicalProperties.line.solidFill = "FFFFFF"
+    bar_ref = Reference(ws, min_col=3, min_row=table_row, max_row=table_end)
+    bar_ser = Series(bar_ref, title="# SIPs")
+    bar_ser.graphicalProperties.solidFill      = "E8521A"
+    bar_ser.graphicalProperties.line.solidFill = "FFFFFF"
+    bar_ser.graphicalProperties.line.width     = 6350
 
-    # Per-bar colors on visible series
-    for i, lbl in enumerate(labels):
-        hex_col = COLOR_MAP.get(lbl, "9CA3AF")
+    for i, lbl in enumerate(bar_labels):
         dp = DataPoint(idx=i)
-        dp.graphicalProperties.solidFill      = hex_col
-        dp.graphicalProperties.line.solidFill = hex_col
-        ser.dPt.append(dp)
+        hc = COLOR_MAP.get(lbl, "9CA3AF")
+        dp.graphicalProperties.solidFill      = hc
+        dp.graphicalProperties.line.solidFill = hc
+        bar_ser.dPt.append(dp)
 
-    # Data labels above bars
-    from openpyxl.chart.label import DataLabel, DataLabelList
     dl = DataLabelList()
-    dl.showVal       = True
-    dl.showCatName   = False
-    dl.showSerName   = False
-    dl.showPercent   = False
+    dl.showVal = True
+    dl.showCatName = False
+    dl.showSerName = False
+    dl.showPercent = False
     dl.showLegendKey = False
-    dl.position      = "outEnd"
-    ser.dLbls = dl
+    dl.position = "outEnd"
+    bar_ser.dLbls = dl
+    chart.append(bar_ser)
 
-    # Categories from col A
-    cats_ref = Reference(ws, min_col=1, min_row=data_start_row, max_row=data_end_row)
-    chart.set_categories(cats_ref)
-
+    cats = Reference(ws, min_col=1, min_row=table_row, max_row=table_end)
+    chart.set_categories(cats)
     ws.add_chart(chart, "E2")
 
-    # ── Sheet 2: Site Detail ──────────────────────────────────
+    # ── Sheet 2: Site Detail ──────────────────────────────
     ws2 = wb.create_sheet("Site Detail")
     ws2.sheet_view.showGridLines = False
 
-    site_headers = [
-        "SIP ID", "Rest No", "FZ", "Address", "City", "ST",
-        "Status", "FZ Proj Open Date", "PLK Proj Open Date",
-        "Risk Level", "Last Comments"
-    ]
-    col_widths = [12, 10, 20, 24, 16, 6, 12, 18, 18, 12, 44]
+    hdrs   = ["SIP ID", "Rest No", "FZ", "Address", "City", "ST", "Status",
+              "FZ Proj Open Date", "PLK Proj Open Date", "Risk Level", "Last Comments"]
+    widths = [12, 10, 20, 24, 16, 6, 12, 18, 18, 12, 44]
 
-    for col, (h, w) in enumerate(zip(site_headers, col_widths), 1):
-        cell = ws2.cell(row=1, column=col, value=h)
-        cell.font      = Font(bold=True, color="FFFFFF", size=10)
-        cell.fill      = HEADER_FILL
-        cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=False)
+    for col, (h, w) in enumerate(zip(hdrs, widths), 1):
+        c = ws2.cell(row=1, column=col, value=h)
+        c.font = Font(bold=True, color="FFFFFF", size=10)
+        c.fill = HEADER_FILL
+        c.alignment = Alignment(horizontal="center", vertical="center")
         ws2.column_dimensions[get_column_letter(col)].width = w
     ws2.row_dimensions[1].height = 18
 
-    risk_colors = {
-        "low":    "D1FAE5", "medium": "FEF3C7", "high": "FEE2E2",
-        "upside": "EDE9FE", "2027+":  "E0F2FE",
+    risk_fills = {
+        "low":    "D1FAE5",
+        "medium": "FEF3C7",
+        "high":   "FEE2E2",
+        "upside": "EDE9FE",
+        "2027+":  "E0F2FE",
     }
 
-    for row_i, s in enumerate(sites, 2):
+    for ri, s in enumerate(sites, 2):
         row_vals = [
-            s.get("sipId",""), s.get("restNum",""), s.get("fz",""),
-            s.get("address",""), s.get("city",""), s.get("state",""),
-            s.get("status",""), s.get("fzOpenDate",""), s.get("plkOpenDate",""),
-            s.get("riskLevel",""), s.get("lastComment","")
+            s.get("sipId",""),    s.get("restNum",""),   s.get("fz",""),
+            s.get("address",""),  s.get("city",""),       s.get("state",""),
+            s.get("status",""),   s.get("fzOpenDate",""), s.get("plkOpenDate",""),
+            s.get("riskLevel",""), s.get("lastComment",""),
         ]
         for col, val in enumerate(row_vals, 1):
-            cell = ws2.cell(row=row_i, column=col, value=val)
+            cell = ws2.cell(row=ri, column=col, value=val)
             cell.alignment = Alignment(vertical="center", wrap_text=(col == 11))
-        ws2.row_dimensions[row_i].height = 16
-
-        risk_val = s.get("riskLevel","").strip().lower()
-        risk_hex = risk_colors.get(risk_val, None)
-        if risk_hex:
-            ws2.cell(row=row_i, column=10).fill = PatternFill("solid", fgColor=risk_hex)
+        ws2.row_dimensions[ri].height = 16
+        rf = risk_fills.get(s.get("riskLevel", "").strip().lower())
+        if rf:
+            ws2.cell(row=ri, column=10).fill = PatternFill("solid", fgColor=rf)
 
     ws2.freeze_panes = "A2"
-    ws2.auto_filter.ref = f"A1:{get_column_letter(len(site_headers))}1"
+    ws2.auto_filter.ref = "A1:" + get_column_letter(len(hdrs)) + "1"
 
-    buf = io.BytesIO()
-    wb.save(buf)
-    buf.seek(0)
-    return buf.read()
+    # ── Save openpyxl workbook to buffer ──────────────────
+    pre_buf = io.BytesIO()
+    wb.save(pre_buf)
+    pre_buf.seek(0)
+
+    # Build strRef cache for X-axis labels
+    pt_tags = "".join(
+        '<pt idx="' + str(i) + '"><v>' + lbl + '</v></pt>'
+        for i, lbl in enumerate(bar_labels)
+    )
+    str_cache = '<strCache><ptCount val="' + str(n) + '"/>' + pt_tags + '</strCache>'
+
+    # Re-zip with (1) chart XML patches and (2) correct ZIP entry order
+    def apply_patches(xml_str):
+        return patch_chart_xml(xml_str, str_cache)
+
+    return rezip_with_correct_order(pre_buf.read(), apply_patches)
 
 
 class handler(BaseHTTPRequestHandler):
+
     def do_OPTIONS(self):
         self.send_response(200)
-        self._set_cors()
+        self.send_header("Access-Control-Allow-Origin",  "*")
+        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
+        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Content-Length", "0")
         self.end_headers()
 
     def do_POST(self):
-        length  = int(self.headers.get("Content-Length", 0))
-        payload = json.loads(self.rfile.read(length))
-        division_name = payload.get("divisionName", "Division")
-
+        try:
+            length  = int(self.headers.get("Content-Length", 0))
+            payload = json.loads(self.rfile.read(length))
+        except Exception as e:
+            self._respond_error(400, "Bad request: " + str(e))
+            return
         try:
             xlsx_bytes = build_xlsx(payload)
         except Exception as e:
-            self.send_response(500)
-            self._set_cors()
-            self.send_header("Content-Type", "application/json")
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
+            self._respond_error(500, str(e))
             return
 
-        safe_name = "".join(c if c.isalnum() or c in " _-" else "_" for c in division_name)
-        filename  = f"Waterfall_{safe_name}.xlsx"
+        division_name = payload.get("divisionName", "Division")
+        safe     = "".join(c if c.isalnum() or c in " _-" else "_" for c in division_name)
+        filename = "Waterfall_" + safe + ".xlsx"
 
         self.send_response(200)
-        self._set_cors()
-        self.send_header("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        self.send_header("Content-Disposition", f'attachment; filename="{filename}"')
+        self.send_header("Access-Control-Allow-Origin", "*")
+        self.send_header("Content-Type",
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+        self.send_header("Content-Disposition", 'attachment; filename="' + filename + '"')
         self.send_header("Content-Length", str(len(xlsx_bytes)))
         self.end_headers()
         self.wfile.write(xlsx_bytes)
 
-    def _set_cors(self):
+    def _respond_error(self, code, msg):
+        body = json.dumps({"error": msg}).encode()
+        self.send_response(code)
         self.send_header("Access-Control-Allow-Origin", "*")
-        self.send_header("Access-Control-Allow-Methods", "POST, OPTIONS")
-        self.send_header("Access-Control-Allow-Headers", "Content-Type")
+        self.send_header("Content-Type", "application/json")
+        self.send_header("Content-Length", str(len(body)))
+        self.end_headers()
+        self.wfile.write(body)
+
+    def log_message(self, fmt, *args):
+        pass
