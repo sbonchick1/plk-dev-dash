@@ -132,14 +132,17 @@ tbody td { padding: 13px 14px; color: #374151; }
       <table class="modal-table" id="modal-table">
         <thead>
           <tr>
-            <th>Rest #</th>
             <th>SIP ID</th>
-            <th>FZ Name</th>
-            <th>FZ POD</th>
-            <th>PLK POD</th>
+            <th>Rest No</th>
+            <th>FZ</th>
+            <th>Address</th>
+            <th>City</th>
+            <th>ST</th>
             <th>Status</th>
+            <th>FZ Proj Open</th>
+            <th>PLK Proj Open</th>
             <th>Risk Level</th>
-            <th>Last Comment</th>
+            <th>Last Comments</th>
           </tr>
         </thead>
         <tbody id="modal-tbody"></tbody>
@@ -341,7 +344,7 @@ function openDrillDown(divisionName, status, riskFilter, title, subtitle) {
 
   const tbody = document.getElementById("modal-tbody");
   if (!sites.length) {
-    tbody.innerHTML = `<tr><td colspan="8" class="modal-empty">No sites found for this selection.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="11" class="modal-empty">No sites found for this selection.</td></tr>`;
   } else {
     tbody.innerHTML = sites.map(s => {
       const rl = (s.riskLevel || "").trim().toLowerCase();
@@ -352,14 +355,17 @@ function openDrillDown(divisionName, status, riskFilter, title, subtitle) {
       else if (rl === "upside") rClass = "risk-upside";
       else if (rl.startsWith("2027")) rClass = "risk-2027";
       return `<tr>
-        <td><strong>${s.restNum || "—"}</strong></td>
         <td>${s.sipId || "—"}</td>
-        <td>${s.fzName || "—"}</td>
-        <td>${s.fzPod || "—"}</td>
-        <td>${s.plkPod || "—"}</td>
+        <td><strong>${s.restNum || "—"}</strong></td>
+        <td>${s.fz || "—"}</td>
+        <td style="white-space:nowrap">${s.address || "—"}</td>
+        <td>${s.city || "—"}</td>
+        <td>${s.state || "—"}</td>
         <td>${s.status || "—"}</td>
+        <td style="white-space:nowrap">${s.fzOpenDate || "—"}</td>
+        <td style="white-space:nowrap">${s.plkOpenDate || "—"}</td>
         <td><span class="risk-badge ${rClass}">${s.riskLevel || "—"}</span></td>
-        <td style="max-width:280px;white-space:normal;font-size:11px;color:#6b7280;">${s.lastComment || "—"}</td>
+        <td style="max-width:260px;white-space:normal;font-size:11px;color:#6b7280;">${s.lastComment || "—"}</td>
       </tr>`;
     }).join("");
   }
@@ -378,10 +384,13 @@ document.getElementById("drill-modal").addEventListener("click", function(e) {
 function exportModalToExcel() {
   if (!MODAL_SITES.length) return;
   const wb = XLSX.utils.book_new();
-  const rows = [["Rest #","SIP ID","FZ Name","FZ POD","PLK POD","Status","Risk Level","Last Comment"]];
-  MODAL_SITES.forEach(s => rows.push([s.restNum||"",s.sipId||"",s.fzName||"",s.fzPod||"",s.plkPod||"",s.status||"",s.riskLevel||"",s.lastComment||""]));
+  const rows = [["SIP ID","Rest No","FZ","Address","City","ST","Status","FZ Proj Open Date","PLK Proj Open Date","Risk Level","Last Comments"]];
+  MODAL_SITES.forEach(s => rows.push([
+    s.sipId||"", s.restNum||"", s.fz||"", s.address||"", s.city||"", s.state||"",
+    s.status||"", s.fzOpenDate||"", s.plkOpenDate||"", s.riskLevel||"", s.lastComment||""
+  ]));
   const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws["!cols"] = [10,12,20,12,12,12,12,40].map(w=>({wch:w}));
+  ws["!cols"] = [12,10,20,24,16,6,12,16,16,12,40].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb, ws, "Sites");
   XLSX.writeFile(wb, MODAL_TITLE_TEXT.replace(/[^a-zA-Z0-9 ]/g,"_") + ".xlsx");
 }
@@ -856,13 +865,16 @@ function exportChartToExcel(canvasId, divisionName) {
   XLSX.utils.book_append_sheet(wb, ws, "Waterfall Data");
 
   // Detail sheet — all 2026 sites for this division
-  const siteRows = [["Rest #","SIP ID","FZ Name","FZ POD","PLK POD","Status","Risk Level","Last Comment"]];
+  const siteRows = [["SIP ID","Rest No","FZ","Address","City","ST","Status","FZ Proj Open Date","PLK Proj Open Date","Risk Level","Last Comments"]];
   const sites = divisionName === "US&C Consolidated"
     ? ALL_DATA.filter(r => is2026(r))
     : ALL_DATA.filter(r => r.division === divisionName && is2026(r));
-  sites.forEach(s => siteRows.push([s.restNum||"",s.sipId||"",s.fzName||"",s.fzPod||"",s.plkPod||"",s.status||"",s.riskLevel||"",s.lastComment||""]));
+  sites.forEach(s => siteRows.push([
+    s.sipId||"", s.restNum||"", s.fz||"", s.address||"", s.city||"", s.state||"",
+    s.status||"", s.fzOpenDate||"", s.plkOpenDate||"", s.riskLevel||"", s.lastComment||""
+  ]));
   const ws2 = XLSX.utils.aoa_to_sheet(siteRows);
-  ws2["!cols"] = [10,12,20,12,12,12,12,40].map(w=>({wch:w}));
+  ws2["!cols"] = [12,10,20,24,16,6,12,16,16,12,40].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb, ws2, "Site Detail");
 
   XLSX.writeFile(wb, `Waterfall_${divisionName.replace(/[^a-zA-Z0-9 ]/g,"_")}.xlsx`);
