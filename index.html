@@ -50,7 +50,12 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
 .meta-items{display:flex;gap:16px;flex-wrap:wrap;}
 .meta-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#9b9b9b;font-weight:500;}
 .meta-dot{width:6px;height:6px;background:#E8521A;border-radius:50%;}
-.card-arrow{width:36px;height:36px;background:#f3f4f6;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;opacity:0;transform:translateX(-8px);flex-shrink:0;align-self:flex-end;}
+.meta-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+.card-url{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#b0b0b0;background:#f8f8f8;padding:3px 9px;border-radius:5px;border:1px solid #eeeeee;transition:color 0.3s,background 0.3s,border-color 0.3s;white-space:nowrap;}
+.card-url svg{width:10px;height:10px;stroke:#b0b0b0;flex-shrink:0;transition:stroke 0.3s;}
+.card:hover .card-url{color:#E8521A;background:#FFF5F0;border-color:#fdd5c5;}
+.card:hover .card-url svg{stroke:#E8521A;}
+.card-arrow{width:36px;height:36px;background:#f3f4f6;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;opacity:0;transform:translateX(-8px);flex-shrink:0;}
 .card-arrow svg{width:16px;height:16px;stroke:#9ca3af;transition:stroke 0.3s ease;}
 .card:hover .card-arrow{opacity:1;transform:translateX(0);background:#E8521A;}
 .card:hover .card-arrow svg{stroke:white;}
@@ -90,7 +95,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>2020–2025 Data</span></div>
             <div class="meta-item"><div class="meta-dot"></div><span>ARS &amp; EBITDA</span></div>
           </div>
-          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="meta-footer">
+            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>01. NRO Performance Tracker</span>
+            <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
         </div>
       </a>
 
@@ -104,7 +112,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>2026 YTD Openings</span></div>
             <div class="meta-item"><div class="meta-dot"></div><span>vs Sales Forecast</span></div>
           </div>
-          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="meta-footer">
+            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>02. Opening</span>
+            <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
         </div>
       </a>
 
@@ -126,7 +137,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>Prospect &amp; SA Tracking</span></div>
             <div class="meta-item"><div class="meta-dot"></div><span>SA Target vs Actual</span></div>
           </div>
-          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="meta-footer">
+            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>03. Pipeline Tracker</span>
+            <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
         </div>
       </a>
 
@@ -140,7 +154,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>2026 &amp; 2027+ Pipeline</span></div>
             <div class="meta-item"><div class="meta-dot"></div><span>Budget Tracking</span></div>
           </div>
-          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="meta-footer">
+            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>03. Pipeline Tracker</span>
+            <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
         </div>
       </a>
 
@@ -154,7 +171,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>2026 LE Pipeline</span></div>
             <div class="meta-item"><div class="meta-dot"></div><span>Closure Reason Analysis</span></div>
           </div>
-          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          <div class="meta-footer">
+            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>04. Closure Tracker</span>
+            <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+          </div>
         </div>
       </a>
 
