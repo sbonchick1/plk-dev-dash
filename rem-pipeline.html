@@ -266,43 +266,24 @@ tbody td{padding:12px 12px;color:#374151;}
       <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* SA Achievement = Site Approvals ÷ SA Target. Rank based on SA achievement relative to target — higher is better. Click any count to drill into individual sites.</p>
     </div>
 
-    <!-- Charts — 2 only, no REM duplicates -->
+    <!-- Charts — single combined chart -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📈</span>Pipeline Visual Analysis</div>
       </div>
-      <div class="charts-grid">
-
-        <!-- Chart 1: Prospects vs SA — grouped side by side -->
-        <div class="chart-card left-accent">
-          <div class="chart-header">
-            <div class="chart-header-left">
-              <div class="chart-title-main">Prospects &amp; Site Approvals by Division</div>
-              <div class="chart-subtitle">Side-by-side count · click bars to drill down</div>
-            </div>
-          </div>
-          <canvas id="chart-grouped" class="chart-canvas"></canvas>
-          <div class="chart-legend">
-            <div class="legend-item"><div class="legend-swatch" style="background:#7B2D8B;"></div>Prospect</div>
-            <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Site Approvals (SA)</div>
+      <div class="chart-card left-accent">
+        <div class="chart-header">
+          <div class="chart-header-left">
+            <div class="chart-title-main">Prospects, Site Approvals &amp; SA Target by Division</div>
+            <div class="chart-subtitle">Click Prospect or SA bars to drill into individual sites</div>
           </div>
         </div>
-
-        <!-- Chart 2: SA count vs SA Target — grouped side by side -->
-        <div class="chart-card right-accent">
-          <div class="chart-header">
-            <div class="chart-header-left">
-              <div class="chart-title-main">SA Achievement vs. Target by Division</div>
-              <div class="chart-subtitle">Site approvals (left) vs SA target (right) per division</div>
-            </div>
-          </div>
-          <canvas id="chart-sa" class="chart-canvas"></canvas>
-          <div class="chart-legend">
-            <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Site Approvals</div>
-            <div class="legend-item"><div class="legend-swatch" style="background:#00A99D;"></div>SA Target</div>
-          </div>
+        <canvas id="chart-combined" style="max-height:360px;"></canvas>
+        <div class="chart-legend" style="margin-top:14px;">
+          <div class="legend-item"><div class="legend-swatch" style="background:#7B2D8B;"></div>Prospect</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Site Approvals (SA)</div>
+          <div class="legend-item"><div class="legend-swatch" style="background:#00A99D;"></div>SA Target</div>
         </div>
-
       </div>
     </div>
   </div>
@@ -483,118 +464,47 @@ function clickableCell(count, divName, status, label) {
   return `<td class="number-cell clickable" onclick="openDrillDown('${ed}',${es},'${el}')"><span>${count}</span></td>`;
 }
 
-// ── Charts — 2 only ────────────────────────────────────────────────────────
+// ── Single combined chart ──────────────────────────────────────────────────
 function renderCharts() {
   const prospects = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="Prospect").length);
   const sas       = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="SA").length);
   const targets   = DIVISIONS.map(d => SA_TARGETS[d]||0);
 
-  // x-axis labels: Division on line 1, (REM name) on line 2
-  const xLabels = DIVISIONS.map(d => {
-    const rem = remForDiv(d);
-    return [d, "("+rem.name+")"];
-  });
+  // Two-line x-axis labels: Division + (REM name)
+  const xLabels = DIVISIONS.map(d => [d, "("+remForDiv(d).name+")"]);
 
-  const commonTooltip = {
-    backgroundColor:"#1f2937",
-    titleColor:"white",
-    bodyColor:"white",
-    padding:10,
-    cornerRadius:6,
-  };
-  const commonScales = {
-    x:{
-      grid:{display:false},
-      border:{display:false},
-      ticks:{
-        color:"#9ca3af",
-        font:{size:10},
-        maxRotation:0,
-        callback: function(val, idx) {
-          // Chart.js passes the tick value; for array labels return the array as-is
-          return xLabels[idx];
-        }
-      }
-    },
-    y:{grid:{color:"#f3f4f6"},border:{display:false},ticks:{color:"#9ca3af",font:{size:11}},beginAtZero:true}
-  };
-
-  // Chart 1: Prospects & SA side-by-side grouped bars
-  // Colors from PLK palette: orange (#E8521A) for SA, purple (#7B2D8B) for Prospect
-  const ctx1 = document.getElementById("chart-grouped");
-  const chart1 = new Chart(ctx1, {
+  const ctx = document.getElementById("chart-combined");
+  const chart = new Chart(ctx, {
     type:"bar",
     data:{
       labels: xLabels,
       datasets:[
         {
           label:"Prospect",
-          data:prospects,
+          data: prospects,
           backgroundColor:"#7B2D8B",
           borderRadius:4,
-          barPercentage:0.75,
-          categoryPercentage:0.7,
+          barPercentage:0.72,
+          categoryPercentage:0.75,
+          order:1,
         },
         {
           label:"Site Approvals (SA)",
-          data:sas,
+          data: sas,
           backgroundColor:"#E8521A",
           borderRadius:4,
-          barPercentage:0.75,
-          categoryPercentage:0.7,
-        },
-      ]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          ...commonTooltip,
-          callbacks:{
-            title: ctx => [DIVISIONS[ctx[0].dataIndex]],
-            label: ctx => `${ctx.dataset.label}: ${ctx.raw}`
-          }
-        }
-      },
-      scales:commonScales,
-      layout:{padding:{top:10}}
-    }
-  });
-  ctx1.addEventListener("click", function(e){
-    const pts = chart1.getElementsAtEventForMode(e,"nearest",{intersect:true},false);
-    if(!pts.length) return;
-    const divName = DIVISIONS[pts[0].index];
-    const dsIdx   = pts[0].datasetIndex;
-    const status  = dsIdx===0?"Prospect":"SA";
-    openDrillDown(divName, status, `${divName} · ${dsIdx===0?"Prospects":"Site Approvals"}`);
-  });
-  ctx1.style.cursor="pointer";
-
-  // Chart 2: SA count (orange) vs SA Target (teal) — grouped side by side
-  // Colors: #E8521A for SA actuals, #00A99D for target — both fully opaque, matching PLK palette
-  const ctx2 = document.getElementById("chart-sa");
-  new Chart(ctx2, {
-    type:"bar",
-    data:{
-      labels: xLabels,
-      datasets:[
-        {
-          label:"Site Approvals",
-          data:sas,
-          backgroundColor:"#E8521A",
-          borderRadius:4,
-          barPercentage:0.75,
-          categoryPercentage:0.7,
+          barPercentage:0.72,
+          categoryPercentage:0.75,
+          order:1,
         },
         {
           label:"SA Target",
-          data:targets,
+          data: targets,
           backgroundColor:"#00A99D",
           borderRadius:4,
-          barPercentage:0.75,
-          categoryPercentage:0.7,
+          barPercentage:0.72,
+          categoryPercentage:0.75,
+          order:1,
         },
       ]
     },
@@ -604,24 +514,91 @@ function renderCharts() {
       plugins:{
         legend:{display:false},
         tooltip:{
-          ...commonTooltip,
+          backgroundColor:"#1f2937",
+          titleColor:"white",
+          bodyColor:"white",
+          padding:12,
+          cornerRadius:6,
           callbacks:{
-            title: ctx => [DIVISIONS[ctx[0].dataIndex]],
+            title: ctx => [DIVISIONS[ctx[0].dataIndex]+"  ·  "+remForDiv(DIVISIONS[ctx[0].dataIndex]).name],
             label: ctx => {
-              const i = ctx.dataIndex;
-              if(ctx.datasetIndex===0){
-                const t = targets[i];
-                const ach = t>0?Math.round(sas[i]/t*100):null;
+              const i   = ctx.dataIndex;
+              const lbl = ctx.dataset.label;
+              if(lbl==="Site Approvals (SA)"){
+                const t   = targets[i];
+                const ach = t>0 ? Math.round(sas[i]/t*100) : null;
                 return `Site Approvals: ${ctx.raw}${ach!=null?" ("+ach+"% of target)":""}`;
               }
-              return `SA Target: ${ctx.raw}`;
+              if(lbl==="SA Target"){
+                const gap = sas[i] - targets[i];
+                return `SA Target: ${ctx.raw}  |  Gap: ${gap>=0?"+":""}${gap}`;
+              }
+              return `${lbl}: ${ctx.raw}`;
+            },
+            afterBody: ctx => {
+              const ds = ctx[0].datasetIndex;
+              if(ds===0||ds===1) return ["▶ Click to view sites"];
+              return [];
             }
           }
         }
       },
-      scales:commonScales,
-      layout:{padding:{top:10}}
-    }
+      scales:{
+        x:{
+          grid:{display:false},
+          border:{display:false},
+          ticks:{
+            color:"#9ca3af",
+            font:{size:10},
+            maxRotation:0,
+            callback: function(val, idx){ return xLabels[idx]; }
+          }
+        },
+        y:{
+          grid:{color:"#f3f4f6"},
+          border:{display:false},
+          ticks:{color:"#9ca3af",font:{size:11}},
+          beginAtZero:true
+        }
+      },
+      layout:{padding:{top:10}},
+      // Custom data-label plugin — show value above each bar
+      animation:{onComplete: function(){}}
+    },
+    plugins:[{
+      id:"barLabels",
+      afterDraw(chart){
+        const cCtx = chart.ctx;
+        cCtx.save();
+        cCtx.font = "bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+        cCtx.textAlign = "center";
+        cCtx.textBaseline = "bottom";
+        chart.data.datasets.forEach((ds, dsIdx) => {
+          const meta = chart.getDatasetMeta(dsIdx);
+          meta.data.forEach((bar, i) => {
+            const val = ds.data[i];
+            if(!val) return;
+            cCtx.fillStyle = dsIdx===2 ? "#00A99D" : dsIdx===1 ? "#E8521A" : "#7B2D8B";
+            cCtx.fillText(val, bar.x, bar.y - 3);
+          });
+        });
+        cCtx.restore();
+      }
+    }]
+  });
+
+  ctx.style.cursor = "pointer";
+  ctx.addEventListener("click", function(e){
+    const pts = chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false);
+    if(!pts.length) return;
+    const dsIdx   = pts[0].datasetIndex;
+    const divIdx  = pts[0].index;
+    // Only Prospect (0) and SA (1) are drillable — Target (2) has no site list
+    if(dsIdx === 2) return;
+    const divName = DIVISIONS[divIdx];
+    const status  = dsIdx===0 ? "Prospect" : "SA";
+    const label   = `${divName} · ${dsIdx===0?"Prospects":"Site Approvals"}`;
+    openDrillDown(divName, status, label);
   });
 }
 
