@@ -283,7 +283,7 @@ tbody td{padding:12px 12px;color:#374151;}
           </div>
           <canvas id="chart-grouped" class="chart-canvas"></canvas>
           <div class="chart-legend">
-            <div class="legend-item"><div class="legend-swatch" style="background:#FDE68A;border:1px solid #F59E0B;"></div>Prospect</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#7B2D8B;"></div>Prospect</div>
             <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Site Approvals (SA)</div>
           </div>
         </div>
@@ -299,7 +299,7 @@ tbody td{padding:12px 12px;color:#374151;}
           <canvas id="chart-sa" class="chart-canvas"></canvas>
           <div class="chart-legend">
             <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Site Approvals</div>
-            <div class="legend-item"><div class="legend-swatch" style="background:rgba(5,150,105,0.25);border:2px solid #059669;"></div>SA Target</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#00A99D;"></div>SA Target</div>
           </div>
         </div>
 
@@ -485,10 +485,15 @@ function clickableCell(count, divName, status, label) {
 
 // ── Charts — 2 only ────────────────────────────────────────────────────────
 function renderCharts() {
-  const labels    = DIVISIONS;
   const prospects = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="Prospect").length);
   const sas       = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="SA").length);
   const targets   = DIVISIONS.map(d => SA_TARGETS[d]||0);
+
+  // x-axis labels: Division on line 1, (REM name) on line 2
+  const xLabels = DIVISIONS.map(d => {
+    const rem = remForDiv(d);
+    return [d, "("+rem.name+")"];
+  });
 
   const commonTooltip = {
     backgroundColor:"#1f2937",
@@ -496,27 +501,36 @@ function renderCharts() {
     bodyColor:"white",
     padding:10,
     cornerRadius:6,
-    borderColor:"rgba(255,255,255,0.1)",
-    borderWidth:1,
   };
   const commonScales = {
-    x:{grid:{display:false},border:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},
+    x:{
+      grid:{display:false},
+      border:{display:false},
+      ticks:{
+        color:"#9ca3af",
+        font:{size:10},
+        maxRotation:0,
+        callback: function(val, idx) {
+          // Chart.js passes the tick value; for array labels return the array as-is
+          return xLabels[idx];
+        }
+      }
+    },
     y:{grid:{color:"#f3f4f6"},border:{display:false},ticks:{color:"#9ca3af",font:{size:11}},beginAtZero:true}
   };
 
   // Chart 1: Prospects & SA side-by-side grouped bars
+  // Colors from PLK palette: orange (#E8521A) for SA, purple (#7B2D8B) for Prospect
   const ctx1 = document.getElementById("chart-grouped");
   const chart1 = new Chart(ctx1, {
     type:"bar",
     data:{
-      labels,
+      labels: xLabels,
       datasets:[
         {
           label:"Prospect",
           data:prospects,
-          backgroundColor:"#FDE68A",
-          borderColor:"#F59E0B",
-          borderWidth:1,
+          backgroundColor:"#7B2D8B",
           borderRadius:4,
           barPercentage:0.75,
           categoryPercentage:0.7,
@@ -539,7 +553,8 @@ function renderCharts() {
         tooltip:{
           ...commonTooltip,
           callbacks:{
-            label:ctx=>`${ctx.dataset.label}: ${ctx.raw}`
+            title: ctx => [DIVISIONS[ctx[0].dataIndex]],
+            label: ctx => `${ctx.dataset.label}: ${ctx.raw}`
           }
         }
       },
@@ -557,12 +572,13 @@ function renderCharts() {
   });
   ctx1.style.cursor="pointer";
 
-  // Chart 2: SA count vs SA Target — grouped side by side
+  // Chart 2: SA count (orange) vs SA Target (teal) — grouped side by side
+  // Colors: #E8521A for SA actuals, #00A99D for target — both fully opaque, matching PLK palette
   const ctx2 = document.getElementById("chart-sa");
   new Chart(ctx2, {
     type:"bar",
     data:{
-      labels,
+      labels: xLabels,
       datasets:[
         {
           label:"Site Approvals",
@@ -575,9 +591,7 @@ function renderCharts() {
         {
           label:"SA Target",
           data:targets,
-          backgroundColor:"rgba(5,150,105,0.18)",
-          borderColor:"#059669",
-          borderWidth:2,
+          backgroundColor:"#00A99D",
           borderRadius:4,
           barPercentage:0.75,
           categoryPercentage:0.7,
@@ -592,8 +606,8 @@ function renderCharts() {
         tooltip:{
           ...commonTooltip,
           callbacks:{
-            title:ctx=>[labels[ctx[0].dataIndex]],
-            label:ctx=>{
+            title: ctx => [DIVISIONS[ctx[0].dataIndex]],
+            label: ctx => {
               const i = ctx.dataIndex;
               if(ctx.datasetIndex===0){
                 const t = targets[i];
