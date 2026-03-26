@@ -1,95 +1,145 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Popeyes Analytics</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;background:#ffffff;min-height:100vh;color:#1a1a1a;line-height:1.6;}
-.container{max-width:1400px;margin:0 auto;padding:80px 40px;}
-.header{text-align:center;margin-bottom:100px;}
-.brand{display:inline-flex;align-items:center;gap:16px;margin-bottom:32px;}
-.brand-icon{width:56px;height:56px;background:#E8521A;border-radius:12px;display:flex;align-items:center;justify-content:center;color:white;font-size:28px;font-weight:900;letter-spacing:-1px;}
-.brand-name{font-size:24px;font-weight:600;color:#1a1a1a;letter-spacing:-0.5px;}
-h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacing:-2px;line-height:1.1;}
-.subtitle{font-size:20px;color:#6b6b6b;font-weight:400;max-width:600px;margin:0 auto;}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(400px,1fr));gap:32px;max-width:1300px;margin:0 auto;}
-.card{background:#ffffff;border:1px solid #e8e8e8;border-radius:20px;padding:48px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);cursor:pointer;text-decoration:none;display:block;position:relative;overflow:hidden;}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#E8521A 0%,#C1272D 100%);transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease;}
-.card:hover::before{transform:scaleX(1);}
-.card:hover{border-color:#E8521A;box-shadow:0 20px 60px rgba(232,82,26,0.08);transform:translateY(-4px);}
-.card-icon{width:64px;height:64px;background:#FFF5F0;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:28px;font-size:32px;transition:all 0.3s ease;}
-.card:hover .card-icon{background:#E8521A;transform:scale(1.05);}
-.card-title{font-size:26px;font-weight:700;color:#1a1a1a;margin-bottom:12px;letter-spacing:-0.5px;line-height:1.2;}
-.card-description{font-size:16px;color:#6b6b6b;line-height:1.7;margin-bottom:28px;}
-.card-meta{display:flex;gap:24px;flex-wrap:wrap;padding-top:24px;border-top:1px solid #f5f5f5;}
-.meta-item{display:flex;align-items:center;gap:8px;font-size:14px;color:#9b9b9b;font-weight:500;}
-.meta-dot{width:8px;height:8px;background:#E8521A;border-radius:50%;}
-.card-arrow{position:absolute;bottom:40px;right:40px;width:48px;height:48px;background:#1a1a1a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;transition:all 0.3s ease;opacity:0;transform:translateX(-10px);}
-.card:hover .card-arrow{opacity:1;transform:translateX(0);background:#E8521A;}
-.badge{display:inline-flex;align-items:center;gap:6px;background:#FFF5F0;color:#E8521A;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:20px;}
-.badge-dot{width:6px;height:6px;background:#E8521A;border-radius:50%;animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
-.footer{text-align:center;margin-top:120px;padding-top:40px;border-top:1px solid #f0f0f0;}
-.footer-text{font-size:14px;color:#9b9b9b;font-weight:400;}
-@media(max-width:768px){.container{padding:40px 24px;}h1{font-size:36px;}.cards-grid{grid-template-columns:1fr;}.card{padding:32px;}.card-arrow{bottom:32px;right:32px;}}
-</style>
-</head>
-<body>
-<div class="container">
-  <div class="header">
-    <div class="brand">
-      <div class="brand-icon">P</div>
-      <div class="brand-name">Popeyes Analytics</div>
-    </div>
-    <h1>Development Insights</h1>
-    <p class="subtitle">Data-driven analytics for restaurant development and performance optimization</p>
-  </div>
+const fetch = require("node-fetch");
 
-  <div class="cards-grid">
+module.exports = async function(req, res) {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  if (req.method === "OPTIONS") return res.status(200).end();
 
-    <a href="/nro-hub" class="card">
-      <div class="badge"><div class="badge-dot"></div>Live Data</div>
-      <div class="card-icon">📊</div>
-      <div class="card-title">New Restaurant Opening (NRO) Performance Dashboard</div>
-      <div class="card-description">Track and analyze new restaurant opening performance across multiple dimensions from 2020-2025.</div>
-      <div class="card-meta">
-        <div class="meta-item"><div class="meta-dot"></div><span>2020-2025 Data</span></div>
-        <div class="meta-item"><div class="meta-dot"></div><span>Real-time Updates</span></div>
-      </div>
-      <div class="card-arrow">→</div>
-    </a>
+  const TOKEN         = process.env.SMARTSHEET_TOKEN;
+  const PIPELINE_ID   = "8717733601798020";
+  const MASTER_FZ_ID  = "5821658321342340";
+  const MASTER_REC_ID = "3277302519517060";
 
-    <a href="/development-execution" class="card">
-      <div class="badge"><div class="badge-dot"></div>Live Pipeline</div>
-      <div class="card-icon">📈</div>
-      <div class="card-title">Development Execution Performance</div>
-      <div class="card-description">Monitor 2026 pipeline vs. budget by division with DDL accountability, waterfall analysis, and 2027+ pipeline visibility.</div>
-      <div class="card-meta">
-        <div class="meta-item"><div class="meta-dot"></div><span>2026 &amp; 2027+ Pipeline</span></div>
-        <div class="meta-item"><div class="meta-dot"></div><span>Budget Tracking</span></div>
-      </div>
-      <div class="card-arrow">→</div>
-    </a>
+  try {
+    const [pr, fr, rr] = await Promise.all([
+      fetch(`https://api.smartsheet.com/2.0/sheets/${PIPELINE_ID}`,   { headers: { Authorization: "Bearer " + TOKEN } }),
+      fetch(`https://api.smartsheet.com/2.0/sheets/${MASTER_FZ_ID}`,  { headers: { Authorization: "Bearer " + TOKEN } }),
+      fetch(`https://api.smartsheet.com/2.0/sheets/${MASTER_REC_ID}`, { headers: { Authorization: "Bearer " + TOKEN } }),
+    ]);
+    const [pipeline, fzSheet, recSheet] = await Promise.all([
+      pr.text().then(t => JSON.parse(t)),
+      fr.text().then(t => JSON.parse(t)),
+      rr.text().then(t => JSON.parse(t)),
+    ]);
 
-    <a href="/closures" class="card">
-      <div class="badge"><div class="badge-dot"></div>Live Data</div>
-      <div class="card-icon">🔴</div>
-      <div class="card-title">Restaurant Closure Performance Dashboard</div>
-      <div class="card-description">Monitor 2026 closure pipeline vs. budget by division with reason analysis, controllable vs non-controllable breakdown, and 2027–2028 pipeline visibility.</div>
-      <div class="card-meta">
-        <div class="meta-item"><div class="meta-dot"></div><span>2026 LE Pipeline</span></div>
-        <div class="meta-item"><div class="meta-dot"></div><span>Closure Reason Analysis</span></div>
-      </div>
-      <div class="card-arrow">→</div>
-    </a>
+    function colMap(sheet) {
+      const m = {};
+      (sheet.columns || []).forEach((c, i) => { m[c.title] = i; });
+      return m;
+    }
+    function get(row, map, title) {
+      const idx = map[title];
+      if (idx === undefined) return null;
+      const cell = row.cells[idx];
+      if (!cell) return null;
+      return cell.displayValue !== undefined && cell.displayValue !== null
+        ? cell.displayValue : cell.value !== undefined ? cell.value : null;
+    }
+    function num(v) {
+      if (v === null || v === undefined) return null;
+      const s = String(v).replace(/[$,%]/g, "").replace(/,/g, "").trim();
+      if (!s || s === "-" || s === "NA" || s === "N/A") return null;
+      const n = parseFloat(s);
+      return isNaN(n) ? null : n;
+    }
 
-  </div>
+    const pMap = colMap(pipeline);
+    const opened = (pipeline.rows || [])
+      .map(row => ({
+        restNum:  get(row, pMap, "Rest No"),
+        fz:       get(row, pMap, "FZ"),
+        division: get(row, pMap, "Division"),
+        address:  get(row, pMap, "Address"),
+        city:     get(row, pMap, "City"),
+        state:    get(row, pMap, "ST"),
+        status:   get(row, pMap, "Status"),
+        fzPOD:    get(row, pMap, "FZ Projected Open Date"),
+      }))
+      .filter(r => r.status === "Open" && r.restNum);
 
-  <div class="footer">
-    <p class="footer-text">Popeyes Louisiana Kitchen · Development Analytics</p>
-  </div>
-</div>
-</body>
-</html>
+    const fzColMap = colMap(fzSheet);
+    const fzLookup = {};
+    (fzSheet.rows || []).forEach(row => {
+      const k = String(get(row, fzColMap, "PLK#") || "").trim();
+      if (!k) return;
+      fzLookup[k] = {
+        fzName:       get(row, fzColMap, "FZ Name"),
+        ttmARS:       num(get(row, fzColMap, "Trailing 12M ARS")),
+        annARS:       num(get(row, fzColMap, "Annualized ARS")),
+        ttmEBITDA:    num(get(row, fzColMap, "Trailing 12M EBITDA")),
+        annEBITDA:    num(get(row, fzColMap, "Annualized EBITDA")),
+        annEBITDAPct: num(get(row, fzColMap, "Annualized EBITDA %")),
+        fssGrade:     get(row, fzColMap, "2026 Round 1 FSS Grade"),
+        driveThru:    get(row, fzColMap, "Drive-Thru Type"),
+        archType:     get(row, fzColMap, "Architecture Type"),
+      };
+    });
+
+    const recColMap = colMap(recSheet);
+    const recLookup = {};
+    (recSheet.rows || []).forEach(row => {
+      const k = String(get(row, recColMap, "Store#") || "").trim();
+      if (!k) return;
+      recLookup[k] = {
+        salesForecast: num(get(row, recColMap, "Sales Forecast")),
+        capEx:         num(get(row, recColMap, "CapEx Estimate")),
+        estEBITDA:     num(get(row, recColMap, "Estimated EBITDA $")),
+        estEBITDAPct:  num(get(row, recColMap, "Estimated EBITDA %")),
+        roi:           num(get(row, recColMap, "ROI")),
+      };
+    });
+
+    const today = Date.now();
+    const rows = opened.map(r => {
+      const key = String(r.restNum || "").trim();
+      const fz  = fzLookup[key]  || {};
+      const rec = recLookup[key] || {};
+
+      let daysOpen = null, openDate = null;
+      if (r.fzPOD) {
+        const d = new Date(r.fzPOD);
+        if (!isNaN(d.getTime())) {
+          openDate = r.fzPOD;
+          daysOpen = Math.max(1, Math.floor((today - d.getTime()) / 86400000));
+        }
+      }
+
+      const ttmARS = fz.ttmARS;
+      let avgWeekly = null, avgMonthly = null, avgAnnual = null;
+      if (ttmARS != null && daysOpen != null && daysOpen > 0) {
+        const dailyRate = ttmARS / daysOpen;
+        avgWeekly  = dailyRate * 7;
+        avgMonthly = dailyRate * 30.44;
+        avgAnnual  = dailyRate * 365;
+      }
+
+      const salesForecast  = rec.salesForecast;
+      const forecastVarD   = (avgAnnual != null && salesForecast) ? avgAnnual - salesForecast : null;
+      const forecastVarPct = (forecastVarD != null && salesForecast) ? forecastVarD / salesForecast : null;
+
+      return {
+        restNum: r.restNum, fzName: fz.fzName || r.fz || null,
+        division: r.division, address: r.address, city: r.city, state: r.state,
+        openDate, daysOpen,
+        ttmARS, annARS: fz.annARS, ttmEBITDA: fz.ttmEBITDA,
+        annEBITDA: fz.annEBITDA, annEBITDAPct: fz.annEBITDAPct,
+        fssGrade: fz.fssGrade, driveThru: fz.driveThru, archType: fz.archType,
+        avgWeekly, avgMonthly, avgAnnual,
+        salesForecast, forecastVarD, forecastVarPct,
+        capEx: rec.capEx, estEBITDA: rec.estEBITDA,
+        estEBITDAPct: rec.estEBITDAPct, roi: rec.roi,
+      };
+    });
+
+    rows.sort((a, b) => {
+      if (!a.openDate && !b.openDate) return 0;
+      if (!a.openDate) return 1; if (!b.openDate) return -1;
+      return new Date(a.openDate) - new Date(b.openDate);
+    });
+
+    res.status(200).json({ rows, lastUpdated: new Date().toISOString() });
+  } catch(err) {
+    res.status(500).json({ error: err.message });
+  }
+};
