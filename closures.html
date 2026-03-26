@@ -74,7 +74,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
 .chart-header-left{flex:1;}
 .chart-title-main{font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:2px;}
 .chart-subtitle{font-size:12px;color:#6b7280;}
-.chart-canvas{max-height:300px;}
+.chart-canvas{max-height:340px;}
 .chart-legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;}
 .legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
@@ -511,10 +511,22 @@ function renderTable2026() {
   document.getElementById("tbody-2026").innerHTML=html;
 }
 
-// ── Reason Charts — waterfall, split PLK Controlled / Non-Controlled ─────────
-// Each bar builds cumulatively on the previous (waterfall stacking).
-// Within each bar: bottom = PLK Controlled (purple), top = Non-Controlled (red/orange).
-// A standalone "Total" bar on the far right shows the grand total in a distinct color.
+// ── Helper: wrap a label string into an array of lines ───────────────────────
+function wrapLabel(str, maxLen) {
+  if (!str || str.length <= maxLen) return str;
+  const words = str.split(' ');
+  const lines = [];
+  let cur = '';
+  words.forEach(w => {
+    if (!cur) { cur = w; }
+    else if ((cur + ' ' + w).length <= maxLen) { cur += ' ' + w; }
+    else { lines.push(cur); cur = w; }
+  });
+  if (cur) lines.push(cur);
+  return lines.length > 1 ? lines : str;
+}
+
+// ── Reason Charts — straight labels, multi-line, no tilt ─────────────────────
 function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const reasonCounts={};
   ALL_REASONS.forEach(r=>reasonCounts[r]={ctrl:0,nonCtrl:0});
@@ -527,36 +539,33 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const activeReasons=ALL_REASONS.filter(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl>0);
   const grandTotal=rows.length;
 
-  // All labels including the trailing "Total" bar
   const labels=[...activeReasons,"Total"];
+  // Wrap labels for multi-line display (no rotation)
+  const wrappedLabels = labels.map(l => wrapLabel(l, 13));
+
   const n=labels.length;
 
-  // Build waterfall base + ctrl portion + nonCtrl portion for each reason bar,
-  // then the standalone Total bar (base=0, full height = grandTotal)
   const baseData=[], ctrlData=[], nonCtrlData=[];
   let cumulative=0;
   activeReasons.forEach(reason=>{
     const ctrl=reasonCounts[reason].ctrl;
     const nonCtrl=reasonCounts[reason].nonCtrl;
-    baseData.push(cumulative);       // invisible lift
-    ctrlData.push(ctrl);             // PLK Controlled portion (bottom of visible)
-    nonCtrlData.push(nonCtrl);       // Non-Controlled portion (top of visible)
+    baseData.push(cumulative);
+    ctrlData.push(ctrl);
+    nonCtrlData.push(nonCtrl);
     cumulative+=ctrl+nonCtrl;
   });
-  // Total bar — standalone from 0
   baseData.push(0);
-  ctrlData.push(0);                  // no ctrl split on total bar
-  nonCtrlData.push(0);               // handled separately
+  ctrlData.push(0);
+  nonCtrlData.push(0);
 
-  // Per-bar display labels (shown above each bar)
-  // For reason bars: individual count; for Total: grandTotal
   const displayVals=[...activeReasons.map(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl), grandTotal];
 
   const ctx=document.getElementById(canvasId);
   new Chart(ctx,{
     type:"bar",
     data:{
-      labels,
+      labels: wrappedLabels,
       datasets:[
         // Dataset 0: invisible base (waterfall lift)
         {label:"_base", data:baseData,
@@ -564,14 +573,14 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
          borderWidth:0, stack:"wf"},
         // Dataset 1: PLK Controlled (bottom visible portion)
         {label:"PLK Controlled", data:ctrlData,
-         backgroundColor:labels.map((_,i)=>i===n-1?totalColor:ctrlColor),
+         backgroundColor:wrappedLabels.map((_,i)=>i===n-1?totalColor:ctrlColor),
          borderRadius:0, stack:"wf"},
         // Dataset 2: Non-Controlled (top visible portion)
         {label:"Non-Controlled", data:nonCtrlData,
-         backgroundColor:labels.map((_,i)=>i===n-1?"rgba(0,0,0,0)":nonCtrlColor),
+         backgroundColor:wrappedLabels.map((_,i)=>i===n-1?"rgba(0,0,0,0)":nonCtrlColor),
          borderRadius:4, stack:"wf"},
-        // Dataset 3: Total bar value (standalone, base=0, starts fresh)
-        {label:"_total", data:labels.map((_,i)=>i===n-1?grandTotal:0),
+        // Dataset 3: Total bar
+        {label:"_total", data:wrappedLabels.map((_,i)=>i===n-1?grandTotal:0),
          backgroundColor:totalColor, borderRadius:4, stack:"wf2"},
       ]
     },
@@ -603,8 +612,18 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
         }
       },
       scales:{
-        x:{stacked:true, grid:{display:false}, border:{display:false},
-           ticks:{color:"#374151",font:{size:10},maxRotation:35}},
+        x:{
+          stacked:true,
+          grid:{display:false},
+          border:{display:false},
+          ticks:{
+            color:"#374151",
+            font:{size:11},
+            maxRotation:0,
+            minRotation:0,
+            autoSkip:false
+          }
+        },
         y:{stacked:true, grid:{display:false}, border:{display:false},
            ticks:{display:false}, beginAtZero:true}
       },
@@ -613,25 +632,19 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
     plugins:[{
       id:"labels_"+canvasId,
       afterDraw(chart){
-        // Draw value above each bar
-        // For reason bars use meta of dataset 2 (top of stacked ctrl+nonCtrl)
-        // For Total bar use dataset 3
         const cCtx=chart.ctx; cCtx.save();
         cCtx.font="bold 11px -apple-system,sans-serif";
         cCtx.fillStyle="#374151"; cCtx.textAlign="center"; cCtx.textBaseline="bottom";
 
-        const meta2=chart.getDatasetMeta(2); // non-ctrl (top of reason bars)
-        const meta3=chart.getDatasetMeta(3); // total bar
+        const meta2=chart.getDatasetMeta(2);
+        const meta3=chart.getDatasetMeta(3);
 
         displayVals.forEach((val,i)=>{
           if(!val) return;
           let bar;
           if(i===n-1) {
-            // Total bar: use dataset 3
             bar=meta3?.data[i];
           } else {
-            // Reason bar: use whichever dataset is on top
-            // If nonCtrl > 0 use meta2, else use meta1 (ctrl bar)
             const meta1=chart.getDatasetMeta(1);
             bar=nonCtrlData[i]>0 ? meta2?.data[i] : meta1?.data[i];
           }
@@ -642,13 +655,12 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
     }]
   });
 
-  // Click drill-down — ignore Total bar and base dataset
+  // Click drill-down
   ctx.addEventListener("click",function(e){
     const ch=Chart.getChart(ctx); if(!ch)return;
     const pts=ch.getElementsAtEventForMode(e,"nearest",{intersect:true},false); if(!pts.length)return;
     const i=pts[0].index;
     if(i===n-1){
-      // Clicked Total bar — open all rows for this bucket
       const bucket=canvasId.includes("opp")?"LE (Opp)":"LE";
       openDrillDown({bucket},`US&C · ${bucket} · All Reasons`,`All divisions`);
       return;
@@ -661,37 +673,11 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
 }
 
 function renderReasonCharts(){
-  // LE chart: ctrl=purple, nonCtrl=dark red, total=teal (distinct from both)
   buildReasonChart("chart-le-reasons",  ALL_DATA.filter(r=>isLE(r)),    "#7B2D8B","#C1272D","#00A99D");
-  // LE Opp chart: ctrl=purple, nonCtrl=orange, total=teal
   buildReasonChart("chart-opp-reasons", ALL_DATA.filter(r=>isLEOpp(r)), "#7B2D8B","#E8521A","#00A99D");
 }
 
-// ── Controllable by Division ─────────────────────────────────────────────────
-function renderCtrlGrid(){
-  const html=DIVISIONS.map(div=>{
-    const rows=ALL_DATA.filter(r=>r.division===div.name&&isLE(r));
-    const yes=rows.filter(r=>r.plkControl==="Yes").length;
-    const no=rows.filter(r=>r.plkControl==="No").length;
-    const total=yes+no||1, yesPct=Math.round(yes/total*100);
-    return`<div class="ctrl-card">
-      <div class="ctrl-name">${div.name} <span style="font-size:11px;font-weight:400;color:#9ca3af;">(${yes+no} LE sites)</span></div>
-      <div style="background:#e5e7eb;border-radius:99px;height:8px;overflow:hidden;">
-        <div style="height:8px;display:flex;">
-          <div style="width:${yesPct}%;background:#C1272D;"></div>
-          <div style="width:${100-yesPct}%;background:#e5e7eb;"></div>
-        </div>
-      </div>
-      <div class="ctrl-legend" style="margin-top:6px;">
-        <span><span class="ctrl-dot" style="background:#C1272D;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;"></span>Controlled: <strong>${yes}</strong> (${yesPct}%)</span>
-        <span><span class="ctrl-dot" style="background:#9ca3af;display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:3px;"></span>Non-Controlled: <strong>${no}</strong> (${100-yesPct}%)</span>
-      </div>
-    </div>`;
-  }).join("");
-  document.getElementById("ctrl-grid").innerHTML=html;
-}
-
-// ── FZ Rollup — by bucket columns, accordion ─────────────────────────────────
+// ── FZ Rollup ─────────────────────────────────────────────────────────────────
 let fzExpanded = false;
 const FZ_TOP = 10;
 
@@ -706,7 +692,7 @@ function toggleFZExpand() {
 }
 
 function renderFZRollup(){
-  fzExpanded = false; // reset on re-render
+  fzExpanded = false;
   const BUCKETS = [
     {key:"LE",       label:"LE",       fn:isLE,       style:"background:#fee2e2;color:#991b1b;"},
     {key:"LE (Opp)", label:"LE (Opp)", fn:isLEOpp,    style:"background:#fef3c7;color:#92400e;"},
@@ -737,7 +723,6 @@ function renderFZRollup(){
     BUCKETS.forEach(b => totals[b.key] += fz[b.key]);
   });
 
-  // Update expand button
   const hiddenCount = Math.max(0, fzList.length - FZ_TOP);
   const expandBtn = document.getElementById("fz-expand-btn");
   if (hiddenCount === 0) {
@@ -748,14 +733,12 @@ function renderFZRollup(){
     document.getElementById("fz-expand-icon").textContent = "▼";
   }
 
-  // Header
   document.getElementById("fz-thead").innerHTML = `<tr>
     <th class="left">Franchisee (FZ)</th>
     ${BUCKETS.map(b=>`<th style="${b.style}">${b.label}</th>`).join("")}
     <th style="background:#f9fafb;color:#374151;font-weight:700;">Total</th>
   </tr>`;
 
-  // Body — top 10 visible, rest collapsed via data-fz-hidden + display:none
   let html = fzList.map((fz, idx) => {
     const ef = fz.fz.replace(/'/g,"\\'");
     const isHidden = idx >= FZ_TOP;
@@ -784,17 +767,15 @@ function renderFZRollup(){
   FZ_REASONS = BUCKETS.map(b => b.key);
 }
 
-// ── Combined 2027 / 2028 Table by Reason ─────────────────────────────────────
+// ── Combined 2027 / 2028 Table ────────────────────────────────────────────────
 function renderFuturePipeline(){
   const rows27=ALL_DATA.filter(r=>is2027(r));
   const rows28=ALL_DATA.filter(r=>is2028(r));
 
-  // Get only reasons with data in either year
   const reasonSet=new Set();
   [...rows27,...rows28].forEach(r=>reasonSet.add(normalizeReason(r)));
   FUTURE_REASONS=ALL_REASONS.filter(r=>reasonSet.has(r));
 
-  // Build division maps
   function buildMap(rows){
     const map={};
     DIVISIONS.forEach(div=>{ map[div.name]={total:0,reasons:{}}; FUTURE_REASONS.forEach(r=>map[div.name].reasons[r]=0); });
@@ -808,13 +789,11 @@ function renderFuturePipeline(){
   }
   const map27=buildMap(rows27), map28=buildMap(rows28);
 
-  // Shared counts (mitigate + not in LE — same rows regardless of year)
   const mitMap={}, nilMap={};
   DIVISIONS.forEach(div=>{ mitMap[div.name]=ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length; nilMap[div.name]=ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length; });
 
   const n=FUTURE_REASONS.length;
 
-  // Header — two rows for merged groups
   const thead=document.getElementById("future-thead");
   thead.innerHTML=`
     <tr>
@@ -832,7 +811,6 @@ function renderFuturePipeline(){
       <th class="grp-shared">Not in LE</th>
     </tr>`;
 
-  // Body
   const tbody=document.getElementById("future-tbody");
   const totals27={reasons:{},total:0}, totals28={reasons:{},total:0}, totalsMit={total:0}, totalsNil={total:0};
   FUTURE_REASONS.forEach(r=>{totals27.reasons[r]=0;totals28.reasons[r]=0;});
@@ -870,7 +848,6 @@ function renderFuturePipeline(){
     </tr>`;
   }).join("");
 
-  // Totals
   html+=`<tr class="total-row">
     <td class="division-cell">US&amp;C Total</td>
     ${FUTURE_REASONS.map((r,i)=>`<td class="number-cell${i===0?" border-l":""}">${totals27.reasons[r]||0}</td>`).join("")}
@@ -1004,9 +981,7 @@ function exportTable2026(){
 }
 function exportFZRollup(){
   const BUCKETS=["LE","LE (Opp)","2027 LE","2028 LE","Mitigate"];
-  const bucketFns={
-    "LE":isLE,"LE (Opp)":isLEOpp,"2027 LE":is2027,"2028 LE":is2028,"Mitigate":isMitigate
-  };
+  const bucketFns={"LE":isLE,"LE (Opp)":isLEOpp,"2027 LE":is2027,"2028 LE":is2028,"Mitigate":isMitigate};
   const relevantRows=ALL_DATA.filter(r=>isLE(r)||isLEOpp(r)||is2027(r)||is2028(r)||isMitigate(r));
   const fzMap={};
   relevantRows.forEach(r=>{
