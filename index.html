@@ -14,28 +14,54 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .brand-name{font-size:24px;font-weight:600;color:#1a1a1a;letter-spacing:-0.5px;}
 h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacing:-2px;line-height:1.1;}
 .subtitle{font-size:20px;color:#6b6b6b;font-weight:400;max-width:600px;margin:0 auto;}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(380px,1fr));gap:32px;max-width:1300px;margin:0 auto;}
-.card{background:#ffffff;border:1px solid #e8e8e8;border-radius:20px;padding:48px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);cursor:pointer;text-decoration:none;display:block;position:relative;overflow:hidden;}
+
+/* Cards grid — fixed-width cards, never stretch */
+.cards-grid{
+  display:flex;
+  flex-wrap:wrap;
+  gap:32px;
+  max-width:1300px;
+  margin:0 auto;
+}
+
+.card{
+  background:#ffffff;
+  border:1px solid #e8e8e8;
+  border-radius:20px;
+  padding:36px 40px;
+  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
+  cursor:pointer;
+  text-decoration:none;
+  display:flex;
+  flex-direction:column;
+  position:relative;
+  overflow:hidden;
+  width:420px;
+  flex-shrink:0;
+}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#E8521A 0%,#C1272D 100%);transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease;}
 .card:hover::before{transform:scaleX(1);}
 .card:hover{border-color:#E8521A;box-shadow:0 20px 60px rgba(232,82,26,0.08);transform:translateY(-4px);}
-.card-icon{width:64px;height:64px;background:#FFF5F0;border-radius:16px;display:flex;align-items:center;justify-content:center;margin-bottom:28px;font-size:32px;transition:all 0.3s ease;}
+.card-icon{width:54px;height:54px;background:#FFF5F0;border-radius:14px;display:flex;align-items:center;justify-content:center;margin-bottom:20px;font-size:28px;transition:all 0.3s ease;flex-shrink:0;}
 .card:hover .card-icon{background:#E8521A;transform:scale(1.05);}
-.card-title{font-size:24px;font-weight:700;color:#1a1a1a;margin-bottom:12px;letter-spacing:-0.5px;line-height:1.2;}
-.card-description{font-size:15px;color:#6b6b6b;line-height:1.7;margin-bottom:28px;}
-.card-meta{display:flex;gap:20px;flex-wrap:wrap;padding-top:24px;border-top:1px solid #f5f5f5;}
-.meta-item{display:flex;align-items:center;gap:8px;font-size:13px;color:#9b9b9b;font-weight:500;}
-.meta-dot{width:8px;height:8px;background:#E8521A;border-radius:50%;}
-.card-arrow{position:absolute;bottom:40px;right:40px;width:48px;height:48px;background:#1a1a1a;border-radius:50%;display:flex;align-items:center;justify-content:center;color:white;font-size:20px;transition:all 0.3s ease;opacity:0;transform:translateX(-10px);}
+.card-title{font-size:22px;font-weight:700;color:#1a1a1a;margin-bottom:10px;letter-spacing:-0.5px;line-height:1.2;}
+.card-description{font-size:14px;color:#6b6b6b;line-height:1.65;margin-bottom:20px;flex:1;}
+.card-meta{display:flex;flex-direction:column;gap:10px;padding-top:18px;border-top:1px solid #f5f5f5;margin-top:auto;}
+.meta-items{display:flex;gap:16px;flex-wrap:wrap;}
+.meta-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#9b9b9b;font-weight:500;}
+.meta-dot{width:6px;height:6px;background:#E8521A;border-radius:50%;}
+.card-arrow{width:36px;height:36px;background:#f3f4f6;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;opacity:0;transform:translateX(-8px);flex-shrink:0;align-self:flex-end;}
+.card-arrow svg{width:16px;height:16px;stroke:#9ca3af;transition:stroke 0.3s ease;}
 .card:hover .card-arrow{opacity:1;transform:translateX(0);background:#E8521A;}
-.badge{display:inline-flex;align-items:center;gap:6px;background:#FFF5F0;color:#E8521A;padding:6px 14px;border-radius:8px;font-size:13px;font-weight:600;margin-bottom:20px;}
+.card:hover .card-arrow svg{stroke:white;}
+.badge{display:inline-flex;align-items:center;gap:6px;background:#FFF5F0;color:#E8521A;padding:5px 12px;border-radius:7px;font-size:12px;font-weight:600;margin-bottom:16px;flex-shrink:0;}
 .badge-dot{width:6px;height:6px;background:#E8521A;border-radius:50%;animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 .section-label{font-size:11px;font-weight:700;color:#9b9b9b;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;padding-left:4px;}
 .cards-section{max-width:1300px;margin:0 auto 48px;}
 .footer{text-align:center;margin-top:80px;padding-top:40px;border-top:1px solid #f0f0f0;}
 .footer-text{font-size:14px;color:#9b9b9b;font-weight:400;}
-@media(max-width:768px){.container{padding:40px 24px;}h1{font-size:36px;}.cards-grid{grid-template-columns:1fr;}.card{padding:32px;}.card-arrow{bottom:32px;right:32px;}}
+@media(max-width:768px){.container{padding:40px 24px;}h1{font-size:36px;}.cards-grid{gap:20px;}.card{width:100%;padding:32px;}}
 </style>
 </head>
 <body>
@@ -60,10 +86,12 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
         <div class="card-title">NRO Performance Dashboard</div>
         <div class="card-description">Track and analyze new restaurant opening performance across multiple dimensions from 2020–2025.</div>
         <div class="card-meta">
-          <div class="meta-item"><div class="meta-dot"></div><span>2020–2025 Data</span></div>
-          <div class="meta-item"><div class="meta-dot"></div><span>ARS &amp; EBITDA</span></div>
+          <div class="meta-items">
+            <div class="meta-item"><div class="meta-dot"></div><span>2020–2025 Data</span></div>
+            <div class="meta-item"><div class="meta-dot"></div><span>ARS &amp; EBITDA</span></div>
+          </div>
+          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
-        <div class="card-arrow">→</div>
       </a>
 
       <a href="/ytd-openings" class="card">
@@ -72,10 +100,12 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
         <div class="card-title">YTD New Opening Performance</div>
         <div class="card-description">Live performance tracking for 2026 restaurant openings — sales run rate, vs forecast, EBITDA, FSS, and ROI in one view.</div>
         <div class="card-meta">
-          <div class="meta-item"><div class="meta-dot"></div><span>2026 YTD Openings</span></div>
-          <div class="meta-item"><div class="meta-dot"></div><span>vs Sales Forecast</span></div>
+          <div class="meta-items">
+            <div class="meta-item"><div class="meta-dot"></div><span>2026 YTD Openings</span></div>
+            <div class="meta-item"><div class="meta-dot"></div><span>vs Sales Forecast</span></div>
+          </div>
+          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
-        <div class="card-arrow">→</div>
       </a>
 
     </div>
@@ -92,10 +122,12 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
         <div class="card-title">Prospect &amp; Site Approval Pipeline</div>
         <div class="card-description">Prospect and site approval tracking by REM and division — SA target vs. actual performance with drill-down detail.</div>
         <div class="card-meta">
-          <div class="meta-item"><div class="meta-dot"></div><span>Prospect &amp; SA Tracking</span></div>
-          <div class="meta-item"><div class="meta-dot"></div><span>SA Target vs Actual</span></div>
+          <div class="meta-items">
+            <div class="meta-item"><div class="meta-dot"></div><span>Prospect &amp; SA Tracking</span></div>
+            <div class="meta-item"><div class="meta-dot"></div><span>SA Target vs Actual</span></div>
+          </div>
+          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
-        <div class="card-arrow">→</div>
       </a>
 
       <a href="/development-execution" class="card">
@@ -104,10 +136,12 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
         <div class="card-title">Development Execution Performance</div>
         <div class="card-description">Monitor 2026 pipeline vs. budget by division with DDL accountability, waterfall analysis, and 2027+ pipeline visibility.</div>
         <div class="card-meta">
-          <div class="meta-item"><div class="meta-dot"></div><span>2026 &amp; 2027+ Pipeline</span></div>
-          <div class="meta-item"><div class="meta-dot"></div><span>Budget Tracking</span></div>
+          <div class="meta-items">
+            <div class="meta-item"><div class="meta-dot"></div><span>2026 &amp; 2027+ Pipeline</span></div>
+            <div class="meta-item"><div class="meta-dot"></div><span>Budget Tracking</span></div>
+          </div>
+          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
-        <div class="card-arrow">→</div>
       </a>
 
       <a href="/closures" class="card">
@@ -116,10 +150,12 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
         <div class="card-title">Restaurant Closure Performance Dashboard</div>
         <div class="card-description">Monitor 2026 closure pipeline vs. budget by division with reason analysis and 2027–2028 pipeline visibility.</div>
         <div class="card-meta">
-          <div class="meta-item"><div class="meta-dot"></div><span>2026 LE Pipeline</span></div>
-          <div class="meta-item"><div class="meta-dot"></div><span>Closure Reason Analysis</span></div>
+          <div class="meta-items">
+            <div class="meta-item"><div class="meta-dot"></div><span>2026 LE Pipeline</span></div>
+            <div class="meta-item"><div class="meta-dot"></div><span>Closure Reason Analysis</span></div>
+          </div>
+          <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
-        <div class="card-arrow">→</div>
       </a>
 
     </div>
