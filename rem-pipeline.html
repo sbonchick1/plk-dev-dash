@@ -572,14 +572,18 @@ function renderCharts() {
         cCtx.save();
         cCtx.font = "bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
         cCtx.textAlign = "center";
-        cCtx.textBaseline = "bottom";
+        cCtx.textBaseline = "middle";
+        cCtx.fillStyle = "#FFFFFF";
         chart.data.datasets.forEach((ds, dsIdx) => {
           const meta = chart.getDatasetMeta(dsIdx);
           meta.data.forEach((bar, i) => {
             const val = ds.data[i];
             if(!val) return;
-            cCtx.fillStyle = dsIdx===2 ? "#00A99D" : dsIdx===1 ? "#E8521A" : "#7B2D8B";
-            cCtx.fillText(val, bar.x, bar.y - 3);
+            const barHeight = bar.base - bar.y;
+            // Only draw label if bar is tall enough to fit text
+            if(barHeight < 16) return;
+            const midY = bar.y + barHeight / 2;
+            cCtx.fillText(val, bar.x, midY);
           });
         });
         cCtx.restore();
