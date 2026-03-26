@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>YTD New Opening Performance</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;background:#f9fafb;min-height:100vh;color:#1a1a1a;}
+.container{max-width:1700px;margin:0 auto;padding:40px;}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:14px;color:#9b9b9b;}
+.breadcrumb a{color:#9b9b9b;text-decoration:none;}.breadcrumb a:hover{color:#E8521A;}
+.page-title{font-size:36px;font-weight:700;color:#1a1a1a;margin-bottom:12px;letter-spacing:-1px;}
+.page-subtitle{font-size:16px;color:#6b6b6b;line-height:1.6;margin-bottom:32px;}
+.section{background:white;border-radius:16px;padding:32px;margin-bottom:32px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #f0f0f0;flex-wrap:wrap;gap:12px;}
+.section-title{font-size:20px;font-weight:700;color:#1a1a1a;display:flex;align-items:center;gap:10px;}
+.export-btn{display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.export-btn:hover{background:#dcfce7;border-color:#4ade80;}
+.export-btn svg{width:15px;height:15px;}
+.kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:32px;}
+.kpi-card{background:white;border-radius:12px;padding:18px 20px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#E8521A);}
+.kpi-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-weight:600;}
+.kpi-value{font-size:24px;font-weight:800;color:#1a1a1a;line-height:1;margin-bottom:4px;}
+.kpi-sub{font-size:11px;color:#9ca3af;}
+.kpi-good .kpi-value{color:#059669;}.kpi-bad .kpi-value{color:#C1272D;}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
+.filter-select{padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white;cursor:pointer;outline:none;}
+.filter-select:focus{border-color:#E8521A;}
+.filter-lbl{font-size:12px;color:#6b7280;font-weight:600;}
+.filter-reset{background:none;border:1px solid #e5e7eb;border-radius:6px;padding:6px 12px;font-size:12px;color:#6b7280;cursor:pointer;}
+.filter-reset:hover{border-color:#E8521A;color:#E8521A;}
+.result-count{margin-left:auto;font-size:12px;color:#9ca3af;}
+
+/* Accordion table */
+.acc-wrap{overflow-x:auto;}
+.acc-table{width:100%;border-collapse:collapse;font-size:13px;}
+.acc-table thead th{background:#f9fafb;padding:10px 12px;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.5px;border-bottom:2px solid #e5e7eb;white-space:nowrap;cursor:pointer;user-select:none;text-align:left;}
+.acc-table thead th.r{text-align:right;}
+.acc-table thead th:hover{color:#E8521A;}
+.acc-table thead th .sa{margin-left:3px;opacity:0.4;font-size:9px;}
+.acc-table thead th.asc .sa::after{content:'▲';opacity:1;}
+.acc-table thead th.desc .sa::after{content:'▼';opacity:1;}
+.acc-table thead th:not(.asc):not(.desc) .sa::after{content:'⇅';}
+.acc-row{border-bottom:1px solid #f3f4f6;cursor:pointer;transition:background 0.12s;}
+.acc-row:hover{background:#fef3ee;}
+.acc-row.open{background:#fff5f0;border-bottom:none;}
+.acc-row td{padding:11px 12px;color:#374151;vertical-align:middle;}
+.exp-icon{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;background:#f3f4f6;font-size:10px;margin-right:4px;transition:transform 0.18s,background 0.18s;flex-shrink:0;}
+.acc-row.open .exp-icon{transform:rotate(90deg);background:#E8521A;color:white;}
+.detail-row-tr{display:none;background:#fafafa;border-bottom:2px solid #e5e7eb;}
+.detail-row-tr.open{display:table-row;}
+.detail-row-tr td{padding:0;}
+.detail-inner{padding:20px 24px 24px;display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;}
+.dg{background:white;border-radius:10px;padding:16px;border:1px solid #e5e7eb;}
+.dg-title{font-size:10px;font-weight:700;color:#9ca3af;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:10px;}
+.dr{display:flex;justify-content:space-between;align-items:baseline;padding:5px 0;border-bottom:1px solid #f3f4f6;font-size:12px;gap:8px;}
+.dr:last-child{border-bottom:none;}
+.dl{color:#6b7280;flex-shrink:0;}
+.dv{font-weight:600;color:#1a1a1a;text-align:right;}
+.dv.good{color:#059669;}.dv.bad{color:#C1272D;}
+
+/* Badges */
+.fss{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;}
+.fss-A{background:#D1FAE5;color:#065F46;}.fss-B{background:#FEF3C7;color:#92400E;}
+.fss-C,.fss-D,.fss-F{background:#FEE2E2;color:#991B1B;}
+.vp{color:#059669;font-weight:700;}.vn{color:#C1272D;font-weight:700;}.vz{color:#6b7280;}
+.days-chip{display:inline-block;background:#f0f9ff;color:#0369a1;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600;}
+
+.overlay{position:fixed;inset:0;background:#f9fafb;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
+.spinner{width:48px;height:48px;border:4px solid #E8521A;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.ov-title{font-size:18px;font-weight:600;color:#374151;}
+.ov-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
+.empty{text-align:center;padding:48px;color:#9ca3af;font-size:14px;}
+@media(max-width:768px){.container{padding:24px;}.detail-inner{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+
+<div id="ov" class="overlay">
+  <div class="spinner"></div>
+  <div class="ov-title">Loading YTD opening data…</div>
+  <div class="ov-sub">Joining pipeline, FZ summary &amp; master rec</div>
+</div>
+
+<div id="app" style="display:none;">
+<div class="container">
+  <div class="breadcrumb">
+    <a href="/">Home</a><span style="color:#d0d0d0">/</span>
+    <span>YTD New Opening Performance</span>
+  </div>
+  <h1 class="page-title">YTD New Opening Performance</h1>
+  <p class="page-subtitle">2026 restaurant openings · sales calculated from TTM ARS ÷ actual days open · oldest openings first</p>
+
+  <!-- KPIs -->
+  <div class="kpi-banner" id="kpis"></div>
+
+  <!-- Table -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title"><span>📊</span>Opening Performance — Sales &amp; Forecast Tracking</div>
+      <button class="export-btn" onclick="exportTable()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Export to Excel
+      </button>
+    </div>
+    <div class="filter-bar">
+      <span class="filter-lbl">Filter:</span>
+      <select class="filter-select" id="f-div" onchange="applyFilters()"><option value="">All Divisions</option></select>
+      <select class="filter-select" id="f-fss" onchange="applyFilters()">
+        <option value="">All FSS Grades</option>
+        <option>A</option><option>B</option><option>C</option><option>D</option><option>F</option>
+      </select>
+      <select class="filter-select" id="f-fc" onchange="applyFilters()">
+        <option value="">All vs Forecast</option>
+        <option value="ahead">Ahead of Forecast</option>
+        <option value="behind">Behind Forecast</option>
+        <option value="nodata">No Forecast Data</option>
+      </select>
+      <button class="filter-reset" onclick="resetFilters()">Reset</button>
+      <span class="result-count" id="rc"></span>
+    </div>
+    <div class="acc-wrap">
+      <table class="acc-table">
+        <thead><tr>
+          <th style="width:22px;"></th>
+          <th onclick="sb('restNum')">Rest No<span class="sa"></span></th>
+          <th onclick="sb('fzName')">FZ Name<span class="sa"></span></th>
+          <th onclick="sb('city')">City, ST<span class="sa"></span></th>
+          <th onclick="sb('openDate')">Open Date<span class="sa"></span></th>
+          <th class="r" onclick="sb('daysOpen')">Days Open<span class="sa"></span></th>
+          <th class="r" onclick="sb('avgWeekly')">Avg Weekly<span class="sa"></span></th>
+          <th class="r" onclick="sb('avgMonthly')">Avg Monthly<span class="sa"></span></th>
+          <th class="r" onclick="sb('avgAnnual')">Annual Run Rate<span class="sa"></span></th>
+          <th class="r" onclick="sb('forecastVarPct')">vs Forecast<span class="sa"></span></th>
+          <th class="r" onclick="sb('annEBITDAPct')">EBITDA %<span class="sa"></span></th>
+          <th onclick="sb('fssGrade')">FSS<span class="sa"></span></th>
+        </tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+    <p style="margin-top:12px;font-size:11px;color:#9ca3af;font-style:italic;">
+      * Avg Weekly = TTM ARS ÷ days open × 7 &nbsp;|&nbsp; Avg Monthly = TTM ARS ÷ days open × 30.44 &nbsp;|&nbsp; Annual Run Rate = TTM ARS ÷ days open × 365 &nbsp;|&nbsp; vs Forecast compares Annual Run Rate to annualized Sales Forecast. Click any row to expand full detail.
+    </p>
+  </div>
+</div>
+</div>
+
+<script>
+const API="/api/ytd-openings";
+let ALL=[],sCol="openDate",sDir=1,expanded=new Set();
+
+const f$=n=>n==null?"—":Math.abs(n)>=1e6?`$${(n/1e6).toFixed(2)}M`:Math.abs(n)>=1000?`$${(n/1e3).toFixed(0)}K`:`$${Math.round(n).toLocaleString()}`;
+const fPct=n=>n==null?"—":(n>=0?"+":"")+(n*100).toFixed(1)+"%";
+const fDate=d=>{if(!d)return"—";const dt=new Date(d);return dt.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
+const varCls=v=>v==null?"vz":v>0?"vp":"vn";
+
+function renderKPIs(rows){
+  const ws=rows.filter(r=>r.avgAnnual!=null);
+  const wf=rows.filter(r=>r.forecastVarPct!=null);
+  const ahead=wf.filter(r=>r.forecastVarPct>0).length;
+  const avgW=ws.length?ws.reduce((a,r)=>a+r.avgWeekly,0)/ws.length:null;
+  const avgA=ws.length?ws.reduce((a,r)=>a+r.avgAnnual,0)/ws.length:null;
+  const wd=rows.filter(r=>r.daysOpen);
+  const avgD=wd.length?wd.reduce((a,r)=>a+r.daysOpen,0)/wd.length:null;
+  const we=rows.filter(r=>r.annEBITDAPct!=null);
+  const avgE=we.length?we.reduce((a,r)=>a+r.annEBITDAPct,0)/we.length:null;
+  const ap=wf.length?ahead/wf.length:null;
+  const cards=[
+    {l:"YTD Openings",      v:rows.length,                        s:"Status = Open",              c:"#E8521A",cls:""},
+    {l:"Avg Days Open",     v:avgD?Math.round(avgD)+" days":"—",  s:"Since FZ POD",               c:"#6b7280",cls:""},
+    {l:"Avg Weekly Sales",  v:f$(avgW),                           s:"Stores with TTM data",       c:"#00A99D",cls:""},
+    {l:"Annual Run Rate",   v:f$(avgA),                           s:"TTM ÷ days × 365",           c:"#7B2D8B",cls:""},
+    {l:"Ahead of Forecast", v:ap!=null?Math.round(ap*100)+"%":"—",s:wf.length?`${ahead} of ${wf.length} stores`:"No forecast data",
+     c:ap!=null&&ap>=0.5?"#059669":"#C1272D",cls:ap!=null&&ap>=0.5?"kpi-good":"kpi-bad"},
+    {l:"Avg EBITDA %",      v:avgE!=null?(avgE>=0?"+":"")+avgE.toFixed(1)+"%":"—",s:"Annualized",
+     c:avgE!=null&&avgE>=0?"#059669":"#C1272D",cls:avgE!=null&&avgE>=0?"kpi-good":"kpi-bad"},
+  ];
+  document.getElementById("kpis").innerHTML=cards.map(c=>`
+    <div class="kpi-card ${c.cls}" style="--kpi-color:${c.c}">
+      <div class="kpi-label">${c.l}</div>
+      <div class="kpi-value">${c.v}</div>
+      <div class="kpi-sub">${c.s}</div>
+    </div>`).join("");
+}
+
+function populateDivisions(){
+  const divs=[...new Set(ALL.map(r=>r.division).filter(Boolean))].sort();
+  const sel=document.getElementById("f-div");
+  divs.forEach(d=>{const o=document.createElement("option");o.value=d;o.textContent=d;sel.appendChild(o);});
+}
+
+function getFiltered(){
+  const div=document.getElementById("f-div").value;
+  const fss=document.getElementById("f-fss").value;
+  const fc =document.getElementById("f-fc").value;
+  return ALL.filter(r=>{
+    if(div&&r.division!==div)return false;
+    if(fss&&r.fssGrade!==fss)return false;
+    if(fc==="ahead"  &&!(r.forecastVarPct!=null&&r.forecastVarPct>0))return false;
+    if(fc==="behind" &&!(r.forecastVarPct!=null&&r.forecastVarPct<=0))return false;
+    if(fc==="nodata" &&r.forecastVarPct!=null)return false;
+    return true;
+  });
+}
+function applyFilters(){expanded.clear();renderTable(getFiltered());}
+function resetFilters(){
+  document.getElementById("f-div").value="";
+  document.getElementById("f-fss").value="";
+  document.getElementById("f-fc").value="";
+  expanded.clear();renderTable(getFiltered());
+}
+
+function sb(col){
+  if(sCol===col)sDir*=-1;else{sCol=col;sDir=1;}
+  const cols=["","restNum","fzName","city","openDate","daysOpen","avgWeekly","avgMonthly","avgAnnual","forecastVarPct","annEBITDAPct","fssGrade"];
+  document.querySelectorAll(".acc-table thead th").forEach((th,i)=>{
+    th.classList.remove("asc","desc");
+    if(cols[i]===col)th.classList.add(sDir===1?"asc":"desc");
+  });
+  renderTable(getFiltered());
+}
+
+function sorted(rows){
+  return[...rows].sort((a,b)=>{
+    let av=a[sCol],bv=b[sCol];
+    if(av==null&&bv==null)return 0;
+    if(av==null)return 1;if(bv==null)return-1;
+    if(typeof av==="string")return av.localeCompare(bv)*sDir;
+    return(av-bv)*sDir;
+  });
+}
+
+function renderTable(rows){
+  const s=sorted(rows);
+  document.getElementById("rc").textContent=`${s.length} restaurant${s.length!==1?"s":""}`;
+  const tbody=document.getElementById("tbody");
+  if(!s.length){tbody.innerHTML=`<tr><td colspan="12" class="empty">No restaurants match the current filters.</td></tr>`;return;}
+
+  tbody.innerHTML=s.map((r,idx)=>{
+    const id=`r${r.restNum||idx}`;
+    const isOpen=expanded.has(id);
+    const vc=varCls(r.forecastVarPct);
+    const ec=varCls(r.annEBITDAPct);
+    const fss=r.fssGrade?`<span class="fss fss-${r.fssGrade}">${r.fssGrade}</span>`:"—";
+    const eStr=r.annEBITDAPct!=null?(r.annEBITDAPct>=0?"+":"")+r.annEBITDAPct.toFixed(1)+"%":"—";
+
+    // format forecast var $ nicely
+    const fvdStr=r.forecastVarD==null?"—":(r.forecastVarD>=0?"+":"")+f$(Math.abs(r.forecastVarD)).replace("—","");
+
+    const detail=`<tr class="detail-row-tr${isOpen?" open":""}" id="d${id}"><td colspan="12"><div class="detail-inner">
+      <div class="dg"><div class="dg-title">📍 Location &amp; Profile</div>
+        <div class="dr"><span class="dl">Address</span><span class="dv">${r.address||"—"}</span></div>
+        <div class="dr"><span class="dl">Division</span><span class="dv">${r.division||"—"}</span></div>
+        <div class="dr"><span class="dl">Drive-Thru</span><span class="dv">${r.driveThru||"—"}</span></div>
+        <div class="dr"><span class="dl">Architecture</span><span class="dv">${r.archType||"—"}</span></div>
+        <div class="dr"><span class="dl">Open Date</span><span class="dv">${fDate(r.openDate)}</span></div>
+        <div class="dr"><span class="dl">Days Open</span><span class="dv">${r.daysOpen!=null?r.daysOpen+" days":"—"}</span></div>
+      </div>
+      <div class="dg"><div class="dg-title">💰 Sales Performance</div>
+        <div class="dr"><span class="dl">TTM ARS (actual $)</span><span class="dv">${f$(r.ttmARS)}</span></div>
+        <div class="dr"><span class="dl">Annualized ARS</span><span class="dv">${f$(r.annARS)}</span></div>
+        <div class="dr"><span class="dl">Avg Weekly Sales</span><span class="dv">${f$(r.avgWeekly)}</span></div>
+        <div class="dr"><span class="dl">Avg Monthly Sales</span><span class="dv">${f$(r.avgMonthly)}</span></div>
+        <div class="dr"><span class="dl">Annual Run Rate</span><span class="dv" style="font-weight:800;">${f$(r.avgAnnual)}</span></div>
+      </div>
+      <div class="dg"><div class="dg-title">🎯 vs Forecast</div>
+        <div class="dr"><span class="dl">Sales Forecast</span><span class="dv">${f$(r.salesForecast)}</span></div>
+        <div class="dr"><span class="dl">Variance $</span><span class="dv ${r.forecastVarD==null?"":(r.forecastVarD>=0?"good":"bad")}">${fvdStr}</span></div>
+        <div class="dr"><span class="dl">Variance %</span><span class="dv ${r.forecastVarPct==null?"":(r.forecastVarPct>=0?"good":"bad")}">${fPct(r.forecastVarPct)}</span></div>
+      </div>
+      <div class="dg"><div class="dg-title">📈 Profitability</div>
+        <div class="dr"><span class="dl">TTM EBITDA</span><span class="dv ${r.ttmEBITDA!=null&&r.ttmEBITDA<0?"bad":""}">${f$(r.ttmEBITDA)}</span></div>
+        <div class="dr"><span class="dl">Ann. EBITDA $</span><span class="dv ${r.annEBITDA!=null&&r.annEBITDA<0?"bad":""}">${f$(r.annEBITDA)}</span></div>
+        <div class="dr"><span class="dl">Ann. EBITDA %</span><span class="dv ${ec}">${eStr}</span></div>
+        <div class="dr"><span class="dl">FSS Grade</span><span class="dv">${fss}</span></div>
+      </div>
+      <div class="dg"><div class="dg-title">🏗️ Investment Model</div>
+        <div class="dr"><span class="dl">CapEx Estimate</span><span class="dv">${f$(r.capEx)}</span></div>
+        <div class="dr"><span class="dl">Est. EBITDA $</span><span class="dv">${f$(r.estEBITDA)}</span></div>
+        <div class="dr"><span class="dl">Est. EBITDA %</span><span class="dv">${r.estEBITDAPct!=null?r.estEBITDAPct.toFixed(1)+"%":"—"}</span></div>
+        <div class="dr"><span class="dl">ROI</span><span class="dv">${r.roi!=null?r.roi.toFixed(1)+"%":"—"}</span></div>
+      </div>
+    </div></td></tr>`;
+
+    return`<tr class="acc-row${isOpen?" open":""}" id="${id}" onclick="toggle('${id}')">
+      <td><span class="exp-icon">▶</span></td>
+      <td style="font-weight:700;">${r.restNum||"—"}</td>
+      <td>${r.fzName||"—"}</td>
+      <td>${[r.city,r.state].filter(Boolean).join(", ")||"—"}</td>
+      <td style="white-space:nowrap;">${fDate(r.openDate)}</td>
+      <td style="text-align:right;">${r.daysOpen!=null?`<span class="days-chip">${r.daysOpen}d</span>`:"—"}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;">${f$(r.avgWeekly)}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;">${f$(r.avgMonthly)}</td>
+      <td style="text-align:right;font-variant-numeric:tabular-nums;font-weight:700;">${f$(r.avgAnnual)}</td>
+      <td style="text-align:right;" class="${vc}">${fPct(r.forecastVarPct)}</td>
+      <td style="text-align:right;" class="${ec}">${eStr}</td>
+      <td>${fss}</td>
+    </tr>${detail}`;
+  }).join("");
+}
+
+function toggle(id){
+  if(expanded.has(id))expanded.delete(id);else expanded.add(id);
+  const row=document.getElementById(id);
+  const det=document.getElementById("d"+id);
+  if(!row||!det)return;
+  row.classList.toggle("open",expanded.has(id));
+  det.classList.toggle("open",expanded.has(id));
+}
+
+function exportTable(){
+  const rows=getFiltered();
+  const wb=XLSX.utils.book_new();
+  const hdrs=["Rest No","FZ Name","Division","Address","City","ST","Open Date","Days Open",
+    "TTM ARS","Annualized ARS","Avg Weekly","Avg Monthly","Annual Run Rate",
+    "Sales Forecast","Forecast Var $","Forecast Var %",
+    "TTM EBITDA","Ann EBITDA $","Ann EBITDA %","FSS Grade",
+    "Drive-Thru Type","Architecture Type","CapEx Estimate","Est EBITDA $","Est EBITDA %","ROI"];
+  const data=[hdrs,...rows.map(r=>[
+    r.restNum,r.fzName,r.division,r.address,r.city,r.state,r.openDate,r.daysOpen,
+    r.ttmARS,r.annARS,r.avgWeekly,r.avgMonthly,r.avgAnnual,
+    r.salesForecast,r.forecastVarD,r.forecastVarPct,
+    r.ttmEBITDA,r.annEBITDA,r.annEBITDAPct,r.fssGrade,
+    r.driveThru,r.archType,r.capEx,r.estEBITDA,r.estEBITDAPct,r.roi
+  ])];
+  const ws=XLSX.utils.aoa_to_sheet(data);
+  const range=XLSX.utils.decode_range(ws["!ref"]);
+  for(let R=1;R<=range.e.r;R++){
+    ["P","S","Y","Z"].forEach(col=>{const c=ws[col+(R+1)];if(c){c.t="n";c.z="0.0%";}});
+  }
+  ws["!cols"]=[10,24,12,28,16,6,14,10,12,12,12,12,12,12,12,10,12,12,10,8,14,16,12,12,10,8].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"YTD Openings");
+  XLSX.writeFile(wb,"YTD_Opening_Performance.xlsx");
+}
+
+async function fetchData(){
+  try{
+    const res=await fetch(API);
+    if(!res.ok)throw new Error("Server responded with "+res.status);
+    const data=await res.json();
+    if(!data.rows)throw new Error("Invalid data structure");
+    ALL=data.rows;
+    document.getElementById("ov").style.display="none";
+    document.getElementById("app").style.display="block";
+    populateDivisions();
+    renderKPIs(ALL);
+    renderTable(ALL);
+  }catch(e){
+    document.getElementById("ov").style.display="none";
+    alert("Error loading YTD opening data: "+e.message);
+  }
+}
+fetchData();
+</script>
+</body>
+</html>
