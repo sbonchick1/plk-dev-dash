@@ -15,30 +15,9 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacing:-2px;line-height:1.1;}
 .subtitle{font-size:20px;color:#6b6b6b;font-weight:400;max-width:600px;margin:0 auto;}
 
-/* Cards grid — fixed-width cards, never stretch */
-.cards-grid{
-  display:flex;
-  flex-wrap:wrap;
-  gap:32px;
-  max-width:1300px;
-  margin:0 auto;
-}
+.cards-grid{display:flex;flex-wrap:wrap;gap:32px;max-width:1300px;margin:0 auto;}
 
-.card{
-  background:#ffffff;
-  border:1px solid #e8e8e8;
-  border-radius:20px;
-  padding:36px 40px;
-  transition:all 0.3s cubic-bezier(0.4,0,0.2,1);
-  cursor:pointer;
-  text-decoration:none;
-  display:flex;
-  flex-direction:column;
-  position:relative;
-  overflow:hidden;
-  width:360px;
-  flex-shrink:0;
-}
+.card{background:#ffffff;border:1px solid #e8e8e8;border-radius:20px;padding:36px 40px;transition:all 0.3s cubic-bezier(0.4,0,0.2,1);cursor:pointer;text-decoration:none;display:flex;flex-direction:column;position:relative;overflow:hidden;width:360px;flex-shrink:0;}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#E8521A 0%,#C1272D 100%);transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease;}
 .card:hover::before{transform:scaleX(1);}
 .card:hover{border-color:#E8521A;box-shadow:0 20px 60px rgba(232,82,26,0.08);transform:translateY(-4px);}
@@ -51,10 +30,16 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
 .meta-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#9b9b9b;font-weight:500;}
 .meta-dot{width:6px;height:6px;background:#E8521A;border-radius:50%;}
 .meta-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;}
+
+/* Single-source pill */
 .card-url{display:inline-flex;align-items:center;gap:5px;font-size:11px;color:#b0b0b0;background:#f8f8f8;padding:3px 9px;border-radius:5px;border:1px solid #eeeeee;transition:color 0.3s,background 0.3s,border-color 0.3s;white-space:nowrap;}
-.card-url svg{width:10px;height:10px;stroke:#b0b0b0;flex-shrink:0;transition:stroke 0.3s;}
 .card:hover .card-url{color:#E8521A;background:#FFF5F0;border-color:#fdd5c5;}
-.card:hover .card-url svg{stroke:#E8521A;}
+
+/* Multi-source pill */
+.card-url-multi{display:inline-flex;flex-direction:column;gap:4px;font-size:11px;color:#b0b0b0;background:#f8f8f8;padding:5px 9px;border-radius:5px;border:1px solid #eeeeee;transition:color 0.3s,background 0.3s,border-color 0.3s;}
+.card-url-multi .card-url-row{display:flex;align-items:center;gap:5px;white-space:nowrap;}
+.card:hover .card-url-multi{color:#E8521A;background:#FFF5F0;border-color:#fdd5c5;}
+
 .card-arrow{width:36px;height:36px;background:#f3f4f6;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;opacity:0;transform:translateX(-8px);flex-shrink:0;}
 .card-arrow svg{width:16px;height:16px;stroke:#9ca3af;transition:stroke 0.3s ease;}
 .card:hover .card-arrow{opacity:1;transform:translateX(0);background:#E8521A;}
@@ -70,6 +55,17 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
 </style>
 </head>
 <body>
+
+<!-- Smartsheet logo: reusable SVG symbol — navy rounded square + bold white checkmark -->
+<svg width="0" height="0" style="position:absolute;">
+  <defs>
+    <symbol id="ss-logo" viewBox="0 0 16 16">
+      <rect width="16" height="16" rx="3" fill="#0D1F2D"/>
+      <polyline points="3.5,8.5 6.5,11.5 12,5" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    </symbol>
+  </defs>
+</svg>
+
 <div class="container">
   <div class="header">
     <div class="brand">
@@ -96,7 +92,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>ARS &amp; EBITDA</span></div>
           </div>
           <div class="meta-footer">
-            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>01. NRO Performance Tracker</span>
+            <span class="card-url">
+              <svg width="14" height="14"><use href="#ss-logo"/></svg>
+              02. PLK Opening
+            </span>
             <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
           </div>
         </div>
@@ -113,7 +112,11 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>vs Sales Forecast</span></div>
           </div>
           <div class="meta-footer">
-            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>02. Opening</span>
+            <span class="card-url-multi">
+              <span class="card-url-row"><svg width="14" height="14"><use href="#ss-logo"/></svg>02. PLK Opening</span>
+              <span class="card-url-row"><svg width="14" height="14"><use href="#ss-logo"/></svg>Master FZ File - Store Summary</span>
+              <span class="card-url-row"><svg width="14" height="14"><use href="#ss-logo"/></svg>12. Master REC File</span>
+            </span>
             <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
           </div>
         </div>
@@ -138,7 +141,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>SA Target vs Actual</span></div>
           </div>
           <div class="meta-footer">
-            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>03. Pipeline Tracker</span>
+            <span class="card-url-multi">
+              <span class="card-url-row"><svg width="14" height="14"><use href="#ss-logo"/></svg>02. PLK Opening</span>
+              <span class="card-url-row"><svg width="14" height="14"><use href="#ss-logo"/></svg>2026 Development Budgets and Targets</span>
+            </span>
             <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
           </div>
         </div>
@@ -155,7 +161,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>Budget Tracking</span></div>
           </div>
           <div class="meta-footer">
-            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>03. Pipeline Tracker</span>
+            <span class="card-url-multi">
+              <span class="card-url-row"><svg width="14" height="14"><use href="#ss-logo"/></svg>02. PLK Opening</span>
+              <span class="card-url-row"><svg width="14" height="14"><use href="#ss-logo"/></svg>2026 Development Budgets and Targets</span>
+            </span>
             <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
           </div>
         </div>
@@ -172,7 +181,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
             <div class="meta-item"><div class="meta-dot"></div><span>Closure Reason Analysis</span></div>
           </div>
           <div class="meta-footer">
-            <span class="card-url"><svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>04. Closure Tracker</span>
+            <span class="card-url-multi">
+              <span class="card-url-row"><svg width="14" height="14"><use href="#ss-logo"/></svg>03. PLK Closure</span>
+              <span class="card-url-row"><svg width="14" height="14"><use href="#ss-logo"/></svg>2026 Development Budgets and Targets</span>
+            </span>
             <div class="card-arrow"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
           </div>
         </div>
