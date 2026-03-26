@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Prospect &amp; Site Approval Pipeline</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;background:#f9fafb;min-height:100vh;color:#1a1a1a;}
+.container{max-width:1700px;margin:0 auto;padding:40px;}
+.breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:14px;color:#9b9b9b;}
+.breadcrumb a{color:#9b9b9b;text-decoration:none;}.breadcrumb a:hover{color:#E8521A;}
+.page-title{font-size:36px;font-weight:700;color:#1a1a1a;margin-bottom:12px;letter-spacing:-1px;}
+.page-subtitle{font-size:16px;color:#6b6b6b;line-height:1.6;margin-bottom:32px;}
+.section{background:white;border-radius:16px;padding:32px;margin-bottom:32px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #f0f0f0;flex-wrap:wrap;gap:12px;}
+.section-title{font-size:20px;font-weight:700;color:#1a1a1a;display:flex;align-items:center;gap:10px;}
+.export-btn{display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
+.export-btn:hover{background:#dcfce7;border-color:#4ade80;}
+.export-btn svg{width:15px;height:15px;}
+
+/* KPI Banner */
+.kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:32px;}
+.kpi-card{background:white;border-radius:12px;padding:18px 20px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#E8521A);}
+.kpi-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-weight:600;}
+.kpi-value{font-size:26px;font-weight:800;color:#1a1a1a;line-height:1;margin-bottom:4px;}
+.kpi-sub{font-size:11px;color:#9ca3af;}
+.kpi-urgent .kpi-value{color:#DC2626;}
+.kpi-good   .kpi-value{color:#059669;}
+.kpi-progress-wrap{margin-top:10px;background:#f3f4f6;border-radius:99px;height:6px;overflow:hidden;}
+.kpi-progress-bar{height:6px;border-radius:99px;background:var(--kpi-color,#E8521A);transition:width 0.6s ease;}
+
+/* REM cards row */
+.rem-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:32px;}
+.rem-card{background:white;border-radius:12px;padding:20px 22px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);border-left:4px solid var(--rem-color,#E8521A);}
+.rem-name{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+.rem-divs{font-size:12px;color:#6b7280;margin-bottom:14px;}
+.rem-stats{display:flex;gap:20px;flex-wrap:wrap;}
+.rem-stat{text-align:center;}
+.rem-stat-val{font-size:22px;font-weight:800;color:#1a1a1a;line-height:1;}
+.rem-stat-lbl{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.6px;margin-top:3px;}
+.rem-progress{margin-top:12px;}
+.rem-progress-lbl{display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-bottom:4px;}
+.rem-progress-track{height:6px;background:#f3f4f6;border-radius:99px;overflow:hidden;}
+.rem-progress-fill{height:6px;border-radius:99px;background:var(--rem-color,#E8521A);}
+
+/* Main Table */
+.table-container{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{background:#f9fafb;padding:11px 12px;text-align:center;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.5px;border-bottom:2px solid #e5e7eb;white-space:nowrap;vertical-align:middle;line-height:1.4;}
+thead th.left{text-align:left;}
+tbody tr{border-bottom:1px solid #f3f4f6;transition:filter 0.15s;}
+tbody tr:hover{filter:brightness(0.96);}
+tbody tr.total-row{background:#FFF5F0!important;font-weight:700;border-top:2px solid #E8521A;border-bottom:2px solid #E8521A;}
+tbody td{padding:12px 12px;color:#374151;}
+.division-cell{font-weight:600;color:#1a1a1a;}
+.rem-cell{font-size:12px;color:#6b7280;}
+.number-cell{text-align:center;font-weight:600;font-variant-numeric:tabular-nums;}
+.number-cell.clickable{cursor:pointer;}
+.number-cell.clickable:hover span{text-decoration:underline;color:#E8521A;}
+.gap-positive{color:#059669;font-weight:700;}
+.gap-negative{color:#DC2626;font-weight:700;}
+.gap-zero{color:#6b7280;font-weight:600;}
+.ach-badge{display:inline-block;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12px;text-align:center;min-width:54px;}
+.ach-high{background:#D1FAE5;color:#065F46;}
+.ach-medium{background:#FEF3C7;color:#92400E;}
+.ach-low{background:#FEE2E2;color:#991B1B;}
+.rank-pill{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800;margin-right:6px;flex-shrink:0;}
+.rank-1{background:#059669;color:white;}.rank-2{background:#34d399;color:white;}
+.rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
+.rank-5{background:#f87171;color:white;}.rank-6{background:#DC2626;color:white;}
+
+/* Risk mini-bar */
+.risk-minibar{display:flex;height:8px;border-radius:4px;overflow:hidden;min-width:80px;gap:1px;}
+.risk-seg{height:100%;}
+
+/* Chart section */
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+.chart-card{background:white;border-radius:12px;padding:22px;border:1px solid #e5e7eb;}
+.chart-title{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+.chart-subtitle{font-size:12px;color:#6b7280;margin-bottom:14px;}
+.chart-canvas{max-height:300px;}
+
+/* Legend */
+.legend-bar{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
+.modal-overlay.open{opacity:1;pointer-events:auto;}
+.modal{background:white;border-radius:16px;width:100%;max-width:1050px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.2);transform:translateY(20px);transition:transform 0.2s;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;}
+.modal-title{font-size:17px;font-weight:700;color:#1a1a1a;}
+.modal-subtitle{font-size:13px;color:#6b7280;margin-top:2px;}
+.modal-actions{display:flex;gap:8px;align-items:center;}
+.modal-close{background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#6b7280;}
+.modal-close:hover{background:#fee2e2;color:#dc2626;}
+.modal-filterbar{display:flex;gap:10px;align-items:center;padding:12px 24px;background:#f9fafb;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;flex-shrink:0;}
+.modal-filter-label{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;}
+.modal-select{padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white;cursor:pointer;outline:none;}
+.modal-select:focus{border-color:#E8521A;}
+.modal-count{margin-left:auto;font-size:12px;color:#9ca3af;white-space:nowrap;}
+.modal-reset{background:none;border:1px solid #e5e7eb;border-radius:6px;padding:5px 10px;font-size:12px;color:#6b7280;cursor:pointer;}
+.modal-reset:hover{border-color:#E8521A;color:#E8521A;}
+.modal-body{overflow-y:auto;padding:0 24px 20px;}
+.modal-table{width:100%;border-collapse:collapse;font-size:12px;}
+.modal-table thead th{background:#f9fafb;padding:9px 12px;text-align:left;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.4px;border-bottom:2px solid #e5e7eb;white-space:nowrap;position:sticky;top:0;z-index:1;cursor:pointer;user-select:none;}
+.modal-table thead th:hover{color:#E8521A;}
+.modal-table thead th .sort-arrow{margin-left:4px;opacity:0.4;font-size:9px;}
+.modal-table thead th.sort-asc .sort-arrow::after{content:'▲';opacity:1;}
+.modal-table thead th.sort-desc .sort-arrow::after{content:'▼';opacity:1;}
+.modal-table thead th:not(.sort-asc):not(.sort-desc) .sort-arrow::after{content:'⇅';}
+.modal-table tbody tr{border-bottom:1px solid #f3f4f6;}
+.modal-table tbody tr:hover{background:#fef3ee;}
+.modal-table tbody td{padding:10px 12px;color:#374151;}
+.modal-empty{text-align:center;padding:40px;color:#9ca3af;font-size:14px;}
+.risk-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;}
+.risk-low{background:#D1FAE5;color:#065F46;}.risk-medium{background:#FEF3C7;color:#92400E;}
+.risk-high{background:#FEE2E2;color:#991B1B;}.risk-upside{background:#EDE9FE;color:#5B21B6;}
+.risk-2027{background:#E0F2FE;color:#0369A1;}.risk-default{background:#F3F4F6;color:#374151;}
+.overlay{position:fixed;inset:0;background:#f9fafb;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
+.spinner{width:48px;height:48px;border:4px solid #E8521A;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.overlay-title{font-size:18px;font-weight:600;color:#374151;}
+.overlay-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
+@media(max-width:900px){.charts-grid{grid-template-columns:1fr;}.container{padding:24px;}}
+</style>
+</head>
+<body>
+
+<div id="loading-overlay" class="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-title">Loading REM pipeline data…</div>
+  <div class="overlay-sub">Fetching prospects &amp; site approvals from Smartsheet</div>
+</div>
+
+<!-- Drill-down Modal -->
+<div class="modal-overlay" id="drill-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Sites</div>
+        <div class="modal-subtitle" id="modal-subtitle"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="export-btn" onclick="exportModalToExcel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-filterbar">
+      <span class="modal-filter-label">Filter:</span>
+      <select class="modal-select" id="modal-filter-risk" onchange="renderModalTable()">
+        <option value="">All Risk Levels</option>
+        <option value="low">Low</option><option value="medium">Medium</option>
+        <option value="high">High</option><option value="upside">Upside</option>
+      </select>
+      <select class="modal-select" id="modal-filter-status" onchange="renderModalTable()">
+        <option value="">All Statuses</option>
+        <option value="Prospect">Prospect</option>
+        <option value="SA">SA</option>
+      </select>
+      <button class="modal-reset" onclick="resetModalFilters()">Reset</button>
+      <span class="modal-count" id="modal-count"></span>
+    </div>
+    <div class="modal-body">
+      <table class="modal-table">
+        <thead>
+          <tr id="modal-thead-row">
+            <th onclick="sortModal(0)">SIP ID<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(1)">Rest No<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(2)">FZ<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(3)">Address<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(4)">City<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(5)">ST<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(6)">Status<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(7)">SA Start<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(8)">FZ Proj Open<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(9)">Risk Level<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(10)">Last Comments<span class="sort-arrow"></span></th>
+          </tr>
+        </thead>
+        <tbody id="modal-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
+  <div class="container">
+    <div class="breadcrumb">
+      <a href="/">Home</a>
+      <span style="color:#d0d0d0">/</span>
+      <span>REM Pipeline Dashboard</span>
+    </div>
+    <h1 class="page-title">Prospect &amp; Site Approval Pipeline</h1>
+    <p class="page-subtitle">Early-stage pipeline tracking — Prospects &amp; Site Approvals by REM and division · SA target vs. actual performance</p>
+
+    <!-- KPI Banner -->
+    <div class="kpi-banner" id="kpi-banner"></div>
+
+    <!-- REM Cards -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span>👤</span>REM Accountability — Prospects &amp; SA Summary</div>
+      </div>
+      <div class="rem-cards" id="rem-cards"></div>
+    </div>
+
+    <!-- Pipeline Table -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span>📊</span>Prospect &amp; SA Pipeline vs. SA Target — by Division</div>
+        <button class="export-btn" onclick="exportTable()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
+      </div>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th class="left" style="width:30px;"></th>
+              <th class="left">Division</th>
+              <th class="left">REM</th>
+              <th style="background:#fef3c7;color:#92400e;">Prospect</th>
+              <th style="background:#dbeafe;color:#1d4ed8;">Site Approvals<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(SA)</span></th>
+              <th>Total Early<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Prospect + SA)</span></th>
+              <th style="background:#f0fdf4;color:#166534;">SA Target</th>
+              <th>Gap (SA vs Target)</th>
+              <th style="background:#eff6ff;color:#1d4ed8;">SA Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(SA / Target)</span></th>
+              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(all early-stage)</span></th>
+            </tr>
+          </thead>
+          <tbody id="tbody-main"></tbody>
+        </table>
+      </div>
+      <div class="legend-bar">
+        <span style="font-size:11px;color:#6b7280;font-weight:600;">Rank (SA achievement vs target):</span>
+        <div class="legend-item"><div class="legend-dot" style="background:#059669;"></div>#1 Best</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#34d399;"></div>#2</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>#3</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fb923c;"></div>#4</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#f87171;"></div>#5</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#DC2626;"></div>#6</div>
+        <div style="width:1px;background:#e5e7eb;height:16px;margin:0 4px;"></div>
+        <span style="font-size:11px;color:#6b7280;font-weight:600;">Risk Mix:</span>
+        <div class="legend-item"><div class="legend-dot" style="background:#059669;"></div>Low</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>Medium</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#DC2626;"></div>High</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#7C3AED;"></div>Upside</div>
+      </div>
+      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* SA Achievement = Site Approvals ÷ SA Target. Rank based on SA achievement relative to target — higher is better. Click any count to drill into individual sites.</p>
+    </div>
+
+    <!-- Charts -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title"><span>📈</span>Pipeline Visual Analysis</div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">Prospects &amp; Site Approvals by Division</div>
+          <div class="chart-subtitle">Stacked — click bars to drill down</div>
+          <canvas id="chart-stack" class="chart-canvas"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">SA Achievement vs. Target by Division</div>
+          <div class="chart-subtitle">Site Approvals vs SA Target</div>
+          <canvas id="chart-sa" class="chart-canvas"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">Prospect &amp; SA Pipeline by REM</div>
+          <div class="chart-subtitle">Total early-stage sites under each REM</div>
+          <canvas id="chart-rem" class="chart-canvas"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">SA Achievement vs. Target by REM</div>
+          <div class="chart-subtitle">Site Approvals vs SA Target — REM view</div>
+          <canvas id="chart-rem-sa" class="chart-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "/api/rem-pipeline";
+
+const DIVISIONS = ["Northeast","Southeast","Central","West","Canada","Non-Trad"];
+const RANK_COLORS = ["#059669","#34d399","#fbbf24","#fb923c","#f87171","#DC2626"];
+const RANK_BG     = ["rgba(209,250,229,0.35)","rgba(187,247,208,0.25)","rgba(254,249,195,0.35)","rgba(254,215,170,0.25)","rgba(254,202,202,0.25)","rgba(254,226,226,0.35)"];
+
+// REM assignments
+const REMS = [
+  { name:"Erin Tyner",      divs:["Northeast","Southeast"], color:"#E8521A" },
+  { name:"Jerod Hanaman",   divs:["Central","West"],        color:"#7B2D8B" },
+  { name:"Carlos Martinez", divs:["Non-Trad"],              color:"#00A99D" },
+  { name:"Kevin Fitzgerald",divs:["Canada"],                color:"#1d4ed8" },
+];
+
+function remForDiv(div) {
+  return REMS.find(r => r.divs.includes(div)) || { name:"—", color:"#9ca3af" };
+}
+
+let ALL_DATA = [], SA_TARGETS = {};
+let MODAL_SITES = [], MODAL_TITLE_TEXT = "";
+let modalSortCol = -1, modalSortDir = 1;
+
+function is2026(r) {
+  const rl = (r.riskLevel || "").trim().toLowerCase();
+  return ["low","medium","high"].includes(rl);
+}
+function isUpside(r) { return (r.riskLevel||"").trim().toLowerCase() === "upside"; }
+
+function achieveClass(p) { return p >= 90 ? "ach-high" : p >= 70 ? "ach-medium" : "ach-low"; }
+function gapClass(g) { return g > 0 ? "gap-positive" : g < 0 ? "gap-negative" : "gap-zero"; }
+
+// ── KPI Banner ─────────────────────────────────────────────────────────────
+function renderKPIBanner() {
+  const prospects = ALL_DATA.filter(r => r.status === "Prospect").length;
+  const sas       = ALL_DATA.filter(r => r.status === "SA").length;
+  const total     = prospects + sas;
+  const totalTarget = Object.values(SA_TARGETS).reduce((a,b)=>a+b,0);
+  const saAch = totalTarget > 0 ? Math.round(sas / totalTarget * 100) : null;
+  const ratio = prospects > 0 ? (sas / prospects).toFixed(1) : "—";
+
+  const cards = [
+    { l:"Total Prospects",     v:prospects,    s:"Active in pipeline",          c:"#F7941D", cls:"" },
+    { l:"Site Approvals (SA)", v:sas,          s:"Approved sites",              c:"#E8521A", cls:"" },
+    { l:"SA Target",           v:totalTarget||"—", s:"US&C combined",           c:"#059669", cls:"" },
+    { l:"SA Achievement",      v:saAch!=null?saAch+"%":"—", s:`${sas} of ${totalTarget} target`,
+      c:saAch!=null&&saAch>=90?"#059669":"#DC2626",
+      cls:saAch!=null&&saAch>=90?"kpi-good":saAch!=null&&saAch<70?"kpi-urgent":"",
+      extra:saAch!=null?`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:${saAch>=90?"#059669":"#DC2626"};width:${Math.min(100,saAch)}%"></div></div>`:"" },
+    { l:"SA → Prospect Ratio", v:ratio,        s:"SAs per prospect",            c:"#7B2D8B", cls:"" },
+    { l:"Total Early Pipeline",v:total,        s:"Prospect + SA",               c:"#00A99D", cls:"" },
+  ];
+
+  document.getElementById("kpi-banner").innerHTML = cards.map(c=>`
+    <div class="kpi-card ${c.cls}" style="--kpi-color:${c.c}">
+      <div class="kpi-label">${c.l}</div>
+      <div class="kpi-value">${c.v}</div>
+      <div class="kpi-sub">${c.s}</div>
+      ${c.extra||""}
+    </div>`).join("");
+}
+
+// ── REM Cards ──────────────────────────────────────────────────────────────
+function renderREMCards() {
+  document.getElementById("rem-cards").innerHTML = REMS.map(rem => {
+    const remRows = ALL_DATA.filter(r => rem.divs.includes(r.division));
+    const prospects = remRows.filter(r => r.status === "Prospect").length;
+    const sas       = remRows.filter(r => r.status === "SA").length;
+    const target    = rem.divs.reduce((a,d) => a + (SA_TARGETS[d]||0), 0);
+    const achPct    = target > 0 ? Math.round(sas / target * 100) : null;
+
+    return `<div class="rem-card" style="--rem-color:${rem.color}">
+      <div class="rem-name">${rem.name}</div>
+      <div class="rem-divs">${rem.divs.join(" · ")}</div>
+      <div class="rem-stats">
+        <div class="rem-stat">
+          <div class="rem-stat-val" style="color:#F7941D">${prospects}</div>
+          <div class="rem-stat-lbl">Prospects</div>
+        </div>
+        <div class="rem-stat">
+          <div class="rem-stat-val" style="color:${rem.color}">${sas}</div>
+          <div class="rem-stat-lbl">Site Approvals</div>
+        </div>
+        <div class="rem-stat">
+          <div class="rem-stat-val">${target||"—"}</div>
+          <div class="rem-stat-lbl">SA Target</div>
+        </div>
+        <div class="rem-stat">
+          <div class="rem-stat-val" style="color:${achPct!=null&&achPct>=90?"#059669":achPct!=null?"#DC2626":"#9ca3af"}">${achPct!=null?achPct+"%":"—"}</div>
+          <div class="rem-stat-lbl">SA Ach.</div>
+        </div>
+      </div>
+      ${target > 0 ? `<div class="rem-progress">
+        <div class="rem-progress-lbl"><span>SA Progress</span><span>${sas} / ${target}</span></div>
+        <div class="rem-progress-track"><div class="rem-progress-fill" style="width:${Math.min(100,achPct||0)}%;background:${rem.color};"></div></div>
+      </div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+// ── Main Table ─────────────────────────────────────────────────────────────
+function renderTable() {
+  const divStats = DIVISIONS.map(div => {
+    const rows      = ALL_DATA.filter(r => r.division === div);
+    const prospects = rows.filter(r => r.status === "Prospect").length;
+    const sas       = rows.filter(r => r.status === "SA").length;
+    const total     = prospects + sas;
+    const target    = SA_TARGETS[div] || 0;
+    const gap       = sas - target;
+    const achPct    = target > 0 ? (sas / target * 100) : 0;
+    // risk mix across all early-stage
+    const nLow  = rows.filter(r=>(r.riskLevel||"").toLowerCase()==="low").length;
+    const nMed  = rows.filter(r=>(r.riskLevel||"").toLowerCase()==="medium").length;
+    const nHigh = rows.filter(r=>(r.riskLevel||"").toLowerCase()==="high").length;
+    const nUp   = rows.filter(r=>(r.riskLevel||"").toLowerCase()==="upside").length;
+    const rem   = remForDiv(div);
+    return { div, prospects, sas, total, target, gap, achPct, nLow, nMed, nHigh, nUp, rem };
+  });
+
+  // Rank by SA achievement descending (higher = better)
+  const sorted = [...divStats].sort((a,b) => b.achPct - a.achPct);
+  const rankMap = {};
+  sorted.forEach((d,i) => rankMap[d.div] = i);
+
+  const totals = { prospects:0, sas:0, total:0, target:0 };
+  let html = "";
+
+  divStats.forEach(({div,prospects,sas,total,target,gap,achPct,nLow,nMed,nHigh,nUp,rem}) => {
+    const rank = rankMap[div], rn = rank + 1;
+    const rColor = RANK_COLORS[Math.min(rank,5)], rBg = RANK_BG[Math.min(rank,5)];
+    const rTotal = nLow+nMed+nHigh+nUp || 1;
+    const minibar = `<div class="risk-minibar" title="Low:${nLow} Med:${nMed} High:${nHigh} Upside:${nUp}">
+      <div class="risk-seg" style="width:${nLow/rTotal*100}%;background:#059669;"></div>
+      <div class="risk-seg" style="width:${nMed/rTotal*100}%;background:#fbbf24;"></div>
+      <div class="risk-seg" style="width:${nHigh/rTotal*100}%;background:#DC2626;"></div>
+      <div class="risk-seg" style="width:${nUp/rTotal*100}%;background:#7C3AED;"></div>
+    </div><div style="font-size:10px;color:#9ca3af;margin-top:3px;">${nLow}L·${nMed}M·${nHigh}H·${nUp}U</div>`;
+
+    html += `<tr style="background:${rBg};border-left:4px solid ${rColor};">
+      <td style="padding-left:10px;"><span class="rank-pill rank-${rn}">${rn}</span></td>
+      <td class="division-cell">${div}</td>
+      <td class="rem-cell" style="color:${rem.color};font-weight:600;">${rem.name}</td>
+      ${clickableCell(prospects,div,"Prospect",`${div} · Prospects`)}
+      ${clickableCell(sas,div,"SA",`${div} · Site Approvals`)}
+      ${clickableCell(total,div,null,`${div} · All Early-Stage`)}
+      <td class="number-cell">${target||"—"}</td>
+      <td class="number-cell ${gapClass(gap)}">${target?((gap>=0?"+":"")+gap):"—"}</td>
+      <td class="number-cell">${target?`<span class="ach-badge ${achieveClass(achPct)}">${achPct.toFixed(0)}%</span>`:"—"}</td>
+      <td style="min-width:100px;">${minibar}</td>
+    </tr>`;
+
+    totals.prospects += prospects;
+    totals.sas       += sas;
+    totals.total     += total;
+    totals.target    += target;
+  });
+
+  const tGap = totals.sas - totals.target;
+  const tAch = totals.target > 0 ? (totals.sas / totals.target * 100) : 0;
+
+  html += `<tr class="total-row">
+    <td></td>
+    <td class="division-cell">US&amp;C Total</td>
+    <td class="rem-cell">—</td>
+    ${clickableCell(totals.prospects,"US&C","Prospect","US&C · All Prospects")}
+    ${clickableCell(totals.sas,"US&C","SA","US&C · All Site Approvals")}
+    ${clickableCell(totals.total,"US&C",null,"US&C · All Early-Stage")}
+    <td class="number-cell">${totals.target||"—"}</td>
+    <td class="number-cell ${gapClass(tGap)}">${totals.target?((tGap>=0?"+":"")+tGap):"—"}</td>
+    <td class="number-cell">${totals.target?`<span class="ach-badge ${achieveClass(tAch)}">${tAch.toFixed(0)}%</span>`:"—"}</td>
+    <td></td>
+  </tr>`;
+
+  document.getElementById("tbody-main").innerHTML = html;
+}
+
+function clickableCell(count, divName, status, label) {
+  if (!count) return `<td class="number-cell">0</td>`;
+  const ed = divName.replace(/'/g,"\\'"), el = label.replace(/'/g,"\\'");
+  const es = status ? `'${status}'` : "null";
+  return `<td class="number-cell clickable" onclick="openDrillDown('${ed}',${es},'${el}')"><span>${count}</span></td>`;
+}
+
+// ── Charts ─────────────────────────────────────────────────────────────────
+function renderCharts() {
+  const labels = DIVISIONS;
+  const prospects = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="Prospect").length);
+  const sas       = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="SA").length);
+  const targets   = DIVISIONS.map(d => SA_TARGETS[d]||0);
+
+  // Stacked bar: Prospect + SA
+  new Chart(document.getElementById("chart-stack"), {
+    type:"bar",
+    data:{
+      labels,
+      datasets:[
+        {label:"Prospect", data:prospects, backgroundColor:"#FDE68A", borderRadius:0, stack:"s"},
+        {label:"SA",       data:sas,       backgroundColor:"#E8521A", borderRadius:4, stack:"s"},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:true,labels:{color:"#6b7280",font:{size:11}}},
+        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white"}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},
+              y:{stacked:true,grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11}}}},
+      onClick:(e,els)=>{ if(!els.length)return; const div=labels[els[0].index]; openDrillDown(div,null,`${div} · All Early-Stage`); }
+    }
+  });
+  document.getElementById("chart-stack").style.cursor="pointer";
+
+  // SA vs Target grouped bar
+  new Chart(document.getElementById("chart-sa"), {
+    type:"bar",
+    data:{
+      labels,
+      datasets:[
+        {label:"SA Target", data:targets, backgroundColor:"rgba(5,150,105,0.2)", borderColor:"#059669", borderWidth:2, borderRadius:4},
+        {label:"Site Approvals", data:sas, backgroundColor:"#E8521A", borderRadius:4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:true,labels:{color:"#6b7280",font:{size:11}}},
+        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white"}},
+      scales:{x:{grid:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},
+              y:{grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11}}}}
+    }
+  });
+
+  // REM stacked
+  const remLabels = REMS.map(r=>r.name);
+  const remProspects = REMS.map(rem => ALL_DATA.filter(r=>rem.divs.includes(r.division)&&r.status==="Prospect").length);
+  const remSAs       = REMS.map(rem => ALL_DATA.filter(r=>rem.divs.includes(r.division)&&r.status==="SA").length);
+
+  new Chart(document.getElementById("chart-rem"), {
+    type:"bar",
+    data:{
+      labels:remLabels,
+      datasets:[
+        {label:"Prospect", data:remProspects, backgroundColor:"#FDE68A", stack:"s"},
+        {label:"SA",       data:remSAs,       backgroundColor:"#E8521A", borderRadius:4, stack:"s"},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:true,labels:{color:"#6b7280",font:{size:11}}},
+        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white"}},
+      scales:{x:{stacked:true,grid:{display:false},ticks:{color:"#9ca3af",font:{size:11},maxRotation:20}},
+              y:{stacked:true,grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11}}}}
+    }
+  });
+
+  // REM SA vs target
+  const remTargets = REMS.map(rem => rem.divs.reduce((a,d)=>a+(SA_TARGETS[d]||0),0));
+  new Chart(document.getElementById("chart-rem-sa"), {
+    type:"bar",
+    data:{
+      labels:remLabels,
+      datasets:[
+        {label:"SA Target", data:remTargets, backgroundColor:"rgba(5,150,105,0.2)", borderColor:"#059669", borderWidth:2, borderRadius:4},
+        {label:"Site Approvals", data:remSAs, backgroundColor:REMS.map(r=>r.color), borderRadius:4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:true,
+      plugins:{legend:{display:true,labels:{color:"#6b7280",font:{size:11}}},
+        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
+          callbacks:{label:ctx=>{
+            if(ctx.dataset.label==="Site Approvals"){
+              const t=remTargets[ctx.dataIndex];
+              const ach=t>0?Math.round(ctx.raw/t*100):null;
+              return `SAs: ${ctx.raw}${ach!=null?" ("+ach+"% of target)":""}`;
+            }
+            return `${ctx.dataset.label}: ${ctx.raw}`;
+          }}}},
+      scales:{x:{grid:{display:false},ticks:{color:"#9ca3af",font:{size:11},maxRotation:20}},
+              y:{grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11}}}}
+    }
+  });
+}
+
+// ── Modal ──────────────────────────────────────────────────────────────────
+function getSiteRow(s){
+  return[s.sipId||"",s.restNum||"",s.fz||"",s.address||"",s.city||"",
+         s.state||"",s.status||"",s.saStart||"",s.fzOpenDate||"",s.riskLevel||"",s.lastComment||""];
+}
+function renderModalTable(){
+  const riskF  = document.getElementById("modal-filter-risk").value.toLowerCase();
+  const statusF= document.getElementById("modal-filter-status").value;
+  let sites = MODAL_SITES.filter(s=>{
+    const rl = (s.riskLevel||"").trim().toLowerCase();
+    return (!riskF||rl===riskF) && (!statusF||s.status===statusF);
+  });
+  if(modalSortCol>=0) sites=[...sites].sort((a,b)=>getSiteRow(a)[modalSortCol].localeCompare(getSiteRow(b)[modalSortCol],undefined,{sensitivity:"base"})*modalSortDir);
+  document.getElementById("modal-count").textContent=`${sites.length} site${sites.length!==1?"s":""}`;
+  const tbody=document.getElementById("modal-tbody");
+  if(!sites.length){tbody.innerHTML=`<tr><td colspan="11" class="modal-empty">No sites match the current filters.</td></tr>`;return;}
+  tbody.innerHTML=sites.map(s=>{
+    const rl=(s.riskLevel||"").trim().toLowerCase();
+    let rc="risk-default";
+    if(rl==="low")rc="risk-low";else if(rl==="medium")rc="risk-medium";
+    else if(rl==="high")rc="risk-high";else if(rl==="upside")rc="risk-upside";
+    else if(rl.startsWith("2027"))rc="risk-2027";
+    return`<tr>
+      <td>${s.sipId||"—"}</td>
+      <td><strong>${s.restNum||"—"}</strong></td>
+      <td>${s.fz||"—"}</td>
+      <td style="white-space:nowrap">${s.address||"—"}</td>
+      <td>${s.city||"—"}</td>
+      <td>${s.state||"—"}</td>
+      <td><strong>${s.status||"—"}</strong></td>
+      <td style="white-space:nowrap">${s.saStart||"—"}</td>
+      <td style="white-space:nowrap">${s.fzOpenDate||"—"}</td>
+      <td><span class="risk-badge ${rc}">${s.riskLevel||"—"}</span></td>
+      <td style="max-width:260px;white-space:normal;font-size:11px;color:#6b7280;">${s.lastComment||"—"}</td>
+    </tr>`;
+  }).join("");
+}
+function sortModal(col){
+  const ths=document.querySelectorAll("#modal-thead-row th");
+  modalSortDir=(modalSortCol===col)?modalSortDir*-1:1; modalSortCol=col;
+  ths.forEach((th,i)=>{th.classList.remove("sort-asc","sort-desc");if(i===col)th.classList.add(modalSortDir===1?"sort-asc":"sort-desc");});
+  renderModalTable();
+}
+function resetModalFilters(){
+  document.getElementById("modal-filter-risk").value="";
+  document.getElementById("modal-filter-status").value="";
+  modalSortCol=-1; modalSortDir=1;
+  document.querySelectorAll("#modal-thead-row th").forEach(th=>th.classList.remove("sort-asc","sort-desc"));
+  renderModalTable();
+}
+function openDrillDown(divName, status, label){
+  let sites = ALL_DATA;
+  if(divName && divName!=="US&C") sites=sites.filter(r=>r.division===divName);
+  if(status) sites=sites.filter(r=>r.status===status);
+  MODAL_SITES=sites; MODAL_TITLE_TEXT=label;
+  document.getElementById("modal-title").textContent=label;
+  document.getElementById("modal-subtitle").textContent=`${sites.length} site${sites.length!==1?"s":""}`;
+  resetModalFilters();
+  document.getElementById("drill-modal").classList.add("open");
+}
+function closeModal(){document.getElementById("drill-modal").classList.remove("open");}
+document.getElementById("drill-modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
+
+// ── Exports ────────────────────────────────────────────────────────────────
+function exportModalToExcel(){
+  const rF=document.getElementById("modal-filter-risk").value.toLowerCase();
+  const sF=document.getElementById("modal-filter-status").value;
+  const sites=MODAL_SITES.filter(s=>{const rl=(s.riskLevel||"").toLowerCase();return(!rF||rl===rF)&&(!sF||s.status===sF);});
+  if(!sites.length)return;
+  const wb=XLSX.utils.book_new();
+  const rows=[["SIP ID","Rest No","FZ","Address","City","ST","Status","SA Start","FZ Proj Open Date","Risk Level","Last Comments"]];
+  sites.forEach(s=>rows.push([s.sipId||"",s.restNum||"",s.fz||"",s.address||"",s.city||"",s.state||"",s.status||"",s.saStart||"",s.fzOpenDate||"",s.riskLevel||"",s.lastComment||""]));
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[12,10,20,24,16,6,10,14,14,12,40].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"Sites");
+  XLSX.writeFile(wb,MODAL_TITLE_TEXT.replace(/[^a-zA-Z0-9 ]/g,"_")+".xlsx");
+}
+function exportTable(){
+  const wb=XLSX.utils.book_new();
+  const rows=[["Division","REM","Prospects","Site Approvals","Total Early-Stage","SA Target","Gap (SA vs Target)","SA Achievement %"]];
+  DIVISIONS.forEach(div=>{
+    const rem=remForDiv(div);
+    const prospects=ALL_DATA.filter(r=>r.division===div&&r.status==="Prospect").length;
+    const sas=ALL_DATA.filter(r=>r.division===div&&r.status==="SA").length;
+    const target=SA_TARGETS[div]||0;
+    rows.push([div,rem.name,prospects,sas,prospects+sas,target,sas-target,target>0?(sas/target):0]);
+  });
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  const range=XLSX.utils.decode_range(ws["!ref"]);
+  for(let R=1;R<=range.e.r;R++){const c=ws["H"+(R+1)];if(c){c.t="n";c.z="0%";}}
+  ws["!cols"]=[14,18,10,14,14,10,16,16].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"REM Pipeline");
+  XLSX.writeFile(wb,"REM_Pipeline_Summary.xlsx");
+}
+
+// ── Fetch ──────────────────────────────────────────────────────────────────
+async function fetchData(){
+  try{
+    const res=await fetch(API);
+    if(!res.ok) throw new Error(`Server responded with ${res.status}`);
+    const data=await res.json();
+    if(!data.rows) throw new Error("Invalid data structure");
+    ALL_DATA   = data.rows;
+    SA_TARGETS = data.saTargets || {};
+    document.getElementById("loading-overlay").style.display="none";
+    document.getElementById("app").style.display="block";
+    renderKPIBanner();
+    renderREMCards();
+    renderTable();
+    renderCharts();
+  } catch(e){
+    document.getElementById("loading-overlay").style.display="none";
+    alert("Error loading REM pipeline data: "+e.message);
+  }
+}
+fetchData();
+</script>
+</body>
+</html>
