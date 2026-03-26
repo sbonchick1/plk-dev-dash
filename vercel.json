@@ -5,6 +5,7 @@
     { "source": "/nro-hub",               "destination": "/nro-hub.html" },
     { "source": "/dashboard",             "destination": "/dashboard.html" },
     { "source": "/development-execution", "destination": "/development-execution.html" },
-    { "source": "/closures",              "destination": "/closures.html" }
+    { "source": "/closures",              "destination": "/closures.html" },
+    { "source": "/ytd-openings",          "destination": "/ytd-openings.html" }
   ]
 }
