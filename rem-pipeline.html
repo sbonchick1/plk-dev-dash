@@ -56,8 +56,8 @@ tbody tr{border-bottom:1px solid #f3f4f6;transition:filter 0.15s;}
 tbody tr:hover{filter:brightness(0.96);}
 tbody tr.total-row{background:#FFF5F0!important;font-weight:700;border-top:2px solid #E8521A;border-bottom:2px solid #E8521A;}
 tbody td{padding:12px 12px;color:#374151;}
-.division-cell{font-weight:600;color:#1a1a1a;}
-.rem-cell{font-size:12px;color:#6b7280;}
+.division-cell{font-weight:600;color:#1a1a1a;line-height:1.3;}
+.rem-sub{font-size:11px;font-weight:400;color:#9ca3af;display:block;margin-top:2px;}
 .number-cell{text-align:center;font-weight:600;font-variant-numeric:tabular-nums;}
 .number-cell.clickable{cursor:pointer;}
 .number-cell.clickable:hover span{text-decoration:underline;color:#E8521A;}
@@ -77,16 +77,23 @@ tbody td{padding:12px 12px;color:#374151;}
 .risk-minibar{display:flex;height:8px;border-radius:4px;overflow:hidden;min-width:80px;gap:1px;}
 .risk-seg{height:100%;}
 
-/* Chart section */
+/* Charts — side by side, matching other pages */
 .charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .chart-card{background:white;border-radius:12px;padding:22px;border:1px solid #e5e7eb;}
-.chart-title{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
+.chart-card.left-accent{border-top:4px solid #E8521A;}
+.chart-card.right-accent{border-top:4px solid #7B2D8B;}
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:12px;}
+.chart-header-left{flex:1;}
+.chart-title-main{font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:2px;}
 .chart-subtitle{font-size:12px;color:#6b7280;margin-bottom:14px;}
 .chart-canvas{max-height:300px;}
+.chart-legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;}
+.legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
 
 /* Legend */
 .legend-bar{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
+.legend-item2{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 
 /* Modal */
@@ -229,7 +236,6 @@ tbody td{padding:12px 12px;color:#374151;}
             <tr>
               <th class="left" style="width:30px;"></th>
               <th class="left">Division</th>
-              <th class="left">REM</th>
               <th style="background:#fef3c7;color:#92400e;">Prospect</th>
               <th style="background:#dbeafe;color:#1d4ed8;">Site Approvals<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(SA)</span></th>
               <th>Total Early<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Prospect + SA)</span></th>
@@ -244,48 +250,59 @@ tbody td{padding:12px 12px;color:#374151;}
       </div>
       <div class="legend-bar">
         <span style="font-size:11px;color:#6b7280;font-weight:600;">Rank (SA achievement vs target):</span>
-        <div class="legend-item"><div class="legend-dot" style="background:#059669;"></div>#1 Best</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#34d399;"></div>#2</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>#3</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fb923c;"></div>#4</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#f87171;"></div>#5</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#DC2626;"></div>#6</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#059669;"></div>#1 Best</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#34d399;"></div>#2</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#fbbf24;"></div>#3</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#fb923c;"></div>#4</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#f87171;"></div>#5</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#DC2626;"></div>#6</div>
         <div style="width:1px;background:#e5e7eb;height:16px;margin:0 4px;"></div>
         <span style="font-size:11px;color:#6b7280;font-weight:600;">Risk Mix:</span>
-        <div class="legend-item"><div class="legend-dot" style="background:#059669;"></div>Low</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#fbbf24;"></div>Medium</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#DC2626;"></div>High</div>
-        <div class="legend-item"><div class="legend-dot" style="background:#7C3AED;"></div>Upside</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#059669;"></div>Low</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#fbbf24;"></div>Medium</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#DC2626;"></div>High</div>
+        <div class="legend-item2"><div class="legend-dot" style="background:#7C3AED;"></div>Upside</div>
       </div>
       <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* SA Achievement = Site Approvals ÷ SA Target. Rank based on SA achievement relative to target — higher is better. Click any count to drill into individual sites.</p>
     </div>
 
-    <!-- Charts -->
+    <!-- Charts — 2 only, no REM duplicates -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📈</span>Pipeline Visual Analysis</div>
       </div>
       <div class="charts-grid">
-        <div class="chart-card">
-          <div class="chart-title">Prospects &amp; Site Approvals by Division</div>
-          <div class="chart-subtitle">Stacked — click bars to drill down</div>
-          <canvas id="chart-stack" class="chart-canvas"></canvas>
+
+        <!-- Chart 1: Prospects vs SA — grouped side by side -->
+        <div class="chart-card left-accent">
+          <div class="chart-header">
+            <div class="chart-header-left">
+              <div class="chart-title-main">Prospects &amp; Site Approvals by Division</div>
+              <div class="chart-subtitle">Side-by-side count · click bars to drill down</div>
+            </div>
+          </div>
+          <canvas id="chart-grouped" class="chart-canvas"></canvas>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-swatch" style="background:#FDE68A;border:1px solid #F59E0B;"></div>Prospect</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Site Approvals (SA)</div>
+          </div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">SA Achievement vs. Target by Division</div>
-          <div class="chart-subtitle">Site Approvals vs SA Target</div>
+
+        <!-- Chart 2: SA count vs SA Target — grouped side by side -->
+        <div class="chart-card right-accent">
+          <div class="chart-header">
+            <div class="chart-header-left">
+              <div class="chart-title-main">SA Achievement vs. Target by Division</div>
+              <div class="chart-subtitle">Site approvals (left) vs SA target (right) per division</div>
+            </div>
+          </div>
           <canvas id="chart-sa" class="chart-canvas"></canvas>
+          <div class="chart-legend">
+            <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Site Approvals</div>
+            <div class="legend-item"><div class="legend-swatch" style="background:rgba(5,150,105,0.25);border:2px solid #059669;"></div>SA Target</div>
+          </div>
         </div>
-        <div class="chart-card">
-          <div class="chart-title">Prospect &amp; SA Pipeline by REM</div>
-          <div class="chart-subtitle">Total early-stage sites under each REM</div>
-          <canvas id="chart-rem" class="chart-canvas"></canvas>
-        </div>
-        <div class="chart-card">
-          <div class="chart-title">SA Achievement vs. Target by REM</div>
-          <div class="chart-subtitle">Site Approvals vs SA Target — REM view</div>
-          <canvas id="chart-rem-sa" class="chart-canvas"></canvas>
-        </div>
+
       </div>
     </div>
   </div>
@@ -298,7 +315,6 @@ const DIVISIONS = ["Northeast","Southeast","Central","West","Canada","Non-Trad"]
 const RANK_COLORS = ["#059669","#34d399","#fbbf24","#fb923c","#f87171","#DC2626"];
 const RANK_BG     = ["rgba(209,250,229,0.35)","rgba(187,247,208,0.25)","rgba(254,249,195,0.35)","rgba(254,215,170,0.25)","rgba(254,202,202,0.25)","rgba(254,226,226,0.35)"];
 
-// REM assignments
 const REMS = [
   { name:"Erin Tyner",      divs:["Northeast","Southeast"], color:"#E8521A" },
   { name:"Jerod Hanaman",   divs:["Central","West"],        color:"#7B2D8B" },
@@ -313,12 +329,6 @@ function remForDiv(div) {
 let ALL_DATA = [], SA_TARGETS = {};
 let MODAL_SITES = [], MODAL_TITLE_TEXT = "";
 let modalSortCol = -1, modalSortDir = 1;
-
-function is2026(r) {
-  const rl = (r.riskLevel || "").trim().toLowerCase();
-  return ["low","medium","high"].includes(rl);
-}
-function isUpside(r) { return (r.riskLevel||"").trim().toLowerCase() === "upside"; }
 
 function achieveClass(p) { return p >= 90 ? "ach-high" : p >= 70 ? "ach-medium" : "ach-low"; }
 function gapClass(g) { return g > 0 ? "gap-positive" : g < 0 ? "gap-negative" : "gap-zero"; }
@@ -391,7 +401,7 @@ function renderREMCards() {
   }).join("");
 }
 
-// ── Main Table ─────────────────────────────────────────────────────────────
+// ── Main Table — division + REM name in parentheses on second line ─────────
 function renderTable() {
   const divStats = DIVISIONS.map(div => {
     const rows      = ALL_DATA.filter(r => r.division === div);
@@ -401,7 +411,6 @@ function renderTable() {
     const target    = SA_TARGETS[div] || 0;
     const gap       = sas - target;
     const achPct    = target > 0 ? (sas / target * 100) : 0;
-    // risk mix across all early-stage
     const nLow  = rows.filter(r=>(r.riskLevel||"").toLowerCase()==="low").length;
     const nMed  = rows.filter(r=>(r.riskLevel||"").toLowerCase()==="medium").length;
     const nHigh = rows.filter(r=>(r.riskLevel||"").toLowerCase()==="high").length;
@@ -410,7 +419,6 @@ function renderTable() {
     return { div, prospects, sas, total, target, gap, achPct, nLow, nMed, nHigh, nUp, rem };
   });
 
-  // Rank by SA achievement descending (higher = better)
   const sorted = [...divStats].sort((a,b) => b.achPct - a.achPct);
   const rankMap = {};
   sorted.forEach((d,i) => rankMap[d.div] = i);
@@ -431,8 +439,10 @@ function renderTable() {
 
     html += `<tr style="background:${rBg};border-left:4px solid ${rColor};">
       <td style="padding-left:10px;"><span class="rank-pill rank-${rn}">${rn}</span></td>
-      <td class="division-cell">${div}</td>
-      <td class="rem-cell" style="color:${rem.color};font-weight:600;">${rem.name}</td>
+      <td class="division-cell">
+        ${div}
+        <span class="rem-sub" style="color:${rem.color};">(${rem.name})</span>
+      </td>
       ${clickableCell(prospects,div,"Prospect",`${div} · Prospects`)}
       ${clickableCell(sas,div,"SA",`${div} · Site Approvals`)}
       ${clickableCell(total,div,null,`${div} · All Early-Stage`)}
@@ -454,7 +464,6 @@ function renderTable() {
   html += `<tr class="total-row">
     <td></td>
     <td class="division-cell">US&amp;C Total</td>
-    <td class="rem-cell">—</td>
     ${clickableCell(totals.prospects,"US&C","Prospect","US&C · All Prospects")}
     ${clickableCell(totals.sas,"US&C","SA","US&C · All Site Approvals")}
     ${clickableCell(totals.total,"US&C",null,"US&C · All Early-Stage")}
@@ -474,97 +483,130 @@ function clickableCell(count, divName, status, label) {
   return `<td class="number-cell clickable" onclick="openDrillDown('${ed}',${es},'${el}')"><span>${count}</span></td>`;
 }
 
-// ── Charts ─────────────────────────────────────────────────────────────────
+// ── Charts — 2 only ────────────────────────────────────────────────────────
 function renderCharts() {
-  const labels = DIVISIONS;
+  const labels    = DIVISIONS;
   const prospects = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="Prospect").length);
   const sas       = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="SA").length);
   const targets   = DIVISIONS.map(d => SA_TARGETS[d]||0);
 
-  // Stacked bar: Prospect + SA
-  new Chart(document.getElementById("chart-stack"), {
+  const commonTooltip = {
+    backgroundColor:"#1f2937",
+    titleColor:"white",
+    bodyColor:"white",
+    padding:10,
+    cornerRadius:6,
+    borderColor:"rgba(255,255,255,0.1)",
+    borderWidth:1,
+  };
+  const commonScales = {
+    x:{grid:{display:false},border:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},
+    y:{grid:{color:"#f3f4f6"},border:{display:false},ticks:{color:"#9ca3af",font:{size:11}},beginAtZero:true}
+  };
+
+  // Chart 1: Prospects & SA side-by-side grouped bars
+  const ctx1 = document.getElementById("chart-grouped");
+  const chart1 = new Chart(ctx1, {
     type:"bar",
     data:{
       labels,
       datasets:[
-        {label:"Prospect", data:prospects, backgroundColor:"#FDE68A", borderRadius:0, stack:"s"},
-        {label:"SA",       data:sas,       backgroundColor:"#E8521A", borderRadius:4, stack:"s"},
+        {
+          label:"Prospect",
+          data:prospects,
+          backgroundColor:"#FDE68A",
+          borderColor:"#F59E0B",
+          borderWidth:1,
+          borderRadius:4,
+          barPercentage:0.75,
+          categoryPercentage:0.7,
+        },
+        {
+          label:"Site Approvals (SA)",
+          data:sas,
+          backgroundColor:"#E8521A",
+          borderRadius:4,
+          barPercentage:0.75,
+          categoryPercentage:0.7,
+        },
       ]
     },
-    options:{responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{display:true,labels:{color:"#6b7280",font:{size:11}}},
-        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white"}},
-      scales:{x:{stacked:true,grid:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},
-              y:{stacked:true,grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11}}}},
-      onClick:(e,els)=>{ if(!els.length)return; const div=labels[els[0].index]; openDrillDown(div,null,`${div} · All Early-Stage`); }
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          ...commonTooltip,
+          callbacks:{
+            label:ctx=>`${ctx.dataset.label}: ${ctx.raw}`
+          }
+        }
+      },
+      scales:commonScales,
+      layout:{padding:{top:10}}
     }
   });
-  document.getElementById("chart-stack").style.cursor="pointer";
+  ctx1.addEventListener("click", function(e){
+    const pts = chart1.getElementsAtEventForMode(e,"nearest",{intersect:true},false);
+    if(!pts.length) return;
+    const divName = DIVISIONS[pts[0].index];
+    const dsIdx   = pts[0].datasetIndex;
+    const status  = dsIdx===0?"Prospect":"SA";
+    openDrillDown(divName, status, `${divName} · ${dsIdx===0?"Prospects":"Site Approvals"}`);
+  });
+  ctx1.style.cursor="pointer";
 
-  // SA vs Target grouped bar
-  new Chart(document.getElementById("chart-sa"), {
+  // Chart 2: SA count vs SA Target — grouped side by side
+  const ctx2 = document.getElementById("chart-sa");
+  new Chart(ctx2, {
     type:"bar",
     data:{
       labels,
       datasets:[
-        {label:"SA Target", data:targets, backgroundColor:"rgba(5,150,105,0.2)", borderColor:"#059669", borderWidth:2, borderRadius:4},
-        {label:"Site Approvals", data:sas, backgroundColor:"#E8521A", borderRadius:4},
+        {
+          label:"Site Approvals",
+          data:sas,
+          backgroundColor:"#E8521A",
+          borderRadius:4,
+          barPercentage:0.75,
+          categoryPercentage:0.7,
+        },
+        {
+          label:"SA Target",
+          data:targets,
+          backgroundColor:"rgba(5,150,105,0.18)",
+          borderColor:"#059669",
+          borderWidth:2,
+          borderRadius:4,
+          barPercentage:0.75,
+          categoryPercentage:0.7,
+        },
       ]
     },
-    options:{responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{display:true,labels:{color:"#6b7280",font:{size:11}}},
-        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white"}},
-      scales:{x:{grid:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},
-              y:{grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11}}}}
-    }
-  });
-
-  // REM stacked
-  const remLabels = REMS.map(r=>r.name);
-  const remProspects = REMS.map(rem => ALL_DATA.filter(r=>rem.divs.includes(r.division)&&r.status==="Prospect").length);
-  const remSAs       = REMS.map(rem => ALL_DATA.filter(r=>rem.divs.includes(r.division)&&r.status==="SA").length);
-
-  new Chart(document.getElementById("chart-rem"), {
-    type:"bar",
-    data:{
-      labels:remLabels,
-      datasets:[
-        {label:"Prospect", data:remProspects, backgroundColor:"#FDE68A", stack:"s"},
-        {label:"SA",       data:remSAs,       backgroundColor:"#E8521A", borderRadius:4, stack:"s"},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{display:true,labels:{color:"#6b7280",font:{size:11}}},
-        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white"}},
-      scales:{x:{stacked:true,grid:{display:false},ticks:{color:"#9ca3af",font:{size:11},maxRotation:20}},
-              y:{stacked:true,grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11}}}}
-    }
-  });
-
-  // REM SA vs target
-  const remTargets = REMS.map(rem => rem.divs.reduce((a,d)=>a+(SA_TARGETS[d]||0),0));
-  new Chart(document.getElementById("chart-rem-sa"), {
-    type:"bar",
-    data:{
-      labels:remLabels,
-      datasets:[
-        {label:"SA Target", data:remTargets, backgroundColor:"rgba(5,150,105,0.2)", borderColor:"#059669", borderWidth:2, borderRadius:4},
-        {label:"Site Approvals", data:remSAs, backgroundColor:REMS.map(r=>r.color), borderRadius:4},
-      ]
-    },
-    options:{responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{display:true,labels:{color:"#6b7280",font:{size:11}}},
-        tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
-          callbacks:{label:ctx=>{
-            if(ctx.dataset.label==="Site Approvals"){
-              const t=remTargets[ctx.dataIndex];
-              const ach=t>0?Math.round(ctx.raw/t*100):null;
-              return `SAs: ${ctx.raw}${ach!=null?" ("+ach+"% of target)":""}`;
+    options:{
+      responsive:true,
+      maintainAspectRatio:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          ...commonTooltip,
+          callbacks:{
+            title:ctx=>[labels[ctx[0].dataIndex]],
+            label:ctx=>{
+              const i = ctx.dataIndex;
+              if(ctx.datasetIndex===0){
+                const t = targets[i];
+                const ach = t>0?Math.round(sas[i]/t*100):null;
+                return `Site Approvals: ${ctx.raw}${ach!=null?" ("+ach+"% of target)":""}`;
+              }
+              return `SA Target: ${ctx.raw}`;
             }
-            return `${ctx.dataset.label}: ${ctx.raw}`;
-          }}}},
-      scales:{x:{grid:{display:false},ticks:{color:"#9ca3af",font:{size:11},maxRotation:20}},
-              y:{grid:{color:"#f0f0f0"},ticks:{color:"#9ca3af",font:{size:11}}}}
+          }
+        }
+      },
+      scales:commonScales,
+      layout:{padding:{top:10}}
     }
   });
 }
