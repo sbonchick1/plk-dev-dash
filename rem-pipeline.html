@@ -20,8 +20,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .export-btn{display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .export-btn:hover{background:#dcfce7;border-color:#4ade80;}
 .export-btn svg{width:15px;height:15px;}
-
-/* KPI Banner */
 .kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin-bottom:32px;}
 .kpi-card{background:white;border-radius:12px;padding:18px 20px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#E8521A);}
@@ -32,8 +30,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .kpi-good   .kpi-value{color:#059669;}
 .kpi-progress-wrap{margin-top:10px;background:#f3f4f6;border-radius:99px;height:6px;overflow:hidden;}
 .kpi-progress-bar{height:6px;border-radius:99px;background:var(--kpi-color,#E8521A);transition:width 0.6s ease;}
-
-/* REM cards row */
 .rem-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:32px;}
 .rem-card{background:white;border-radius:12px;padding:20px 22px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);border-left:4px solid var(--rem-color,#E8521A);}
 .rem-name{font-size:15px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
@@ -46,8 +42,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .rem-progress-lbl{display:flex;justify-content:space-between;font-size:11px;color:#6b7280;margin-bottom:4px;}
 .rem-progress-track{height:6px;background:#f3f4f6;border-radius:99px;overflow:hidden;}
 .rem-progress-fill{height:6px;border-radius:99px;background:var(--rem-color,#E8521A);}
-
-/* Main Table */
 .table-container{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead th{background:#f9fafb;padding:11px 12px;text-align:center;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.5px;border-bottom:2px solid #e5e7eb;white-space:nowrap;vertical-align:middle;line-height:1.4;}
@@ -72,8 +66,6 @@ tbody td{padding:12px 12px;color:#374151;}
 .rank-1{background:#059669;color:white;}.rank-2{background:#34d399;color:white;}
 .rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
 .rank-5{background:#f87171;color:white;}.rank-6{background:#DC2626;color:white;}
-
-/* ── Risk Mix cell — min-width matches dev-execution (130px) ── */
 .risk-mix-cell{min-width:130px;}
 .risk-bar{display:flex;height:14px;border-radius:6px;overflow:hidden;gap:2px;margin-bottom:8px;}
 .risk-seg{height:100%;cursor:pointer;transition:opacity 0.15s,filter 0.15s;min-width:4px;}
@@ -85,8 +77,6 @@ tbody td{padding:12px 12px;color:#374151;}
 .risk-pill-item:hover{filter:brightness(0.9);}
 .risk-pill-item.zero{opacity:0.32;cursor:default;pointer-events:none;}
 .risk-pill-item .rp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-
-/* Division charts grid */
 .division-charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:24px;}
 .div-chart-card{background:white;border-radius:12px;padding:22px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
 .div-chart-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:2px;}
@@ -95,13 +85,9 @@ tbody td{padding:12px 12px;color:#374151;}
 .div-chart-subtitle{font-size:12px;color:#6b7280;margin-bottom:4px;}
 .chart-hint{font-size:11px;color:#E8521A;margin-bottom:12px;display:flex;align-items:center;gap:4px;font-weight:500;}
 .div-chart-canvas{max-height:260px;}
-
-/* Legend */
 .legend-bar{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
 .legend-item2{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-
-/* Modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .modal-overlay.open{opacity:1;pointer-events:auto;}
 .modal{background:white;border-radius:16px;width:100%;max-width:1200px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.2);transform:translateY(20px);transition:transform 0.2s;}
@@ -215,10 +201,8 @@ tbody td{padding:12px 12px;color:#374151;}
     <h1 class="page-title">Prospect &amp; Site Approval Pipeline</h1>
     <p class="page-subtitle">Early-stage pipeline tracking — Prospects &amp; Site Approvals by REM and division · SA target vs. actual performance</p>
 
-    <!-- KPI Banner -->
     <div class="kpi-banner" id="kpi-banner"></div>
 
-    <!-- REM Cards -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>👤</span>REM Accountability — Prospects &amp; SA Summary</div>
@@ -226,7 +210,6 @@ tbody td{padding:12px 12px;color:#374151;}
       <div class="rem-cards" id="rem-cards"></div>
     </div>
 
-    <!-- Pipeline Table -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📊</span>Prospect &amp; SA Pipeline vs. SA Target — by Division</div>
@@ -270,7 +253,6 @@ tbody td{padding:12px 12px;color:#374151;}
       <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* SA Achievement = Site Approvals ÷ SA Target. Rank based on SA achievement relative to target — higher is better. Click any Risk Mix segment or pill to view those sites.</p>
     </div>
 
-    <!-- Division Charts -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📈</span>Pipeline Analysis — by Division</div>
@@ -294,7 +276,6 @@ const REMS = [
   { name:"Kevin Fitzgerald",divs:["Canada"],                color:"#1d4ed8" },
 ];
 
-// Risk levels — consistent with dev-execution standard palette
 const REM_RISK_LEVELS = [
   { key:"low",    label:"Low",    color:"#059669", bg:"#D1FAE5", text:"#065F46" },
   { key:"medium", label:"Medium", color:"#fbbf24", bg:"#FEF3C7", text:"#92400E" },
@@ -313,12 +294,10 @@ let modalSortCol = -1, modalSortDir = 1;
 function achieveClass(p) { return p >= 90 ? "ach-high" : p >= 70 ? "ach-medium" : "ach-low"; }
 function gapClass(g) { return g > 0 ? "gap-positive" : g < 0 ? "gap-negative" : "gap-zero"; }
 
-// ── Risk Mix cell builder ─────────────────────────────────────────────────────
 function buildRiskMixCell(divName, nLow, nMed, nHigh, nUp) {
   const total = nLow + nMed + nHigh + nUp || 1;
   const counts = { low:nLow, medium:nMed, high:nHigh, upside:nUp };
   const edd = divName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-
   const barSegs = REM_RISK_LEVELS.map(rl => {
     const cnt = counts[rl.key] || 0;
     if (cnt === 0) return '';
@@ -326,35 +305,29 @@ function buildRiskMixCell(divName, nLow, nMed, nHigh, nUp) {
     const clickAttr = `onclick="openRiskDrillDown('${edd}','${rl.key}','${edd} · ${rl.label} Risk')"`;
     return `<div class="risk-seg" style="width:${pct}%;background:${rl.color};" data-count="${cnt}" title="${rl.label}: ${cnt} site${cnt!==1?'s':''}" ${clickAttr}></div>`;
   }).join('');
-
   const pills = REM_RISK_LEVELS.map(rl => {
     const cnt = counts[rl.key] || 0;
     if (cnt === 0) return '';
     const clickAttr = `onclick="openRiskDrillDown('${edd}','${rl.key}','${edd} · ${rl.label} Risk')"`;
     return `<span class="risk-pill-item" style="background:${rl.bg};color:${rl.text};border-color:${rl.color};" ${clickAttr} title="${rl.label}: ${cnt} site${cnt!==1?'s':''}"><span class="rp-dot" style="background:${rl.color};"></span>${rl.label} <strong>${cnt}</strong></span>`;
   }).join('');
-
   return `<td class="risk-mix-cell"><div class="risk-bar">${barSegs}</div><div class="risk-pills">${pills}</div></td>`;
 }
 
-// ── KPI Banner ─────────────────────────────────────────────────────────────
 function renderKPIBanner() {
   const prospects = ALL_DATA.filter(r => r.status === "Prospect").length;
   const sas       = ALL_DATA.filter(r => r.status === "SA").length;
-  const total     = prospects + sas;
   const totalTarget = Object.values(SA_TARGETS).reduce((a,b)=>a+b,0);
   const saAch = totalTarget > 0 ? Math.round(sas / totalTarget * 100) : null;
-
   const cards = [
-    { l:"Total Prospects",     v:prospects,    s:"Active in pipeline",          c:"#F7941D", cls:"" },
-    { l:"Site Approvals (SA) YTD", v:sas,      s:"Approved sites in 2026",      c:"#E8521A", cls:"" },
-    { l:"SA Target",           v:totalTarget||"—", s:"US&C combined",           c:"#059669", cls:"" },
-    { l:"SA Achievement",      v:saAch!=null?saAch+"%":"—", s:`${sas} of ${totalTarget} target`,
+    { l:"Total Prospects",         v:prospects,              s:"Active in pipeline",          c:"#F7941D", cls:"" },
+    { l:"Site Approvals (SA) YTD", v:sas,                    s:"Approved sites in 2026",      c:"#E8521A", cls:"" },
+    { l:"SA Target",               v:totalTarget||"—",       s:"US&C combined",               c:"#059669", cls:"" },
+    { l:"SA Achievement",          v:saAch!=null?saAch+"%":"—", s:`${sas} of ${totalTarget} target`,
       c:saAch!=null&&saAch>=90?"#059669":"#DC2626",
       cls:saAch!=null&&saAch>=90?"kpi-good":saAch!=null&&saAch<70?"kpi-urgent":"",
       extra:saAch!=null?`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:${saAch>=90?"#059669":"#DC2626"};width:${Math.min(100,saAch)}%"></div></div>`:"" },
   ];
-
   document.getElementById("kpi-banner").innerHTML = cards.map(c=>`
     <div class="kpi-card ${c.cls}" style="--kpi-color:${c.c}">
       <div class="kpi-label">${c.l}</div>
@@ -364,7 +337,6 @@ function renderKPIBanner() {
     </div>`).join("");
 }
 
-// ── REM Cards ──────────────────────────────────────────────────────────────
 function renderREMCards() {
   document.getElementById("rem-cards").innerHTML = REMS.map(rem => {
     const remRows = ALL_DATA.filter(r => rem.divs.includes(r.division));
@@ -372,27 +344,14 @@ function renderREMCards() {
     const sas       = remRows.filter(r => r.status === "SA").length;
     const target    = rem.divs.reduce((a,d) => a + (SA_TARGETS[d]||0), 0);
     const achPct    = target > 0 ? Math.round(sas / target * 100) : null;
-
     return `<div class="rem-card" style="--rem-color:${rem.color}">
       <div class="rem-name">${rem.name}</div>
       <div class="rem-divs">${rem.divs.join(" · ")}</div>
       <div class="rem-stats">
-        <div class="rem-stat">
-          <div class="rem-stat-val" style="color:#F7941D">${prospects}</div>
-          <div class="rem-stat-lbl">Prospects</div>
-        </div>
-        <div class="rem-stat">
-          <div class="rem-stat-val" style="color:${rem.color}">${sas}</div>
-          <div class="rem-stat-lbl">Site Approvals</div>
-        </div>
-        <div class="rem-stat">
-          <div class="rem-stat-val">${target||"—"}</div>
-          <div class="rem-stat-lbl">SA Target</div>
-        </div>
-        <div class="rem-stat">
-          <div class="rem-stat-val" style="color:${achPct!=null&&achPct>=90?"#059669":achPct!=null?"#DC2626":"#9ca3af"}">${achPct!=null?achPct+"%":"—"}</div>
-          <div class="rem-stat-lbl">SA Ach.</div>
-        </div>
+        <div class="rem-stat"><div class="rem-stat-val" style="color:#F7941D">${prospects}</div><div class="rem-stat-lbl">Prospects</div></div>
+        <div class="rem-stat"><div class="rem-stat-val" style="color:${rem.color}">${sas}</div><div class="rem-stat-lbl">Site Approvals</div></div>
+        <div class="rem-stat"><div class="rem-stat-val">${target||"—"}</div><div class="rem-stat-lbl">SA Target</div></div>
+        <div class="rem-stat"><div class="rem-stat-val" style="color:${achPct!=null&&achPct>=90?"#059669":achPct!=null?"#DC2626":"#9ca3af"}">${achPct!=null?achPct+"%":"—"}</div><div class="rem-stat-lbl">SA Ach.</div></div>
       </div>
       ${target > 0 ? `<div class="rem-progress">
         <div class="rem-progress-lbl"><span>SA Progress</span><span>${sas} / ${target}</span></div>
@@ -402,7 +361,6 @@ function renderREMCards() {
   }).join("");
 }
 
-// ── Main Table ─────────────────────────────────────────────────────────────
 function renderTable() {
   const divStats = DIVISIONS.map(div => {
     const rows      = ALL_DATA.filter(r => r.division === div);
@@ -430,13 +388,9 @@ function renderTable() {
   divStats.forEach(({div,prospects,sas,total,target,gap,achPct,nLow,nMed,nHigh,nUp,rem}) => {
     const rank = rankMap[div], rn = rank + 1;
     const rColor = RANK_COLORS[Math.min(rank,5)], rBg = RANK_BG[Math.min(rank,5)];
-
     html += `<tr style="background:${rBg};border-left:4px solid ${rColor};">
       <td style="padding-left:10px;"><span class="rank-pill rank-${rn}">${rn}</span></td>
-      <td class="division-cell">
-        ${div}
-        <span class="rem-sub" style="color:${rem.color};">(${rem.name})</span>
-      </td>
+      <td class="division-cell">${div}<span class="rem-sub" style="color:${rem.color};">(${rem.name})</span></td>
       ${clickableCell(prospects,div,"Prospect",`${div} · Prospects`)}
       ${clickableCell(sas,div,"SA",`${div} · Site Approvals`)}
       <td class="number-cell">${target||"—"}</td>
@@ -444,20 +398,12 @@ function renderTable() {
       <td class="number-cell">${target?`<span class="ach-badge ${achieveClass(achPct)}">${achPct.toFixed(0)}%</span>`:"—"}</td>
       ${buildRiskMixCell(div,nLow,nMed,nHigh,nUp)}
     </tr>`;
-
-    totals.prospects += prospects;
-    totals.sas       += sas;
-    totals.total     += total;
-    totals.target    += target;
-    totals.nLow      += nLow;
-    totals.nMed      += nMed;
-    totals.nHigh     += nHigh;
-    totals.nUp       += nUp;
+    totals.prospects+=prospects; totals.sas+=sas; totals.total+=total; totals.target+=target;
+    totals.nLow+=nLow; totals.nMed+=nMed; totals.nHigh+=nHigh; totals.nUp+=nUp;
   });
 
   const tGap = totals.sas - totals.target;
   const tAch = totals.target > 0 ? (totals.sas / totals.target * 100) : 0;
-
   html += `<tr class="total-row">
     <td></td>
     <td class="division-cell">US&amp;C Total</td>
@@ -468,7 +414,6 @@ function renderTable() {
     <td class="number-cell">${totals.target?`<span class="ach-badge ${achieveClass(tAch)}">${tAch.toFixed(0)}%</span>`:"—"}</td>
     ${buildRiskMixCell("US&C",totals.nLow,totals.nMed,totals.nHigh,totals.nUp)}
   </tr>`;
-
   document.getElementById("tbody-main").innerHTML = html;
 }
 
@@ -479,7 +424,6 @@ function clickableCell(count, divName, status, label) {
   return `<td class="number-cell clickable" onclick="openDrillDown('${ed}',${es},'${el}')"><span>${count}</span></td>`;
 }
 
-// ── Risk drill-down helper ──────────────────────────────────────────────────
 function openRiskDrillDown(divName, riskKey, title) {
   let sites = ALL_DATA;
   if (divName && divName !== "US&C") sites = sites.filter(r => r.division === divName);
@@ -491,19 +435,19 @@ function openRiskDrillDown(divName, riskKey, title) {
   document.getElementById("drill-modal").classList.add("open");
 }
 
-// ── Division Charts ────────────────────────────────────────────────────────
-const DIV_CHART_DATA = {};  // stores data for export
+// ── Division charts ───────────────────────────────────────────────────────────
+const DIV_CHART_DATA = {};
 
 function exportDivisionChart(divName) {
   const d = DIV_CHART_DATA[divName];
   if (!d) return;
   const wb = XLSX.utils.book_new();
   const rows = [
-    ["Division", "Metric", "Count"],
-    [divName, "Prospect",        d.prospects],
-    [divName, "Site Approvals",  d.sas],
-    [divName, "SA Target",       d.target],
-    [divName, "Gap (SA vs Target)", d.sas - d.target],
+    ["Division","Metric","Count"],
+    [divName,"Prospect",d.prospects],
+    [divName,"Site Approvals",d.sas],
+    [divName,"SA Target",d.target],
+    [divName,"Gap (SA vs Target)",d.sas - d.target],
   ];
   const ws = XLSX.utils.aoa_to_sheet(rows);
   ws["!cols"] = [{wch:16},{wch:20},{wch:10}];
@@ -511,6 +455,7 @@ function exportDivisionChart(divName) {
   XLSX.writeFile(wb, `SA_Pipeline_${divName.replace(/[^a-zA-Z0-9]/g,"_")}.xlsx`);
 }
 
+// ── FIXED: animation:false + tooltip animation:false on all division charts ──
 function createDivisionChart(divName, canvasId) {
   const prospects = ALL_DATA.filter(r => r.division===divName && r.status==="Prospect").length;
   const sas       = ALL_DATA.filter(r => r.division===divName && r.status==="SA").length;
@@ -523,9 +468,9 @@ function createDivisionChart(divName, canvasId) {
   const ctx = document.getElementById(canvasId);
   if (!ctx) return;
 
-  const labels   = ["Prospect", "SA", "SA Target"];
-  const data     = [prospects, sas, target];
-  const colors   = ["#7B2D8B", "#E8521A", "#00A99D"];
+  const labels = ["Prospect", "SA", "SA Target"];
+  const data   = [prospects, sas, target];
+  const colors = ["#7B2D8B", "#E8521A", "#00A99D"];
 
   const chart = new Chart(ctx, {
     type: "bar",
@@ -542,20 +487,19 @@ function createDivisionChart(divName, canvasId) {
     options: {
       responsive: true,
       maintainAspectRatio: true,
+      animation: false,
+      interaction: { mode: "nearest", intersect: true },
       plugins: {
         legend: { display: false },
         tooltip: {
+          animation: false,
           backgroundColor: "#1f2937", titleColor: "white", bodyColor: "white",
           padding: 10, cornerRadius: 6, titleFont:{weight:"normal"}, bodyFont:{weight:"normal"},
           callbacks: {
             label: ctx => {
               const lbl = labels[ctx.dataIndex];
-              if (lbl === "SA") {
-                return `SA: ${sas}${ach != null ? "  (" + ach + "% of target)" : ""}`;
-              }
-              if (lbl === "SA Target") {
-                return `SA Target: ${target}  |  Gap: ${gap >= 0 ? "+" : ""}${gap}`;
-              }
+              if (lbl === "SA") return `SA: ${sas}${ach != null ? "  (" + ach + "% of target)" : ""}`;
+              if (lbl === "SA Target") return `SA Target: ${target}  |  Gap: ${gap >= 0 ? "+" : ""}${gap}`;
               return `${lbl}: ${ctx.raw}`;
             },
             afterLabel: ctx => {
@@ -573,6 +517,7 @@ function createDivisionChart(divName, canvasId) {
     },
     plugins: [{
       id: "labels_" + canvasId,
+      // afterDraw fires once per full render — prevents label paint accumulation on hover
       afterDraw(chart) {
         const cCtx = chart.ctx;
         cCtx.save();
@@ -614,7 +559,7 @@ function renderDivisionCharts() {
     const rem    = remForDiv(div);
     const target = SA_TARGETS[div] || 0;
     const id     = "div-chart-" + div.toLowerCase().replace(/[^a-z0-9]/g, "-");
-    const safeDiv = div.replace(/'/g, "\'");
+    const safeDiv = div.replace(/'/g, "\\'");
     return `<div class="div-chart-card">
       <div class="div-chart-header">
         <div class="div-chart-header-left">
@@ -660,14 +605,9 @@ function renderModalTable(){
     else if(rl==="high")rc="risk-high";else if(rl==="upside")rc="risk-upside";
     else if(rl.startsWith("2027"))rc="risk-2027";
     return`<tr>
-      <td>${s.sipId||"—"}</td>
-      <td><strong>${s.restNum||"—"}</strong></td>
-      <td>${s.fz||"—"}</td>
-      <td style="white-space:nowrap">${s.address||"—"}</td>
-      <td>${s.city||"—"}</td>
-      <td>${s.state||"—"}</td>
-      <td><strong>${s.status||"—"}</strong></td>
-      <td style="white-space:nowrap">${s.saStart||"—"}</td>
+      <td>${s.sipId||"—"}</td><td><strong>${s.restNum||"—"}</strong></td><td>${s.fz||"—"}</td>
+      <td style="white-space:nowrap">${s.address||"—"}</td><td>${s.city||"—"}</td><td>${s.state||"—"}</td>
+      <td><strong>${s.status||"—"}</strong></td><td style="white-space:nowrap">${s.saStart||"—"}</td>
       <td style="white-space:nowrap">${s.fzOpenDate||"—"}</td>
       <td><span class="risk-badge ${rc}">${s.riskLevel||"—"}</span></td>
       <td style="max-width:260px;white-space:normal;font-size:11px;color:#6b7280;">${s.lastComment||"—"}</td>
