@@ -30,22 +30,22 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .kpi-sub{font-size:11px;color:#9ca3af;}
 .kpi-urgent .kpi-value{color:#DC2626;}
 .kpi-good   .kpi-value{color:#059669;}
-
-/* ── Progress bar inside KPI ── */
 .kpi-progress-wrap{margin-top:10px;background:#f3f4f6;border-radius:99px;height:6px;overflow:hidden;}
 .kpi-progress-bar{height:6px;border-radius:99px;background:var(--kpi-color,#E8521A);transition:width 0.6s ease;}
 
 /* ── Velocity section ── */
 .velocity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
 .velocity-card{background:#f9fafb;border-radius:10px;padding:16px 18px;border:1px solid #e5e7eb;}
-.velocity-stage{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:4px;}
-.velocity-arrow{font-size:10px;color:#9ca3af;margin-bottom:8px;}
+.velocity-card.velocity-total{background:#fff8f5;border-color:#fdd5c5;border-left:4px solid #E8521A;}
+.velocity-stage{font-size:11px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:0.6px;margin-bottom:6px;}
+.velocity-card.velocity-total .velocity-stage{color:#E8521A;}
+.velocity-timing{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:4px;}
 .velocity-days{font-size:28px;font-weight:800;color:#1a1a1a;line-height:1;}
 .velocity-days span{font-size:13px;font-weight:500;color:#6b7280;margin-left:3px;}
+.velocity-months{font-size:14px;font-weight:600;color:#6b7280;white-space:nowrap;}
 .velocity-sub{font-size:11px;color:#9ca3af;margin-top:4px;}
-.velocity-bar-wrap{margin-top:10px;background:#e5e7eb;border-radius:99px;height:5px;overflow:hidden;}
-.velocity-bar{height:5px;border-radius:99px;background:#E8521A;}
 
+/* ── Tables ── */
 .table-container{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead th{background:#f9fafb;padding:12px 14px;text-align:center;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.5px;border-bottom:2px solid #e5e7eb;white-space:nowrap;vertical-align:middle;line-height:1.4;}
@@ -68,12 +68,8 @@ tbody td{padding:13px 14px;color:#374151;}
 .gap-zero{color:#6b7280;font-weight:600;}
 .ach-current{background:#eff6ff;color:#1d4ed8;}
 .ach-projected{background:#f0fdf4;color:#166534;}
-
-/* ── Risk mini-bar ── */
 .risk-minibar{display:flex;height:8px;border-radius:4px;overflow:hidden;min-width:80px;gap:1px;}
 .risk-seg{height:100%;transition:width 0.4s;}
-
-/* ── Rank pills ── */
 .rank-pill{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800;margin-right:6px;flex-shrink:0;}
 .rank-1{background:#059669;color:white;}.rank-2{background:#34d399;color:white;}
 .rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
@@ -82,6 +78,7 @@ tbody td{padding:13px 14px;color:#374151;}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
 
+/* ── Chart card ── */
 .chart-card{background:white;border-radius:12px;padding:24px;border:1px solid #e5e7eb;}
 .chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
 .chart-header-left{flex:1;}
@@ -205,19 +202,24 @@ tbody td{padding:13px 14px;color:#374151;}
     <h1 class="page-title">Development Execution Performance</h1>
     <p class="page-subtitle">New restaurant pipeline analysis by division with budget tracking and accountability</p>
 
-    <!-- ── #1: KPI Banner ── -->
+    <!-- KPI Banner -->
     <div class="kpi-banner" id="kpi-banner"></div>
 
-    <!-- ── #2: Velocity Section ── -->
+    <!-- Velocity Section -->
     <div class="section">
       <div class="section-header">
-        <div class="section-title"><span>⏱</span>Pipeline Velocity — Avg Days per Stage</div>
+        <div class="section-title"><span>⏱</span>Pipeline Velocity — Avg Time per Stage</div>
       </div>
       <div class="velocity-grid" id="velocity-grid"></div>
-      <p style="margin-top:14px;font-size:11px;color:#9ca3af;font-style:italic;">* SA→PC: PC Start minus SA Start · PC→Permitting: Permit Started minus PC Start · Permitting→UC: UC Start minus Permit Completed · UC→Open: FZ Projected Open Date minus UC Start (open sites only). Sites missing either date for a stage are excluded from that average.</p>
+      <p style="margin-top:14px;font-size:11px;color:#9ca3af;font-style:italic;">
+        * Includes all pipeline sites with both stage dates present — not limited to BU sites.
+        SA→PC: PC Start − SA Start &nbsp;·&nbsp; PC→Permitting: Permit Started − PC Start &nbsp;·&nbsp;
+        Permitting→UC: UC Start − Permit Completed &nbsp;·&nbsp; UC→Open: FZ Projected Open Date − UC Start (opened sites only).
+        SA→Open (total timeline): FZ Projected Open Date − SA Start (opened sites only).
+      </p>
     </div>
 
-    <!-- ── 2026 Pipeline Table ── -->
+    <!-- 2026 Pipeline Table -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📊</span>2026 Pipeline vs. Budget</div>
@@ -336,7 +338,14 @@ function achieveClass(p)    { return p>=90?"achievement-high":p>=70?"achievement
 function gapClass(g)        { return g>0?"gap-positive":g<0?"gap-negative":"gap-zero"; }
 function avgDays(rows, fn)  { const vals=rows.map(fn).filter(v=>v!==null&&v>0); return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null; }
 
-// ── #1: KPI Banner ────────────────────────────────────────────────────────────
+// Convert days to a human-friendly months string, e.g. "2.3 mo"
+function daysToMonths(d) {
+  if (d == null) return null;
+  return (d / 30.44).toFixed(1) + ' mo';
+}
+
+// ── KPI Banner ──────────────────────────────────────────────────────────────
+// CHANGE 1: Sites in Permitting now appears before Sites in UC
 function renderKPIBanner() {
   const now      = new Date();
   const yearEnd  = new Date(now.getFullYear(), 11, 31);
@@ -345,8 +354,8 @@ function renderKPIBanner() {
 
   const bu2026   = ALL_DATA.filter(r=>is2026(r));
   const opened   = bu2026.filter(r=>r.status==="Open").length;
-  const inUC     = bu2026.filter(r=>r.status==="UC").length;
-  const inPerm   = bu2026.filter(r=>r.status==="Permitting").length;
+  const inPerm   = bu2026.filter(r=>r.status==="Permitting").length;  // BEFORE UC
+  const inUC     = bu2026.filter(r=>r.status==="UC").length;           // AFTER Permitting
   const total2026= STATUSES.reduce((a,s)=>a+bu2026.filter(r=>r.status===s).length,0);
   const ltg      = Math.max(0, totalBudget - opened);
   const projAch  = totalBudget>0?Math.round(total2026/totalBudget*100):0;
@@ -361,10 +370,11 @@ function renderKPIBanner() {
       cls: currAch>=90?"kpi-good":"" },
     { label:"Openings LTG",            value:ltg,      sub:"Left to go vs budget",
       color:"#DC2626", extra:"", cls: ltg===0?"kpi-good":"" },
-    { label:"Sites in UC",             value:inUC,     sub:"Under construction",
-      color:"#7B2D8B", extra:"", cls:"" },
+    // PERMITTING now before UC
     { label:"Sites in Permitting",     value:inPerm,   sub:"Active permitting",
       color:"#F7941D", extra:"", cls:"" },
+    { label:"Sites in UC",             value:inUC,     sub:"Under construction",
+      color:"#7B2D8B", extra:"", cls:"" },
     { label:"Total 2026 Pipeline",     value:total2026,sub:"BU low + med + high",
       color:"#00A99D", extra:"", cls:"" },
     { label:"Current Achievement",    value:currAch+"%",  sub:"Opened vs budget",
@@ -386,38 +396,59 @@ function renderKPIBanner() {
     </div>`).join("");
 }
 
-// ── #2: Velocity Section ──────────────────────────────────────────────────────
+// ── Velocity Section ────────────────────────────────────────────────────────
+// CHANGE 2: All sites with dates (not just BU+Upside), SA→Open total timeline added,
+//           days + months shown, progress bars removed
 function renderVelocity() {
-  const all2026 = ALL_DATA.filter(r=>is2026(r)||isUpside(r));
+  // CHANGE: use ALL pipeline sites with dates, not filtered to BU/Upside
+  const allWithDates = ALL_DATA.filter(r => r.saStartMs);
 
-  const saToPC   = avgDays(all2026, r=> (r.pcStartMs&&r.saStartMs)         ? (r.pcStartMs-r.saStartMs)/MS_PER_DAY         : null);
-  const pcToPerm = avgDays(all2026, r=> (r.permitStartedMs&&r.pcStartMs)   ? (r.permitStartedMs-r.pcStartMs)/MS_PER_DAY   : null);
-  const permToUC = avgDays(all2026, r=> (r.ucStartMs&&r.permitCompletedMs) ? (r.ucStartMs-r.permitCompletedMs)/MS_PER_DAY : null);
-  // UC→Open: only sites with status=Open, use fzOpenDateMs - ucStartMs
-  const openSites= ALL_DATA.filter(r=>r.status==="Open"&&r.ucStartMs&&r.fzOpenDateMs);
-  const ucToOpen = avgDays(openSites, r=> (r.fzOpenDateMs-r.ucStartMs)/MS_PER_DAY);
+  const saToPC   = avgDays(allWithDates, r=> (r.pcStartMs   && r.saStartMs)          ? (r.pcStartMs   - r.saStartMs)          / MS_PER_DAY : null);
+  const pcToPerm = avgDays(allWithDates, r=> (r.permitStartedMs && r.pcStartMs)       ? (r.permitStartedMs - r.pcStartMs)      / MS_PER_DAY : null);
+  const permToUC = avgDays(allWithDates, r=> (r.ucStartMs   && r.permitCompletedMs)   ? (r.ucStartMs   - r.permitCompletedMs)  / MS_PER_DAY : null);
 
-  const totalAvg = [saToPC,pcToPerm,permToUC,ucToOpen].filter(v=>v!==null).reduce((a,b)=>a+b,0);
+  // UC→Open: opened sites only, FZ Open Date − UC Start
+  const openSites = ALL_DATA.filter(r => r.status==="Open" && r.ucStartMs && r.fzOpenDateMs);
+  const ucToOpen  = avgDays(openSites, r => (r.fzOpenDateMs - r.ucStartMs) / MS_PER_DAY);
+
+  // CHANGE: SA→Open total timeline — opened sites with both SA Start and FZ Open Date
+  const saToOpenSites = ALL_DATA.filter(r => r.status==="Open" && r.saStartMs && r.fzOpenDateMs);
+  const saToOpen = avgDays(saToOpenSites, r => (r.fzOpenDateMs - r.saStartMs) / MS_PER_DAY);
 
   const stages = [
-    {from:"SA",    to:"PC",         days:saToPC,   color:"#E8521A"},
-    {from:"PC",    to:"Permitting", days:pcToPerm, color:"#F7941D"},
-    {from:"Permit",to:"UC",         days:permToUC, color:"#7B2D8B"},
-    {from:"UC",    to:"Open",       days:ucToOpen, color:"#059669", note:"Open sites only · FZ POD"},
+    { label:"SA → PC",           days:saToPC,   color:"#E8521A",  note:"All sites with SA & PC start dates" },
+    { label:"PC → Permitting",   days:pcToPerm, color:"#F7941D",  note:"All sites with PC & permit start dates" },
+    { label:"Permitting → UC",   days:permToUC, color:"#7B2D8B",  note:"All sites with permit complete & UC start" },
+    { label:"UC → Open",         days:ucToOpen, color:"#059669",  note:"Opened sites · FZ POD − UC Start" },
   ];
 
-  document.getElementById("velocity-grid").innerHTML = stages.map(s=>{
-    const pct = s.days&&totalAvg ? Math.round(s.days/totalAvg*100) : 0;
+  let html = stages.map(s => {
+    const months = daysToMonths(s.days);
     return `<div class="velocity-card">
-      <div class="velocity-stage">${s.from} → ${s.to}</div>
-      <div class="velocity-days">${s.days!==null?s.days:"—"}<span>avg days</span></div>
-      <div class="velocity-sub">${s.note||"All 2026 BU + Upside sites with dates"}</div>
-      <div class="velocity-bar-wrap"><div class="velocity-bar" style="width:${pct}%;background:${s.color};"></div></div>
+      <div class="velocity-stage">${s.label}</div>
+      <div class="velocity-timing">
+        <div class="velocity-days">${s.days !== null ? s.days : "—"}<span>days</span></div>
+        ${months ? `<div class="velocity-months">${months}</div>` : ""}
+      </div>
+      <div class="velocity-sub">${s.note}</div>
     </div>`;
   }).join("");
+
+  // CHANGE: SA→Open total timeline card — visually differentiated
+  const saOpenMonths = daysToMonths(saToOpen);
+  html += `<div class="velocity-card velocity-total">
+    <div class="velocity-stage">SA → Open (Total Timeline)</div>
+    <div class="velocity-timing">
+      <div class="velocity-days">${saToOpen !== null ? saToOpen : "—"}<span>days</span></div>
+      ${saOpenMonths ? `<div class="velocity-months">${saOpenMonths}</div>` : ""}
+    </div>
+    <div class="velocity-sub">${saToOpenSites.length} opened sites with SA start date · end-to-end</div>
+  </div>`;
+
+  document.getElementById("velocity-grid").innerHTML = html;
 }
 
-// ── #3: 2026 Table with risk mini-bars ────────────────────────────────────────
+// ── 2026 Table ──────────────────────────────────────────────────────────────
 function renderTable2026() {
   const divStats = DIVISIONS.map(div=>{
     const rows   = ALL_DATA.filter(r=>r.division===div.name&&is2026(r));
@@ -427,7 +458,6 @@ function renderTable2026() {
     const budget = BUDGETS[div.name]||0;
     const currPct = budget>0?(opened/budget*100):0;
     const projPct = budget>0?(total/budget*100):0;
-    // risk counts for mini-bar
     const nLow    = rows.filter(r=>r.riskLevel&&r.riskLevel.trim().toLowerCase()==="low").length;
     const nMed    = rows.filter(r=>r.riskLevel&&r.riskLevel.trim().toLowerCase()==="medium").length;
     const nHigh   = rows.filter(r=>r.riskLevel&&r.riskLevel.trim().toLowerCase()==="high").length;
@@ -435,7 +465,6 @@ function renderTable2026() {
     return {div,counts,total,opened,budget,gap:total-budget,currPct,projPct,nLow,nMed,nHigh,nUp};
   });
 
-  // Weighted rank
   const byProj=[...divStats].sort((a,b)=>b.projPct-a.projPct);
   const byCurr=[...divStats].sort((a,b)=>b.currPct-a.currPct);
   const projRank={},currRank={};
@@ -491,7 +520,7 @@ function renderTable2026() {
   document.getElementById("tbody-2026").innerHTML=html;
 }
 
-// ── 2027 Table ────────────────────────────────────────────────────────────────
+// ── 2027 Table ──────────────────────────────────────────────────────────────
 function renderTable2027() {
   const s27=STATUSES.filter(s=>s!=="Open");
   const totals={};s27.forEach(s=>totals[s]=0);
@@ -516,7 +545,7 @@ function renderTable2027() {
   document.getElementById("tbody-2027").innerHTML=html;
 }
 
-// ── Modal helpers ─────────────────────────────────────────────────────────────
+// ── Modal helpers ────────────────────────────────────────────────────────────
 function getSiteRow(s){return[s.sipId||"",s.restNum||"",s.fz||"",s.address||"",s.city||"",s.state||"",s.status||"",s.fzOpenDate||"",s.plkOpenDate||"",s.riskLevel||"",s.lastComment||""];}
 function renderModalTable(){
   const riskF  =document.getElementById("modal-filter-risk").value.toLowerCase();
@@ -588,7 +617,7 @@ function clickableCell(count,divName,status,riskFilter,label){
   return`<td class="number-cell clickable" onclick="openDrillDown('${ed}',${es},'${riskFilter}','${el}','${ed}${status?" · "+status:""}')"><span>${count}</span></td>`;
 }
 
-// ── Waterfall Chart ───────────────────────────────────────────────────────────
+// ── Waterfall Charts ─────────────────────────────────────────────────────────
 function createWaterfallChart(canvasId,divisionName,data,budget){
   const ctx=document.getElementById(canvasId); if(!ctx)return;
   const values=STATUSES.map(s=>data[s]);
@@ -661,7 +690,7 @@ function renderWaterfallCharts(){
   });
 }
 
-// ── Excel exports ─────────────────────────────────────────────────────────────
+// ── Excel exports ────────────────────────────────────────────────────────────
 function exportTable2026(){
   const wb=XLSX.utils.book_new();
   const rows=[["Division","DDL","Prospect","SA","PC","Permitting","UC","Open","Total 2026","Budget","Gap","Current Achievement","Projected Achievement"]];
