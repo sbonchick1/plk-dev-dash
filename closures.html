@@ -645,28 +645,21 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
         tooltip:{
           backgroundColor:"#1f2937", titleColor:"white", bodyColor:"white",
           padding:10, cornerRadius:6, titleFont:{weight:"normal"}, bodyFont:{weight:"normal"},
-          // Only fire tooltip from the topmost VISIBLE dataset at each position
-          // ds0=base(invisible), ds1=ctrl, ds2=nonCtrl, ds3=total
-          // We want ONE tooltip per column — use mode:'index' + custom filter
-          mode:"index",
-          intersect:true,
+          // Match dev-execution pattern: filter to the hovered visible dataset,
+          // return a single label string so Chart.js auto-renders the color swatch
           filter:item=>{
-            // For the Total bar (last index): only show the ds3 item
             if(item.dataIndex===n-1) return item.datasetIndex===3;
-            // For reason bars: only show ds1 (ctrl) — we surface both values via callbacks
-            return item.datasetIndex===1;
+            // Show tooltip on whichever visible segment (ctrl or nonCtrl) is hovered
+            return item.datasetIndex===1||item.datasetIndex===2;
           },
           callbacks:{
             title:items=>{
               const i=items[0].dataIndex;
-              return [i===n-1?"Total":labels[i]];
+              return i===n-1?"Total":labels[i];
             },
-            label:()=>null,  // suppress default label line
-            afterTitle:items=>{
-              const i=items[0].dataIndex;
-              if(i===n-1){
-                return[`Total closures: ${grandTotal}`, "· Click to View"];
-              }
+            label:item=>{
+              const i=item.dataIndex;
+              if(i===n-1) return `Total closures: ${grandTotal}  ·  Click to View`;
               const lbl=labels[i];
               const ctrl=reasonCounts[lbl]?.ctrl||0;
               const nonCtrl=reasonCounts[lbl]?.nonCtrl||0;
@@ -676,8 +669,9 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
                 const r=activeReasons[j];
                 run+=(reasonCounts[r]?.ctrl||0)+(reasonCounts[r]?.nonCtrl||0);
               }
-              const lines=[`PLK Controlled: ${ctrl}`, `Non-Controlled: ${nonCtrl}`, `Bar Total: ${barTotal}`, `Running Total: ${run}`, "· Click to View"];
-              return lines;
+              const hoveredLbl=item.datasetIndex===1?"PLK Controlled":"Non-Controlled";
+              const hoveredVal=item.datasetIndex===1?ctrl:nonCtrl;
+              return `${hoveredLbl}: ${hoveredVal}  |  Bar Total: ${barTotal}  |  Running: ${run}  ·  Click to View`;
             }
           }
         }
