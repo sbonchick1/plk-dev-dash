@@ -644,6 +644,7 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
         legend:{display:false},
         tooltip:{
           backgroundColor:"#1f2937", titleColor:"white", bodyColor:"white",
+          titleFont:{weight:"normal"}, bodyFont:{weight:"normal"},
           // Only fire tooltip from the topmost VISIBLE dataset at each position
           // ds0=base(invisible), ds1=ctrl, ds2=nonCtrl, ds3=total
           // We want ONE tooltip per column — use mode:'index' + custom filter
