@@ -20,8 +20,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .export-btn{display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .export-btn:hover{background:#dcfce7;border-color:#4ade80;}
 .export-btn svg{width:15px;height:15px;}
-
-/* ── KPI Banner ── */
 .kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:32px;}
 .kpi-card{background:white;border-radius:12px;padding:18px 20px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#E8521A);}
@@ -32,8 +30,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .kpi-good   .kpi-value{color:#059669;}
 .kpi-progress-wrap{margin-top:10px;background:#f3f4f6;border-radius:99px;height:6px;overflow:hidden;}
 .kpi-progress-bar{height:6px;border-radius:99px;background:var(--kpi-color,#E8521A);transition:width 0.6s ease;}
-
-/* ── Velocity section ── */
 .velocity-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;}
 .velocity-card{background:#f9fafb;border-radius:10px;padding:16px 18px;border:1px solid #e5e7eb;}
 .velocity-card.velocity-total{background:#fff8f5;border-color:#fdd5c5;border-left:4px solid #E8521A;}
@@ -44,8 +40,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .velocity-days span{font-size:13px;font-weight:500;color:#6b7280;margin-left:3px;}
 .velocity-months{font-size:14px;font-weight:600;color:#6b7280;white-space:nowrap;}
 .velocity-sub{font-size:11px;color:#9ca3af;margin-top:4px;}
-
-/* ── Tables ── */
 .table-container{overflow-x:auto;}
 table{width:100%;border-collapse:collapse;font-size:13px;}
 thead th{background:#f9fafb;padding:12px 14px;text-align:center;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.5px;border-bottom:2px solid #e5e7eb;white-space:nowrap;vertical-align:middle;line-height:1.4;}
@@ -75,8 +69,6 @@ tbody td{padding:13px 14px;color:#374151;}
 .legend-bar{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
 .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
 .legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-
-/* ── Chart card ── */
 .chart-card{background:white;border-radius:12px;padding:24px;border:1px solid #e5e7eb;}
 .chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:12px;}
 .chart-header-left{flex:1;}
@@ -85,8 +77,6 @@ tbody td{padding:13px 14px;color:#374151;}
 .chart-hint{font-size:11px;color:#E8521A;margin-bottom:14px;display:flex;align-items:center;gap:4px;font-weight:500;}
 .chart-canvas{max-height:320px;}
 .division-charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:24px;margin-top:24px;}
-
-/* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .modal-overlay.open{opacity:1;pointer-events:auto;}
 .modal{background:white;border-radius:16px;width:100%;max-width:1200px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.2);transform:translateY(20px);transition:transform 0.2s;}
@@ -126,8 +116,6 @@ tbody td{padding:13px 14px;color:#374151;}
 .overlay-title{font-size:18px;font-weight:600;color:#374151;}
 .overlay-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
 @media(max-width:768px){.container{padding:24px;}.page-title{font-size:28px;}.division-charts-grid{grid-template-columns:1fr;}.kpi-banner{grid-template-columns:repeat(2,1fr);}}
-
-/* ── Risk Mix cell ── */
 .risk-mix-cell{min-width:130px;}
 .risk-bar{display:flex;height:14px;border-radius:6px;overflow:hidden;gap:2px;margin-bottom:8px;}
 .risk-seg{height:100%;cursor:pointer;transition:opacity 0.15s,filter 0.15s;min-width:4px;}
@@ -149,7 +137,6 @@ tbody td{padding:13px 14px;color:#374151;}
   <div class="overlay-sub">Fetching from Smartsheet</div>
 </div>
 
-<!-- Drill-down Modal -->
 <div class="modal-overlay" id="drill-modal">
   <div class="modal">
     <div class="modal-header">
@@ -213,25 +200,14 @@ tbody td{padding:13px 14px;color:#374151;}
     </div>
     <h1 class="page-title">Development Execution Performance</h1>
     <p class="page-subtitle">New restaurant pipeline analysis by division with budget tracking and accountability</p>
-
-    <!-- KPI Banner -->
     <div class="kpi-banner" id="kpi-banner"></div>
-
-    <!-- Velocity Section -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>⏱</span>Pipeline Velocity — Avg Time per Stage</div>
       </div>
       <div class="velocity-grid" id="velocity-grid"></div>
-      <p style="margin-top:14px;font-size:11px;color:#9ca3af;font-style:italic;">
-        * Includes all pipeline sites with both stage dates present — not limited to BU sites.
-        SA→PC: PC Start − SA Start &nbsp;·&nbsp; PC→Permitting: Permit Started − PC Start &nbsp;·&nbsp;
-        Permitting→UC: UC Start − Permit Completed &nbsp;·&nbsp; UC→Open: FZ Projected Open Date − UC Start (opened sites only).
-        SA→Open (total timeline): FZ Projected Open Date − SA Start (opened sites only).
-      </p>
+      <p style="margin-top:14px;font-size:11px;color:#9ca3af;font-style:italic;">* Includes all pipeline sites with both stage dates present — not limited to BU sites. SA→PC: PC Start − SA Start &nbsp;·&nbsp; PC→Permitting: Permit Started − PC Start &nbsp;·&nbsp; Permitting→UC: UC Start − Permit Completed &nbsp;·&nbsp; UC→Open: FZ Projected Open Date − UC Start (opened sites only). SA→Open (total timeline): FZ Projected Open Date − SA Start (opened sites only).</p>
     </div>
-
-    <!-- 2026 Pipeline Table -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📊</span>2026 Pipeline vs. Budget</div>
@@ -274,8 +250,6 @@ tbody td{padding:13px 14px;color:#374151;}
       </div>
       <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Pipeline figures reflect bottom-up submissions only. Row rank is a weighted score: 40% Current Achievement + 60% Projected Achievement, ranked relative to other divisions. Risk Mix bar shows composition of each division's 2026 pipeline by risk level.</p>
     </div>
-
-    <!-- Waterfall Charts -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📈</span>2026 Pipeline Waterfall Analysis</div>
@@ -296,8 +270,6 @@ tbody td{padding:13px 14px;color:#374151;}
       </div>
       <div class="division-charts-grid" id="division-charts"></div>
     </div>
-
-    <!-- 2027+ Table -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>🔮</span>2027+ Pipeline Visibility</div>
@@ -537,6 +509,7 @@ function clickableCell(count,divName,status,riskFilter,label){
   return`<td class="number-cell clickable" onclick="openDrillDown('${ed}',${es},'${riskFilter}','${el}','${ed}${status?" · "+status:""}')"><span>${count}</span></td>`;
 }
 
+// ── FIXED: animation:false + tooltip animation:false prevent label accumulation on long hover ──
 function createWaterfallChart(canvasId,divisionName,data,budget){
   const ctx=document.getElementById(canvasId);if(!ctx)return;
   const existing=Chart.getChart(ctx);if(existing)existing.destroy();
@@ -555,7 +528,6 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
   baseData.push(fyBUPlusUpside);barData.push(Math.abs(gapToBudget));barColors.push(PLK.red);
   baseData.push(0);barData.push(budget);barColors.push(PLK.teal);
   CHART_DATA_MAP[canvasId]={division:divisionName,labels,displayValues:[...values,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,budget],budget,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,gap:fyBU-budget};
-  const barColorByIdx=barColors;
   new Chart(ctx,{
     type:"bar",
     data:{labels,datasets:[
@@ -564,9 +536,12 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
     ]},
     options:{
       responsive:true,maintainAspectRatio:true,
+      animation:false,
+      interaction:{ mode:"nearest", intersect:true },
       plugins:{
         legend:{display:false},
         tooltip:{
+          animation:false,
           backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
           padding:10,cornerRadius:6,titleFont:{weight:"normal"},bodyFont:{weight:"normal"},
           filter:item=>item.datasetIndex===1,
@@ -606,7 +581,6 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
       }
     }]
   });
-  // Named handler to prevent stacking on re-render
   if(ctx._waterfallClickHandler)ctx.removeEventListener("click",ctx._waterfallClickHandler);
   ctx._waterfallClickHandler=function(e){
     const chart=Chart.getChart(ctx);if(!chart)return;
