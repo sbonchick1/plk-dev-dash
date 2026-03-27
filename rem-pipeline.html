@@ -73,8 +73,8 @@ tbody td{padding:12px 12px;color:#374151;}
 .rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
 .rank-5{background:#f87171;color:white;}.rank-6{background:#DC2626;color:white;}
 
-/* ── Risk Mix cell — matches dev-execution style ── */
-.risk-mix-cell{min-width:160px;}
+/* ── Risk Mix cell — min-width matches dev-execution (130px) ── */
+.risk-mix-cell{min-width:130px;}
 .risk-bar{display:flex;height:14px;border-radius:6px;overflow:hidden;gap:2px;margin-bottom:8px;}
 .risk-seg{height:100%;cursor:pointer;transition:opacity 0.15s,filter 0.15s;min-width:4px;}
 .risk-seg:hover{opacity:0.82;filter:brightness(1.08);}
@@ -86,16 +86,14 @@ tbody td{padding:12px 12px;color:#374151;}
 .risk-pill-item.zero{opacity:0.32;cursor:default;pointer-events:none;}
 .risk-pill-item .rp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 
-/* Charts */
-.chart-card{background:white;border-radius:12px;padding:22px;border:1px solid #e5e7eb;}
-.chart-card.left-accent{border-top:4px solid #E8521A;}
-.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:12px;}
-.chart-header-left{flex:1;}
-.chart-title-main{font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:2px;}
-.chart-subtitle{font-size:12px;color:#6b7280;margin-bottom:14px;}
-.chart-legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;}
-.legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
+/* Division charts grid */
+.division-charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(430px,1fr));gap:24px;}
+.div-chart-card{background:white;border-radius:12px;padding:22px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.04);}
+.div-chart-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:2px;}
+.div-chart-header-left{flex:1;}
+.div-chart-title{font-size:15px;font-weight:700;color:#1a1a1a;}
+.div-chart-subtitle{font-size:12px;color:#6b7280;margin-bottom:14px;}
+.div-chart-canvas{max-height:260px;}
 
 /* Legend */
 .legend-bar{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
@@ -272,25 +270,12 @@ tbody td{padding:12px 12px;color:#374151;}
       <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* SA Achievement = Site Approvals ÷ SA Target. Rank based on SA achievement relative to target — higher is better. Click any Risk Mix segment or pill to drill into those sites.</p>
     </div>
 
-    <!-- Charts -->
+    <!-- Division Charts -->
     <div class="section">
       <div class="section-header">
-        <div class="section-title"><span>📈</span>Pipeline Visual Analysis</div>
+        <div class="section-title"><span>📈</span>Pipeline Analysis — by Division</div>
       </div>
-      <div class="chart-card left-accent">
-        <div class="chart-header">
-          <div class="chart-header-left">
-            <div class="chart-title-main">Prospects, Site Approvals &amp; SA Target by Division</div>
-            <div class="chart-subtitle">Click Prospect or SA bars to drill into individual sites</div>
-          </div>
-        </div>
-        <canvas id="chart-combined" style="max-height:360px;"></canvas>
-        <div class="chart-legend" style="margin-top:14px;">
-          <div class="legend-item"><div class="legend-swatch" style="background:#7B2D8B;"></div>Prospect</div>
-          <div class="legend-item"><div class="legend-swatch" style="background:#E8521A;"></div>Site Approvals (SA)</div>
-          <div class="legend-item"><div class="legend-swatch" style="background:#00A99D;"></div>SA Target</div>
-        </div>
-      </div>
+      <div class="division-charts-grid" id="division-charts-grid"></div>
     </div>
   </div>
 </div>
@@ -309,7 +294,7 @@ const REMS = [
   { name:"Kevin Fitzgerald",divs:["Canada"],                color:"#1d4ed8" },
 ];
 
-// ── Risk level definitions for early-stage pipeline ──────────────────────────
+// Risk levels — consistent with dev-execution standard palette
 const REM_RISK_LEVELS = [
   { key:"low",    label:"Low",    color:"#059669", bg:"#D1FAE5", text:"#065F46" },
   { key:"medium", label:"Medium", color:"#fbbf24", bg:"#FEF3C7", text:"#92400E" },
@@ -328,7 +313,7 @@ let modalSortCol = -1, modalSortDir = 1;
 function achieveClass(p) { return p >= 90 ? "ach-high" : p >= 70 ? "ach-medium" : "ach-low"; }
 function gapClass(g) { return g > 0 ? "gap-positive" : g < 0 ? "gap-negative" : "gap-zero"; }
 
-// ── Risk Mix cell builder — matches dev-execution style ─────────────────────
+// ── Risk Mix cell builder ─────────────────────────────────────────────────────
 function buildRiskMixCell(divName, nLow, nMed, nHigh, nUp) {
   const total = nLow + nMed + nHigh + nUp || 1;
   const counts = { low:nLow, medium:nMed, high:nHigh, upside:nUp };
@@ -511,88 +496,148 @@ function openRiskDrillDown(divName, riskKey, title) {
   document.getElementById("drill-modal").classList.add("open");
 }
 
-// ── Chart ──────────────────────────────────────────────────────────────────
-function renderCharts() {
-  const prospects = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="Prospect").length);
-  const sas       = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="SA").length);
-  const targets   = DIVISIONS.map(d => SA_TARGETS[d]||0);
-  const xLabels   = DIVISIONS.map(d => [d, "("+remForDiv(d).name+")"]);
+// ── Division Charts ────────────────────────────────────────────────────────
+const DIV_CHART_DATA = {};  // stores data for export
 
-  const ctx = document.getElementById("chart-combined");
+function exportDivisionChart(divName) {
+  const d = DIV_CHART_DATA[divName];
+  if (!d) return;
+  const wb = XLSX.utils.book_new();
+  const rows = [
+    ["Division", "Metric", "Count"],
+    [divName, "Prospect",        d.prospects],
+    [divName, "Site Approvals",  d.sas],
+    [divName, "SA Target",       d.target],
+    [divName, "Gap (SA vs Target)", d.sas - d.target],
+  ];
+  const ws = XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"] = [{wch:16},{wch:20},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, ws, divName.slice(0,31));
+  XLSX.writeFile(wb, `SA_Pipeline_${divName.replace(/[^a-zA-Z0-9]/g,"_")}.xlsx`);
+}
+
+function createDivisionChart(divName, canvasId) {
+  const prospects = ALL_DATA.filter(r => r.division===divName && r.status==="Prospect").length;
+  const sas       = ALL_DATA.filter(r => r.division===divName && r.status==="SA").length;
+  const target    = SA_TARGETS[divName] || 0;
+  const gap       = sas - target;
+  const ach       = target > 0 ? Math.round(sas / target * 100) : null;
+
+  DIV_CHART_DATA[divName] = { prospects, sas, target };
+
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+
+  const labels   = ["Prospect", "SA", "SA Target"];
+  const data     = [prospects, sas, target];
+  const colors   = ["#7B2D8B", "#E8521A", "#00A99D"];
+
   const chart = new Chart(ctx, {
-    type:"bar",
-    data:{
-      labels: xLabels,
-      datasets:[
-        { label:"Prospect", data:prospects, backgroundColor:"#7B2D8B", borderRadius:4, barPercentage:0.72, categoryPercentage:0.75, order:1 },
-        { label:"Site Approvals (SA)", data:sas, backgroundColor:"#E8521A", borderRadius:4, barPercentage:0.72, categoryPercentage:0.75, order:1 },
-        { label:"SA Target", data:targets, backgroundColor:"#00A99D", borderRadius:4, barPercentage:0.72, categoryPercentage:0.75, order:1 },
-      ]
+    type: "bar",
+    data: {
+      labels,
+      datasets: [{
+        data,
+        backgroundColor: colors,
+        borderRadius: 5,
+        barPercentage: 0.55,
+        categoryPercentage: 0.7,
+      }]
     },
-    options:{
-      responsive:true, maintainAspectRatio:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:"#1f2937", titleColor:"white", bodyColor:"white", padding:12, cornerRadius:6,
-          callbacks:{
-            title: ctx => [DIVISIONS[ctx[0].dataIndex]+"  ·  "+remForDiv(DIVISIONS[ctx[0].dataIndex]).name],
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#1f2937", titleColor: "white", bodyColor: "white",
+          padding: 10, cornerRadius: 6,
+          callbacks: {
             label: ctx => {
-              const i=ctx.dataIndex, lbl=ctx.dataset.label;
-              if(lbl==="Site Approvals (SA)"){
-                const t=targets[i], ach=t>0?Math.round(sas[i]/t*100):null;
-                return `Site Approvals: ${ctx.raw}${ach!=null?" ("+ach+"% of target)":""}`;
+              const lbl = labels[ctx.dataIndex];
+              if (lbl === "SA") {
+                return `SA: ${sas}${ach != null ? "  (" + ach + "% of target)" : ""}`;
               }
-              if(lbl==="SA Target"){
-                const gap=sas[i]-targets[i];
-                return `SA Target: ${ctx.raw}  |  Gap: ${gap>=0?"+":""}${gap}`;
+              if (lbl === "SA Target") {
+                return `SA Target: ${target}  |  Gap: ${gap >= 0 ? "+" : ""}${gap}`;
               }
               return `${lbl}: ${ctx.raw}`;
             },
-            afterBody: ctx => {
-              const ds=ctx[0].datasetIndex;
-              if(ds===0||ds===1) return ["▶ Click to view sites"];
-              return [];
+            afterLabel: ctx => {
+              if (labels[ctx.dataIndex] !== "SA Target") return "▶ Click to drill down";
+              return "";
             }
           }
         }
       },
-      scales:{
-        x:{ grid:{display:false}, border:{display:false}, ticks:{color:"#9ca3af", font:{size:10}, maxRotation:0, callback: function(val,idx){ return xLabels[idx]; }} },
-        y:{ display:false, grid:{display:false}, border:{display:false}, beginAtZero:true }
+      scales: {
+        x: { grid:{display:false}, border:{display:false}, ticks:{color:"#374151", font:{size:11}} },
+        y: { display:false, grid:{display:false}, border:{display:false}, beginAtZero:true }
       },
-      layout:{padding:{top:10}}
+      layout: { padding: { top: 28 } }
     },
-    plugins:[{
-      id:"barLabels",
-      afterDraw(chart){
-        const cCtx=chart.ctx;
+    plugins: [{
+      id: "labels_" + canvasId,
+      afterDraw(chart) {
+        const cCtx = chart.ctx;
         cCtx.save();
-        cCtx.font="bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-        cCtx.textAlign="center"; cCtx.textBaseline="middle"; cCtx.fillStyle="#FFFFFF";
-        chart.data.datasets.forEach((ds,dsIdx)=>{
-          const meta=chart.getDatasetMeta(dsIdx);
-          meta.data.forEach((bar,i)=>{
-            const val=ds.data[i]; if(!val)return;
-            const barHeight=bar.base-bar.y; if(barHeight<16)return;
-            cCtx.fillText(val, bar.x, bar.y+barHeight/2);
-          });
+        cCtx.font = "bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+        cCtx.textAlign = "center";
+        const meta = chart.getDatasetMeta(0);
+        meta.data.forEach((bar, i) => {
+          const val = data[i];
+          if (!val) return;
+          const barH = bar.base - bar.y;
+          if (barH >= 18) {
+            cCtx.fillStyle = "#FFFFFF";
+            cCtx.textBaseline = "middle";
+            cCtx.fillText(val, bar.x, bar.y + barH / 2);
+          } else {
+            cCtx.fillStyle = "#374151";
+            cCtx.textBaseline = "bottom";
+            cCtx.fillText(val, bar.x, bar.y - 3);
+          }
         });
         cCtx.restore();
       }
     }]
   });
 
-  ctx.style.cursor="pointer";
-  ctx.addEventListener("click",function(e){
-    const pts=chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false);
-    if(!pts.length)return;
-    const dsIdx=pts[0].datasetIndex, divIdx=pts[0].index;
-    if(dsIdx===2)return;
-    const divName=DIVISIONS[divIdx];
-    const status=dsIdx===0?"Prospect":"SA";
-    const label=`${divName} · ${dsIdx===0?"Prospects":"Site Approvals"}`;
-    openDrillDown(divName,status,label);
+  ctx.style.cursor = "pointer";
+  ctx.addEventListener("click", function(e) {
+    const pts = chart.getElementsAtEventForMode(e, "nearest", {intersect:true}, false);
+    if (!pts.length) return;
+    const idx = pts[0].index;
+    if (idx === 0) openDrillDown(divName, "Prospect", `${divName} · Prospects`);
+    else if (idx === 1) openDrillDown(divName, "SA", `${divName} · Site Approvals`);
+  });
+}
+
+function renderDivisionCharts() {
+  const grid = document.getElementById("division-charts-grid");
+  grid.innerHTML = DIVISIONS.map(div => {
+    const rem    = remForDiv(div);
+    const target = SA_TARGETS[div] || 0;
+    const id     = "div-chart-" + div.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    const safeDiv = div.replace(/'/g, "\'");
+    return `<div class="div-chart-card">
+      <div class="div-chart-header">
+        <div class="div-chart-header-left">
+          <div class="div-chart-title">${div}</div>
+          <div class="div-chart-subtitle">${rem.name} · SA Target: ${target||"—"}</div>
+        </div>
+        <button class="export-btn" onclick="exportDivisionChart('${safeDiv}')">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export
+        </button>
+      </div>
+      <canvas id="${id}" class="div-chart-canvas"></canvas>
+    </div>`;
+  }).join("");
+
+  DIVISIONS.forEach(div => {
+    const id = "div-chart-" + div.toLowerCase().replace(/[^a-z0-9]/g, "-");
+    createDivisionChart(div, id);
   });
 }
 
@@ -705,7 +750,7 @@ async function fetchData(){
     renderKPIBanner();
     renderREMCards();
     renderTable();
-    renderCharts();
+    renderDivisionCharts();
   } catch(e){
     document.getElementById("loading-overlay").style.display="none";
     alert("Error loading REM pipeline data: "+e.message);
