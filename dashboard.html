@@ -673,60 +673,59 @@ function updatePills(f){
 }
 function removePill(key,val){FSTATE[key].delete(val);syncCheckboxes(key);updateBtn(key);applyFilters();}
 
-// ── Above-bar black labels plugin ────────────────────────────────────────────
-// Draws value labels just above each bar in black at a fixed readable size.
-// Skips a label if it would horizontally overlap the previous label drawn
-// in the same dataset pass (prevents crowding on grouped/multi-dataset charts).
+// ── Bar labels above plugin ──────────────────────────────────────────────────
+// Draws every label — no skipping, no overlap detection, no clip guards.
+// Uses rotation for narrow bars (grouped charts) so text never crowds.
 const BAR_LABELS_PLUGIN = {
   id: 'barLabelsAbove',
   afterDatasetsDraw(chart) {
-    const ctx = chart.ctx;
-    const FONT_SIZE = 10;       // fixed — always readable, never scales down
-    const GAP = 4;              // px gap between top of bar and bottom of label
-    ctx.save();
-    ctx.font = `bold ${FONT_SIZE}px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif`;
-    ctx.fillStyle = '#374151';  // dark gray — readable on white background
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'bottom';
+    const GAP = 3;
+    const FONT_SIZE = 10;
 
     chart.data.datasets.forEach((ds, di) => {
       const meta = chart.getDatasetMeta(di);
       if (meta.hidden || meta.type !== 'bar') return;
 
-      // Track last drawn label's x-center & half-width to detect overlap
-      let lastX = -Infinity;
-      let lastHalfW = 0;
+      // Measure actual rendered bar width to decide orientation
+      const firstBar = meta.data.find(b => b && b.width > 0);
+      if (!firstBar) return;
+      const barWidth = firstBar.width;
+      const rotate = barWidth < 24;
 
       meta.data.forEach((bar, i) => {
         const val = ds.data[i];
         if (val == null || val === 0) return;
 
-        // Format value
         let label;
         const abs = Math.abs(val);
-        if (abs >= 1e6)       label = '$' + (val / 1e6).toFixed(1) + 'M';
-        else if (abs >= 1e3)  label = '$' + (val / 1e3).toFixed(0) + 'K';
+        if (abs >= 1e6)         label = '$' + (val / 1e6).toFixed(1) + 'M';
+        else if (abs >= 1e3)    label = '$' + (val / 1e3).toFixed(0) + 'K';
         else if (val % 1 === 0) label = String(val);
-        else                  label = val.toFixed(2);
+        else                    label = val.toFixed(2);
 
-        const labelW = ctx.measureText(label).width;
-        const halfW  = labelW / 2 + 2; // 2px breathing room each side
-
-        // Skip if this label's left edge would overlap previous label's right edge
-        if (bar.x - halfW < lastX + lastHalfW + 2) return;
-
-        // Draw above the top of the bar (bar.y is the top pixel)
+        const x = bar.x;
         const y = bar.y - GAP;
 
-        // Skip if y is outside the chart area (clipped by canvas top)
-        if (y - FONT_SIZE < chart.chartArea.top - 4) return;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = `bold ${FONT_SIZE}px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif`;
+        ctx.fillStyle = '#374151';
 
-        ctx.fillText(label, bar.x, y);
-        lastX = bar.x;
-        lastHalfW = halfW;
+        if (rotate) {
+          // Rotated 90deg anticlockwise — text reads bottom-to-top beside bar
+          ctx.translate(x, y);
+          ctx.rotate(-Math.PI / 2);
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, 2, 0);
+        } else {
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'bottom';
+          ctx.fillText(label, x, y);
+        }
+        ctx.restore();
       });
     });
-    ctx.restore();
   }
 };
 Chart.register(BAR_LABELS_PLUGIN);
