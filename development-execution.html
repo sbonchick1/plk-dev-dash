@@ -68,8 +68,6 @@ tbody td{padding:13px 14px;color:#374151;}
 .gap-zero{color:#6b7280;font-weight:600;}
 .ach-current{background:#eff6ff;color:#1d4ed8;}
 .ach-projected{background:#f0fdf4;color:#166534;}
-.risk-minibar{display:flex;height:8px;border-radius:4px;overflow:hidden;min-width:80px;gap:1px;}
-
 .rank-pill{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800;margin-right:6px;flex-shrink:0;}
 .rank-1{background:#059669;color:white;}.rank-2{background:#34d399;color:white;}
 .rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
@@ -80,17 +78,18 @@ tbody td{padding:13px 14px;color:#374151;}
 
 /* ── Chart card ── */
 .chart-card{background:white;border-radius:12px;padding:24px;border:1px solid #e5e7eb;}
-.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;}
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:12px;}
 .chart-header-left{flex:1;}
-.chart-title{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:4px;}
-.chart-subtitle{font-size:13px;color:#6b7280;}
+.chart-title{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:2px;}
+.chart-subtitle{font-size:13px;color:#6b7280;margin-bottom:2px;}
+.chart-hint{font-size:11px;color:#E8521A;margin-bottom:14px;display:flex;align-items:center;gap:4px;font-weight:500;}
 .chart-canvas{max-height:320px;}
 .division-charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:24px;margin-top:24px;}
 
 /* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .modal-overlay.open{opacity:1;pointer-events:auto;}
-.modal{background:white;border-radius:16px;width:100%;max-width:1050px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.2);transform:translateY(20px);transition:transform 0.2s;}
+.modal{background:white;border-radius:16px;width:100%;max-width:1200px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.2);transform:translateY(20px);transition:transform 0.2s;}
 .modal-overlay.open .modal{transform:translateY(0);}
 .modal-header{padding:20px 24px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;}
 .modal-title{font-size:17px;font-weight:700;color:#1a1a1a;}
@@ -252,7 +251,7 @@ tbody td{padding:13px 14px;color:#374151;}
               <th>Total 2026</th><th>Budget</th><th>Gap</th>
               <th style="background:#eff6ff;color:#1d4ed8;">Current Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Opened / Budget)</span></th>
               <th style="background:#f0fdf4;color:#166534;">Projected Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Bottom-Up / Budget)</span></th>
-              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">Click a segment to drill down</span></th>
+              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">Click to View</span></th>
             </tr>
           </thead>
           <tbody id="tbody-2026"></tbody>
@@ -286,6 +285,7 @@ tbody td{padding:13px 14px;color:#374151;}
           <div class="chart-header-left">
             <div class="chart-title">US&amp;C Consolidated — 2026 Pipeline</div>
             <div class="chart-subtitle">All divisions combined vs. total budget</div>
+            <div class="chart-hint">🖱 Click to View</div>
           </div>
           <button class="export-btn" onclick="exportChartToExcel('chart-usc','US&C Consolidated',this)">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -342,10 +342,8 @@ const RISK_LEVELS = [
   { key:"high",   label:"High",   color:"#DC2626", bg:"#FEE2E2", text:"#991B1B" },
   { key:"upside", label:"Upside", color:"#7C3AED", bg:"#EDE9FE", text:"#5B21B6" },
 ];
-
 const PLK = {orange:"#E8521A",teal:"#00A99D",purple:"#7B2D8B",red:"#C1272D"};
 const MS_PER_DAY = 86400000;
-
 let ALL_DATA=[], BUDGETS={}, CHART_DATA_MAP={};
 let MODAL_SITES=[], MODAL_TITLE_TEXT="";
 let modalSortCol=-1, modalSortDir=1;
@@ -357,168 +355,86 @@ function countByStatus(rows){ const c={}; STATUSES.forEach(s=>c[s]=0); rows.forE
 function achieveClass(p)    { return p>=90?"achievement-high":p>=70?"achievement-medium":"achievement-low"; }
 function gapClass(g)        { return g>0?"gap-positive":g<0?"gap-negative":"gap-zero"; }
 function avgDays(rows, fn)  { const vals=rows.map(fn).filter(v=>v!==null&&v>0); return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null; }
+function daysToMonths(d)    { if(d==null)return null; return (d/30.44).toFixed(1)+' mo'; }
 
-function daysToMonths(d) {
-  if (d == null) return null;
-  return (d / 30.44).toFixed(1) + ' mo';
-}
-
-// ── KPI Banner ──────────────────────────────────────────────────────────────
 function renderKPIBanner() {
-  const now      = new Date();
-  const yearEnd  = new Date(now.getFullYear(), 11, 31);
-  const daysLeft = Math.ceil((yearEnd - now) / MS_PER_DAY);
-  const totalBudget = Object.values(BUDGETS).reduce((a,b)=>a+b,0);
-
-  const bu2026   = ALL_DATA.filter(r=>is2026(r));
-  const opened   = bu2026.filter(r=>r.status==="Open").length;
-  const inPerm   = bu2026.filter(r=>r.status==="Permitting").length;
-  const inUC     = bu2026.filter(r=>r.status==="UC").length;
-  const total2026= STATUSES.reduce((a,s)=>a+bu2026.filter(r=>r.status===s).length,0);
-  const ltg      = Math.max(0, totalBudget - opened);
-  const projAch  = totalBudget>0?Math.round(total2026/totalBudget*100):0;
-  const currAch  = totalBudget>0?Math.round(opened/totalBudget*100):0;
-
-  const cards = [
-    { label:"Days Remaining in 2026", value:daysLeft, sub:"Until Dec 31, 2026",
-      color:"#E8521A", extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#E8521A;width:${Math.round((365-daysLeft)/365*100)}%"></div></div>`,
-      cls: daysLeft < 60 ? "kpi-urgent" : "" },
-    { label:"Openings YTD",            value:opened,   sub:`of ${totalBudget} budget`,
-      color:"#059669", extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#059669;width:${Math.min(100,currAch)}%"></div></div>`,
-      cls: currAch>=90?"kpi-good":"" },
-    { label:"Openings LTG",            value:ltg,      sub:"Left to go vs budget",
-      color:"#DC2626", extra:"", cls: ltg===0?"kpi-good":"" },
-    { label:"Sites in Permitting",     value:inPerm,   sub:"Active permitting",
-      color:"#F7941D", extra:"", cls:"" },
-    { label:"Sites in UC",             value:inUC,     sub:"Under construction",
-      color:"#7B2D8B", extra:"", cls:"" },
-    { label:"Total 2026 Pipeline",     value:total2026,sub:"BU low + med + high",
-      color:"#00A99D", extra:"", cls:"" },
-    { label:"Current Achievement",    value:currAch+"%",  sub:"Opened vs budget",
-      color:"#1d4ed8",
-      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#1d4ed8;width:${Math.min(100,currAch)}%"></div></div>`,
-      cls: currAch>=90?"kpi-good":currAch<70?"kpi-urgent":"" },
-    { label:"Projected Achievement",   value:projAch+"%", sub:"Bottom-up vs budget",
-      color:"#166534",
-      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#166534;width:${Math.min(100,projAch)}%"></div></div>`,
-      cls: projAch>=90?"kpi-good":projAch<70?"kpi-urgent":"" },
+  const now=new Date(), yearEnd=new Date(now.getFullYear(),11,31);
+  const daysLeft=Math.ceil((yearEnd-now)/MS_PER_DAY);
+  const totalBudget=Object.values(BUDGETS).reduce((a,b)=>a+b,0);
+  const bu2026=ALL_DATA.filter(r=>is2026(r));
+  const opened=bu2026.filter(r=>r.status==="Open").length;
+  const inPerm=bu2026.filter(r=>r.status==="Permitting").length;
+  const inUC=bu2026.filter(r=>r.status==="UC").length;
+  const total2026=STATUSES.reduce((a,s)=>a+bu2026.filter(r=>r.status===s).length,0);
+  const ltg=Math.max(0,totalBudget-opened);
+  const projAch=totalBudget>0?Math.round(total2026/totalBudget*100):0;
+  const currAch=totalBudget>0?Math.round(opened/totalBudget*100):0;
+  const cards=[
+    {label:"Days Remaining in 2026",value:daysLeft,sub:"Until Dec 31, 2026",color:"#E8521A",extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#E8521A;width:${Math.round((365-daysLeft)/365*100)}%"></div></div>`,cls:daysLeft<60?"kpi-urgent":""},
+    {label:"Openings YTD",value:opened,sub:`of ${totalBudget} budget`,color:"#059669",extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#059669;width:${Math.min(100,currAch)}%"></div></div>`,cls:currAch>=90?"kpi-good":""},
+    {label:"Openings LTG",value:ltg,sub:"Left to go vs budget",color:"#DC2626",extra:"",cls:ltg===0?"kpi-good":""},
+    {label:"Sites in Permitting",value:inPerm,sub:"Active permitting",color:"#F7941D",extra:"",cls:""},
+    {label:"Sites in UC",value:inUC,sub:"Under construction",color:"#7B2D8B",extra:"",cls:""},
+    {label:"Total 2026 Pipeline",value:total2026,sub:"BU low + med + high",color:"#00A99D",extra:"",cls:""},
+    {label:"Current Achievement",value:currAch+"%",sub:"Opened vs budget",color:"#1d4ed8",extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#1d4ed8;width:${Math.min(100,currAch)}%"></div></div>`,cls:currAch>=90?"kpi-good":currAch<70?"kpi-urgent":""},
+    {label:"Projected Achievement",value:projAch+"%",sub:"Bottom-up vs budget",color:"#166534",extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#166534;width:${Math.min(100,projAch)}%"></div></div>`,cls:projAch>=90?"kpi-good":projAch<70?"kpi-urgent":""},
   ];
-
-  document.getElementById("kpi-banner").innerHTML = cards.map(c=>`
-    <div class="kpi-card ${c.cls}" style="--kpi-color:${c.color}">
-      <div class="kpi-label">${c.label}</div>
-      <div class="kpi-value">${c.value}</div>
-      <div class="kpi-sub">${c.sub}</div>
-      ${c.extra}
-    </div>`).join("");
+  document.getElementById("kpi-banner").innerHTML=cards.map(c=>`<div class="kpi-card ${c.cls}" style="--kpi-color:${c.color}"><div class="kpi-label">${c.label}</div><div class="kpi-value">${c.value}</div><div class="kpi-sub">${c.sub}</div>${c.extra}</div>`).join("");
 }
 
-// ── Velocity Section ────────────────────────────────────────────────────────
 function renderVelocity() {
-  const allWithDates = ALL_DATA.filter(r => r.saStartMs);
-
-  const saToPC   = avgDays(allWithDates, r=> (r.pcStartMs   && r.saStartMs)          ? (r.pcStartMs   - r.saStartMs)          / MS_PER_DAY : null);
-  const pcToPerm = avgDays(allWithDates, r=> (r.permitStartedMs && r.pcStartMs)       ? (r.permitStartedMs - r.pcStartMs)      / MS_PER_DAY : null);
-  const permToUC = avgDays(allWithDates, r=> (r.ucStartMs   && r.permitCompletedMs)   ? (r.ucStartMs   - r.permitCompletedMs)  / MS_PER_DAY : null);
-
-  const openSites = ALL_DATA.filter(r => r.status==="Open" && r.ucStartMs && r.fzOpenDateMs);
-  const ucToOpen  = avgDays(openSites, r => (r.fzOpenDateMs - r.ucStartMs) / MS_PER_DAY);
-
-  const saToOpenSites = ALL_DATA.filter(r => r.status==="Open" && r.saStartMs && r.fzOpenDateMs);
-  const saToOpen = avgDays(saToOpenSites, r => (r.fzOpenDateMs - r.saStartMs) / MS_PER_DAY);
-
-  const stages = [
-    { label:"SA → PC",           days:saToPC,   color:"#E8521A",  note:"All sites with SA & PC start dates" },
-    { label:"PC → Permitting",   days:pcToPerm, color:"#F7941D",  note:"All sites with PC & permit start dates" },
-    { label:"Permitting → UC",   days:permToUC, color:"#7B2D8B",  note:"All sites with permit complete & UC start" },
-    { label:"UC → Open",         days:ucToOpen, color:"#059669",  note:"Opened sites · FZ POD − UC Start" },
+  const allWithDates=ALL_DATA.filter(r=>r.saStartMs);
+  const saToPC=avgDays(allWithDates,r=>(r.pcStartMs&&r.saStartMs)?(r.pcStartMs-r.saStartMs)/MS_PER_DAY:null);
+  const pcToPerm=avgDays(allWithDates,r=>(r.permitStartedMs&&r.pcStartMs)?(r.permitStartedMs-r.pcStartMs)/MS_PER_DAY:null);
+  const permToUC=avgDays(allWithDates,r=>(r.ucStartMs&&r.permitCompletedMs)?(r.ucStartMs-r.permitCompletedMs)/MS_PER_DAY:null);
+  const openSites=ALL_DATA.filter(r=>r.status==="Open"&&r.ucStartMs&&r.fzOpenDateMs);
+  const ucToOpen=avgDays(openSites,r=>(r.fzOpenDateMs-r.ucStartMs)/MS_PER_DAY);
+  const saToOpenSites=ALL_DATA.filter(r=>r.status==="Open"&&r.saStartMs&&r.fzOpenDateMs);
+  const saToOpen=avgDays(saToOpenSites,r=>(r.fzOpenDateMs-r.saStartMs)/MS_PER_DAY);
+  const stages=[
+    {label:"SA → PC",days:saToPC,note:"All sites with SA & PC start dates"},
+    {label:"PC → Permitting",days:pcToPerm,note:"All sites with PC & permit start dates"},
+    {label:"Permitting → UC",days:permToUC,note:"All sites with permit complete & UC start"},
+    {label:"UC → Open",days:ucToOpen,note:"Opened sites · FZ POD − UC Start"},
   ];
-
-  let html = stages.map(s => {
-    const months = daysToMonths(s.days);
-    return `<div class="velocity-card">
-      <div class="velocity-stage">${s.label}</div>
-      <div class="velocity-timing">
-        <div class="velocity-days">${s.days !== null ? s.days : "—"}<span>days</span></div>
-        ${months ? `<div class="velocity-months">${months}</div>` : ""}
-      </div>
-      <div class="velocity-sub">${s.note}</div>
-    </div>`;
-  }).join("");
-
-  const saOpenMonths = daysToMonths(saToOpen);
-  html += `<div class="velocity-card velocity-total">
-    <div class="velocity-stage">SA → Open (Total Timeline)</div>
-    <div class="velocity-timing">
-      <div class="velocity-days">${saToOpen !== null ? saToOpen : "—"}<span>days</span></div>
-      ${saOpenMonths ? `<div class="velocity-months">${saOpenMonths}</div>` : ""}
-    </div>
-    <div class="velocity-sub">${saToOpenSites.length} opened sites with SA start date · end-to-end</div>
-  </div>`;
-
-  document.getElementById("velocity-grid").innerHTML = html;
+  let html=stages.map(s=>{const mo=daysToMonths(s.days);return`<div class="velocity-card"><div class="velocity-stage">${s.label}</div><div class="velocity-timing"><div class="velocity-days">${s.days!==null?s.days:"—"}<span>days</span></div>${mo?`<div class="velocity-months">${mo}</div>`:""}</div><div class="velocity-sub">${s.note}</div></div>`;}).join("");
+  const saOpenMonths=daysToMonths(saToOpen);
+  html+=`<div class="velocity-card velocity-total"><div class="velocity-stage">SA → Open (Total Timeline)</div><div class="velocity-timing"><div class="velocity-days">${saToOpen!==null?saToOpen:"—"}<span>days</span></div>${saOpenMonths?`<div class="velocity-months">${saOpenMonths}</div>`:""}</div><div class="velocity-sub">${saToOpenSites.length} opened sites with SA start date · end-to-end</div></div>`;
+  document.getElementById("velocity-grid").innerHTML=html;
 }
 
-// ── Risk Mix cell builder ─────────────────────────────────────────────────────
-function buildRiskMixCell(divName, nLow, nMed, nHigh, nUp) {
-  const total = nLow + nMed + nHigh + nUp || 1;
-  const counts = { low:nLow, medium:nMed, high:nHigh, upside:nUp };
-  const edd = divName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-
-  const barSegs = RISK_LEVELS.map(rl => {
-    const cnt = counts[rl.key];
-    if(cnt === 0) return '';
-    const pct = Math.max((cnt/total*100), 4);
-    const clickAttr = `onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`;
-    return `<div class="risk-seg" style="width:${pct}%;background:${rl.color};" data-count="${cnt}" title="${rl.label}: ${cnt} site${cnt!==1?'s':''}" ${clickAttr}></div>`;
-  }).join('');
-
-  const pills = RISK_LEVELS.map(rl => {
-    const cnt = counts[rl.key];
-    if(cnt === 0) return '';
-    const clickAttr = `onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`;
-    return `<span class="risk-pill-item" style="background:${rl.bg};color:${rl.text};border-color:${rl.color};" ${clickAttr} title="${rl.label}: ${cnt} site${cnt!==1?'s':''}"><span class="rp-dot" style="background:${rl.color};"></span>${rl.label} <strong>${cnt}</strong></span>`;
-  }).join('');
-
-  return `<td class="risk-mix-cell"><div class="risk-bar">${barSegs}</div><div class="risk-pills">${pills}</div></td>`;
+function buildRiskMixCell(divName,nLow,nMed,nHigh,nUp){
+  const total=nLow+nMed+nHigh+nUp||1;
+  const counts={low:nLow,medium:nMed,high:nHigh,upside:nUp};
+  const edd=divName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  const barSegs=RISK_LEVELS.map(rl=>{const cnt=counts[rl.key];if(cnt===0)return'';const pct=Math.max((cnt/total*100),4);const ca=`onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`;return`<div class="risk-seg" style="width:${pct}%;background:${rl.color};" data-count="${cnt}" title="${rl.label}: ${cnt} site${cnt!==1?'s':''}" ${ca}></div>`;}).join('');
+  const pills=RISK_LEVELS.map(rl=>{const cnt=counts[rl.key];if(cnt===0)return'';const ca=`onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`;return`<span class="risk-pill-item" style="background:${rl.bg};color:${rl.text};border-color:${rl.color};" ${ca} title="${rl.label}: ${cnt} site${cnt!==1?'s':''}"><span class="rp-dot" style="background:${rl.color};"></span>${rl.label} <strong>${cnt}</strong></span>`;}).join('');
+  return`<td class="risk-mix-cell"><div class="risk-bar">${barSegs}</div><div class="risk-pills">${pills}</div></td>`;
 }
 
-function renderTable2026() {
-  const divStats = DIVISIONS.map(div=>{
-    const rows   = ALL_DATA.filter(r=>r.division===div.name&&is2026(r));
-    const counts = countByStatus(rows);
-    const total  = STATUSES.reduce((a,s)=>a+counts[s],0);
-    const opened = counts["Open"];
-    const budget = BUDGETS[div.name]||0;
-    const currPct = budget>0?(opened/budget*100):0;
-    const projPct = budget>0?(total/budget*100):0;
-    const nLow    = rows.filter(r=>r.riskLevel&&r.riskLevel.trim().toLowerCase()==="low").length;
-    const nMed    = rows.filter(r=>r.riskLevel&&r.riskLevel.trim().toLowerCase()==="medium").length;
-    const nHigh   = rows.filter(r=>r.riskLevel&&r.riskLevel.trim().toLowerCase()==="high").length;
-    const nUp     = ALL_DATA.filter(r=>r.division===div.name&&isUpside(r)).length;
-    return {div,counts,total,opened,budget,gap:total-budget,currPct,projPct,nLow,nMed,nHigh,nUp};
+function renderTable2026(){
+  const divStats=DIVISIONS.map(div=>{
+    const rows=ALL_DATA.filter(r=>r.division===div.name&&is2026(r));
+    const counts=countByStatus(rows),total=STATUSES.reduce((a,s)=>a+counts[s],0),opened=counts["Open"],budget=BUDGETS[div.name]||0;
+    const currPct=budget>0?(opened/budget*100):0,projPct=budget>0?(total/budget*100):0;
+    const nLow=rows.filter(r=>r.riskLevel&&r.riskLevel.trim().toLowerCase()==="low").length;
+    const nMed=rows.filter(r=>r.riskLevel&&r.riskLevel.trim().toLowerCase()==="medium").length;
+    const nHigh=rows.filter(r=>r.riskLevel&&r.riskLevel.trim().toLowerCase()==="high").length;
+    const nUp=ALL_DATA.filter(r=>r.division===div.name&&isUpside(r)).length;
+    return{div,counts,total,opened,budget,gap:total-budget,currPct,projPct,nLow,nMed,nHigh,nUp};
   });
-
-  const byProj=[...divStats].sort((a,b)=>b.projPct-a.projPct);
-  const byCurr=[...divStats].sort((a,b)=>b.currPct-a.currPct);
+  const byProj=[...divStats].sort((a,b)=>b.projPct-a.projPct),byCurr=[...divStats].sort((a,b)=>b.currPct-a.currPct);
   const projRank={},currRank={};
-  byProj.forEach((d,i)=>projRank[d.div.name]=i);
-  byCurr.forEach((d,i)=>currRank[d.div.name]=i);
-  divStats.forEach(d=>{ d.wScore=0.4*currRank[d.div.name]+0.6*projRank[d.div.name]; });
-  const rankMap={};
-  [...divStats].sort((a,b)=>a.wScore-b.wScore).forEach((d,i)=>rankMap[d.div.name]=i);
-
-  const totals={s:{},total:0,budget:0,opened:0,nLow:0,nMed:0,nHigh:0,nUp:0};
-  STATUSES.forEach(s=>totals.s[s]=0);
+  byProj.forEach((d,i)=>projRank[d.div.name]=i);byCurr.forEach((d,i)=>currRank[d.div.name]=i);
+  divStats.forEach(d=>{d.wScore=0.4*currRank[d.div.name]+0.6*projRank[d.div.name];});
+  const rankMap={};[...divStats].sort((a,b)=>a.wScore-b.wScore).forEach((d,i)=>rankMap[d.div.name]=i);
+  const totals={s:{},total:0,budget:0,opened:0,nLow:0,nMed:0,nHigh:0,nUp:0};STATUSES.forEach(s=>totals.s[s]=0);
   let html="";
-
   divStats.forEach(({div,counts,total,opened,budget,gap,currPct,projPct,nLow,nMed,nHigh,nUp})=>{
-    const rank=rankMap[div.name], rn=rank+1;
-    const rColor=RANK_COLORS[Math.min(rank,5)], rBg=RANK_BG[Math.min(rank,5)];
+    const rank=rankMap[div.name],rn=rank+1,rColor=RANK_COLORS[Math.min(rank,5)],rBg=RANK_BG[Math.min(rank,5)];
     html+=`<tr style="background:${rBg};border-left:4px solid ${rColor};">
       <td style="padding-left:10px;"><span class="rank-pill rank-${rn}">${rn}</span></td>
-      <td class="division-cell">${div.name}</td>
-      <td class="ddl-cell">${div.ddl}</td>
+      <td class="division-cell">${div.name}</td><td class="ddl-cell">${div.ddl}</td>
       ${STATUSES.map(s=>clickableCell(counts[s],div.name,s,"2026",`${div.name} · ${s}`)).join("")}
       ${clickableCell(total,div.name,null,"2026",`${div.name} · All 2026 Pipeline`)}
       <td class="number-cell">${budget}</td>
@@ -531,12 +447,8 @@ function renderTable2026() {
     totals.total+=total;totals.budget+=budget;totals.opened+=opened;
     totals.nLow+=nLow;totals.nMed+=nMed;totals.nHigh+=nHigh;totals.nUp+=nUp;
   });
-
-  const tGap=totals.total-totals.budget;
-  const tCurr=totals.budget>0?(totals.opened/totals.budget*100):0;
-  const tProj=totals.budget>0?(totals.total/totals.budget*100):0;
-  html+=`<tr class="total-row">
-    <td></td><td class="division-cell">US&amp;C Total</td><td class="ddl-cell">—</td>
+  const tGap=totals.total-totals.budget,tCurr=totals.budget>0?(totals.opened/totals.budget*100):0,tProj=totals.budget>0?(totals.total/totals.budget*100):0;
+  html+=`<tr class="total-row"><td></td><td class="division-cell">US&amp;C Total</td><td class="ddl-cell">—</td>
     ${STATUSES.map(s=>clickableCell(totals.s[s],"US&C",s,"2026",`US&C · ${s}`)).join("")}
     ${clickableCell(totals.total,"US&C",null,"2026","US&C · All 2026 Pipeline")}
     <td class="number-cell">${totals.budget}</td>
@@ -548,41 +460,24 @@ function renderTable2026() {
   document.getElementById("tbody-2026").innerHTML=html;
 }
 
-// ── 2027 Table ──────────────────────────────────────────────────────────────
-function renderTable2027() {
-  const s27=STATUSES.filter(s=>s!=="Open");
-  const totals={};s27.forEach(s=>totals[s]=0);
+function renderTable2027(){
+  const s27=STATUSES.filter(s=>s!=="Open"),totals={};s27.forEach(s=>totals[s]=0);
   let html="";
   DIVISIONS.forEach(div=>{
-    const rows=ALL_DATA.filter(r=>r.division===div.name&&is2027PlusTable(r));
-    const counts=countByStatus(rows);
-    const total=s27.reduce((a,s)=>a+counts[s],0);
-    html+=`<tr>
-      <td class="division-cell">${div.name}</td><td class="ddl-cell">${div.ddl}</td>
-      ${s27.map(s=>clickableCell(counts[s],div.name,s,"2027",`${div.name} · ${s} (2027+)`)).join("")}
-      ${clickableCell(total,div.name,null,"2027",`${div.name} · All 2027+ Pipeline`)}
-    </tr>`;
+    const rows=ALL_DATA.filter(r=>r.division===div.name&&is2027PlusTable(r)),counts=countByStatus(rows),total=s27.reduce((a,s)=>a+counts[s],0);
+    html+=`<tr><td class="division-cell">${div.name}</td><td class="ddl-cell">${div.ddl}</td>${s27.map(s=>clickableCell(counts[s],div.name,s,"2027",`${div.name} · ${s} (2027+)`)).join("")}${clickableCell(total,div.name,null,"2027",`${div.name} · All 2027+ Pipeline`)}</tr>`;
     s27.forEach(s=>totals[s]+=counts[s]);
   });
   const grand=s27.reduce((a,s)=>a+totals[s],0);
-  html+=`<tr class="total-row">
-    <td class="division-cell">US&amp;C Total</td><td class="ddl-cell">—</td>
-    ${s27.map(s=>clickableCell(totals[s],"US&C",s,"2027",`US&C · ${s} (2027+)`)).join("")}
-    ${clickableCell(grand,"US&C",null,"2027","US&C · All 2027+ Pipeline")}
-  </tr>`;
+  html+=`<tr class="total-row"><td class="division-cell">US&amp;C Total</td><td class="ddl-cell">—</td>${s27.map(s=>clickableCell(totals[s],"US&C",s,"2027",`US&C · ${s} (2027+)`)).join("")}${clickableCell(grand,"US&C",null,"2027","US&C · All 2027+ Pipeline")}</tr>`;
   document.getElementById("tbody-2027").innerHTML=html;
 }
 
-// ── Modal helpers ────────────────────────────────────────────────────────────
 function getSiteRow(s){return[s.sipId||"",s.restNum||"",s.fz||"",s.address||"",s.city||"",s.state||"",s.status||"",s.fzOpenDate||"",s.plkOpenDate||"",s.riskLevel||"",s.lastComment||""];}
 function renderModalTable(){
-  const riskF  =document.getElementById("modal-filter-risk").value.toLowerCase();
-  const statusF=document.getElementById("modal-filter-status").value;
-  let sites=MODAL_SITES.filter(s=>{
-    const rl=(s.riskLevel||"").trim().toLowerCase();
-    return(!riskF||rl===riskF)&&(!statusF||s.status===statusF);
-  });
-  if(modalSortCol>=0) sites=[...sites].sort((a,b)=>getSiteRow(a)[modalSortCol].localeCompare(getSiteRow(b)[modalSortCol],undefined,{sensitivity:"base"})*modalSortDir);
+  const riskF=document.getElementById("modal-filter-risk").value.toLowerCase(),statusF=document.getElementById("modal-filter-status").value;
+  let sites=MODAL_SITES.filter(s=>{const rl=(s.riskLevel||"").trim().toLowerCase();return(!riskF||rl===riskF)&&(!statusF||s.status===statusF);});
+  if(modalSortCol>=0)sites=[...sites].sort((a,b)=>getSiteRow(a)[modalSortCol].localeCompare(getSiteRow(b)[modalSortCol],undefined,{sensitivity:"base"})*modalSortDir);
   document.getElementById("modal-count").textContent=`${sites.length} site${sites.length!==1?"s":""}`;
   const tbody=document.getElementById("modal-tbody");
   if(!sites.length){tbody.innerHTML=`<tr><td colspan="11" class="modal-empty">No sites match the current filters.</td></tr>`;return;}
@@ -595,27 +490,24 @@ function renderModalTable(){
 }
 function sortModal(col){
   const ths=document.querySelectorAll("#modal-thead-row th");
-  modalSortDir=(modalSortCol===col)?modalSortDir*-1:1; modalSortCol=col;
+  modalSortDir=(modalSortCol===col)?modalSortDir*-1:1;modalSortCol=col;
   ths.forEach((th,i)=>{th.classList.remove("sort-asc","sort-desc");if(i===col)th.classList.add(modalSortDir===1?"sort-asc":"sort-desc");});
   renderModalTable();
 }
 function resetModalFilters(){
-  document.getElementById("modal-filter-risk").value="";
-  document.getElementById("modal-filter-status").value="";
+  document.getElementById("modal-filter-risk").value="";document.getElementById("modal-filter-status").value="";
   modalSortCol=-1;modalSortDir=1;
   document.querySelectorAll("#modal-thead-row th").forEach(th=>th.classList.remove("sort-asc","sort-desc"));
   renderModalTable();
 }
 function openDrillDown(divisionName,status,riskFilter,title,subtitle,riskLevels){
   let sites;
-  if(riskFilter==="2026")   sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&is2026(r)&&(status===null||r.status===status));
-  else if(riskFilter==="upside") sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&isUpside(r)&&(status===null||r.status===status));
-  else if(riskFilter==="2027")   sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&is2027PlusTable(r)&&(status===null||r.status===status));
+  if(riskFilter==="2026")sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&is2026(r)&&(status===null||r.status===status));
+  else if(riskFilter==="upside")sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&isUpside(r)&&(status===null||r.status===status));
+  else if(riskFilter==="2027")sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&is2027PlusTable(r)&&(status===null||r.status===status));
   else sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&(status===null||r.status===status));
-  if(riskLevels && riskLevels.length>0) {
-    sites=sites.filter(r=>riskLevels.includes((r.riskLevel||"").trim().toLowerCase()));
-  }
-  MODAL_SITES=sites; MODAL_TITLE_TEXT=title;
+  if(riskLevels&&riskLevels.length>0)sites=sites.filter(r=>riskLevels.includes((r.riskLevel||"").trim().toLowerCase()));
+  MODAL_SITES=sites;MODAL_TITLE_TEXT=title;
   document.getElementById("modal-title").textContent=title;
   document.getElementById("modal-subtitle").textContent=subtitle;
   document.getElementById("modal-filter-risk").value=riskLevels&&riskLevels.length===1?riskLevels[0]:"";
@@ -629,17 +521,14 @@ function closeModal(){document.getElementById("drill-modal").classList.remove("o
 document.getElementById("drill-modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
 
 function exportModalToExcel(){
-  const riskF=document.getElementById("modal-filter-risk").value.toLowerCase();
-  const statusF=document.getElementById("modal-filter-status").value;
+  const riskF=document.getElementById("modal-filter-risk").value.toLowerCase(),statusF=document.getElementById("modal-filter-status").value;
   const sites=MODAL_SITES.filter(s=>{const rl=(s.riskLevel||"").trim().toLowerCase();return(!riskF||rl===riskF)&&(!statusF||s.status===statusF);});
   if(!sites.length)return;
   const wb=XLSX.utils.book_new();
   const rows=[["SIP ID","Rest No","FZ","Address","City","ST","Status","FZ Proj Open Date","PLK Proj Open Date","Risk Level","Last Comments"]];
   sites.forEach(s=>rows.push([s.sipId||"",s.restNum||"",s.fz||"",s.address||"",s.city||"",s.state||"",s.status||"",s.fzOpenDate||"",s.plkOpenDate||"",s.riskLevel||"",s.lastComment||""]));
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws["!cols"]=[12,10,20,24,16,6,12,16,16,12,40].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws,"Sites");
-  XLSX.writeFile(wb,MODAL_TITLE_TEXT.replace(/[^a-zA-Z0-9 ]/g,"_")+".xlsx");
+  const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[12,10,20,24,16,6,12,16,16,12,40].map(w=>({wch:w}));
+  XLSX.utils.book_append_sheet(wb,ws,"Sites");XLSX.writeFile(wb,MODAL_TITLE_TEXT.replace(/[^a-zA-Z0-9 ]/g,"_")+".xlsx");
 }
 
 function clickableCell(count,divName,status,riskFilter,label){
@@ -648,58 +537,25 @@ function clickableCell(count,divName,status,riskFilter,label){
   return`<td class="number-cell clickable" onclick="openDrillDown('${ed}',${es},'${riskFilter}','${el}','${ed}${status?" · "+status:""}')"><span>${count}</span></td>`;
 }
 
-// ── Waterfall Charts ─────────────────────────────────────────────────────────
 function createWaterfallChart(canvasId,divisionName,data,budget){
-  const ctx=document.getElementById(canvasId); if(!ctx)return;
+  const ctx=document.getElementById(canvasId);if(!ctx)return;
+  const existing=Chart.getChart(ctx);if(existing)existing.destroy();
   const values=STATUSES.map(s=>data[s]);
   const fyBU=values.reduce((a,b)=>a+b,0);
-  const upsideCount=divisionName==="US&C Consolidated"
-    ?ALL_DATA.filter(r=>isUpside(r)).length
-    :ALL_DATA.filter(r=>r.division===divisionName&&isUpside(r)).length;
-  const fyBUPlusUpside=fyBU+upsideCount;
-  const gapToBudget=budget-fyBUPlusUpside; // positive = gap to fill, negative = over budget
-
+  const upsideCount=divisionName==="US&C Consolidated"?ALL_DATA.filter(r=>isUpside(r)).length:ALL_DATA.filter(r=>r.division===divisionName&&isUpside(r)).length;
+  const fyBUPlusUpside=fyBU+upsideCount,gapToBudget=budget-fyBUPlusUpside;
   const labels=[...STATUSES,"FY BU","Upside","FY BU + Upside","Gap to Budget","Budget"];
-
-  const displayValues=[
-    ...values,
-    fyBU,
-    upsideCount,
-    fyBUPlusUpside,
-    gapToBudget,
-    budget
-  ];
-
+  const displayValues=[...values,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,budget];
   const baseData=[],barData=[],barColors=[];
   let cum=0;
-  STATUSES.forEach((s,i)=>{
-    baseData.push(cum);
-    barData.push(values[i]);
-    barColors.push(PLK.orange);
-    cum+=values[i];
-  });
-  // FY BU — standalone, purple
-  baseData.push(0); barData.push(fyBU);                  barColors.push(PLK.purple);
-  // Upside — stacks on top of FY BU (waterfall), orange
-  baseData.push(fyBU); barData.push(upsideCount);        barColors.push(PLK.orange);
-  // FY BU + Upside — standalone reference bar, purple
-  baseData.push(0); barData.push(fyBUPlusUpside);        barColors.push(PLK.purple);
-
-  // Gap to Budget — always starts where FY BU + Upside left off
-  // gapToBudget = budget - fyBUPlusUpside: positive = still need to reach budget, negative = over budget
-  baseData.push(fyBUPlusUpside); barData.push(Math.abs(gapToBudget)); barColors.push(PLK.red);
-
-  // Budget — standalone, teal
-  baseData.push(0); barData.push(budget);                barColors.push(PLK.teal);
-
-  CHART_DATA_MAP[canvasId]={
-    division:divisionName,labels,
-    displayValues:[...values,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,budget],
-    budget,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,gap:fyBU-budget
-  };
-
+  STATUSES.forEach((s,i)=>{baseData.push(cum);barData.push(values[i]);barColors.push(PLK.orange);cum+=values[i];});
+  baseData.push(0);barData.push(fyBU);barColors.push(PLK.purple);
+  baseData.push(fyBU);barData.push(upsideCount);barColors.push(PLK.orange);
+  baseData.push(0);barData.push(fyBUPlusUpside);barColors.push(PLK.purple);
+  baseData.push(fyBUPlusUpside);barData.push(Math.abs(gapToBudget));barColors.push(PLK.red);
+  baseData.push(0);barData.push(budget);barColors.push(PLK.teal);
+  CHART_DATA_MAP[canvasId]={division:divisionName,labels,displayValues:[...values,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,budget],budget,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,gap:fyBU-budget};
   const barColorByIdx=barColors;
-
   new Chart(ctx,{
     type:"bar",
     data:{labels,datasets:[
@@ -714,14 +570,13 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
           backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
           filter:item=>item.datasetIndex===1,
           callbacks:{label:ctx=>{
-            const lbl=labels[ctx.dataIndex];
-            const idx=STATUSES.indexOf(lbl);
-            if(idx>=0){let run=0;for(let i=0;i<=idx;i++)run+=values[i];return`${lbl}: ${values[idx]}  |  Running: ${run}`;}
-            if(lbl==="FY BU")          return`FY BU: ${fyBU}`;
-            if(lbl==="Upside")         return`Upside sites: ${upsideCount}`;
-            if(lbl==="FY BU + Upside") return`FY BU + Upside: ${fyBUPlusUpside}`;
-            if(lbl==="Gap to Budget")  return`Gap to Budget: ${gapToBudget}  (${fyBUPlusUpside} vs ${budget} budget)`;
-            if(lbl==="Budget")         return`Budget: ${budget}`;
+            const lbl=labels[ctx.dataIndex],idx=STATUSES.indexOf(lbl);
+            if(idx>=0){let run=0;for(let i=0;i<=idx;i++)run+=values[i];return`${lbl}: ${values[idx]}  |  Running: ${run}  ·  Click to View`;}
+            if(lbl==="FY BU")return`FY BU: ${fyBU}  ·  Click to View`;
+            if(lbl==="Upside")return`Upside sites: ${upsideCount}  ·  Click to View`;
+            if(lbl==="FY BU + Upside")return`FY BU + Upside: ${fyBUPlusUpside}  ·  Click to View`;
+            if(lbl==="Gap to Budget")return`Gap to Budget: ${gapToBudget}  (${fyBUPlusUpside} vs ${budget} budget)`;
+            if(lbl==="Budget")return`Budget: ${budget}`;
             return"";
           }}
         }
@@ -735,49 +590,33 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
     plugins:[{
       id:"lbl_"+canvasId,
       afterDraw(chart){
-        const meta=chart.getDatasetMeta(1); if(!meta?.data)return;
-        const cCtx=chart.ctx;
-        const FONT="bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-        const MIN_BAR_H=18;
-
+        const meta=chart.getDatasetMeta(1);if(!meta?.data)return;
+        const cCtx=chart.ctx,FONT="bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif",MIN_BAR_H=18;
         displayValues.forEach((val,i)=>{
           if(val===null||val===undefined)return;
-          const bar=meta.data[i]; if(!bar)return;
-          const barH=Math.abs(bar.base-bar.y);
-          const barTop=Math.min(bar.y,bar.base);
-          const barMidY=(bar.y+bar.base)/2;
+          const bar=meta.data[i];if(!bar||bar.x==null||bar.y==null)return;
+          const barH=Math.abs(bar.base-bar.y),barTop=Math.min(bar.y,bar.base),barMidY=(bar.y+bar.base)/2;
           const label=String(i===labels.indexOf("Gap to Budget")?gapToBudget:val);
-          const barCol=barColorByIdx[i]||"#374151";
-
-          cCtx.save();
-          cCtx.font=FONT;
-          cCtx.textAlign="center";
-
-          if(barH>=MIN_BAR_H){
-            cCtx.fillStyle="#FFFFFF";
-            cCtx.textBaseline="middle";
-            cCtx.fillText(label,bar.x,barMidY);
-          } else if(barH>0){
-            cCtx.fillStyle="#374151";
-            cCtx.textBaseline="bottom";
-            cCtx.fillText(label,bar.x,barTop-3);
-          }
+          cCtx.save();cCtx.font=FONT;cCtx.textAlign="center";
+          if(barH>=MIN_BAR_H){cCtx.fillStyle="#FFFFFF";cCtx.textBaseline="middle";cCtx.fillText(label,bar.x,barMidY);}
+          else if(barH>0){cCtx.fillStyle="#374151";cCtx.textBaseline="bottom";cCtx.fillText(label,bar.x,barTop-3);}
           cCtx.restore();
         });
       }
     }]
   });
-
-  ctx.addEventListener("click",function(e){
-    const chart=Chart.getChart(ctx); if(!chart)return;
-    const pts=chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false); if(!pts.length)return;
-    const idx=pts[0].index, df=divisionName==="US&C Consolidated"?"US&C":divisionName;
-    const n=STATUSES.length;
-    if(idx<n)             openDrillDown(df,STATUSES[idx],"2026",`${divisionName} · ${STATUSES[idx]}`,`${divisionName} · ${STATUSES[idx]}`);
-    else if(idx===n)      openDrillDown(df,null,"2026",`${divisionName} · Full BU Pipeline`,divisionName);
-    else if(idx===n+1)    openDrillDown(df,null,"upside",`${divisionName} · Upside Sites`,divisionName);
-    else if(idx===n+2)    openDrillDown(df,null,"upside",`${divisionName} · FY BU + Upside`,divisionName);
-  });
+  // Named handler to prevent stacking on re-render
+  if(ctx._waterfallClickHandler)ctx.removeEventListener("click",ctx._waterfallClickHandler);
+  ctx._waterfallClickHandler=function(e){
+    const chart=Chart.getChart(ctx);if(!chart)return;
+    const pts=chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false);if(!pts.length)return;
+    const idx=pts[0].index,df=divisionName==="US&C Consolidated"?"US&C":divisionName,n=STATUSES.length;
+    if(idx<n)openDrillDown(df,STATUSES[idx],"2026",`${divisionName} · ${STATUSES[idx]}`,`${divisionName} · ${STATUSES[idx]}`);
+    else if(idx===n)openDrillDown(df,null,"2026",`${divisionName} · Full BU Pipeline`,divisionName);
+    else if(idx===n+1)openDrillDown(df,null,"upside",`${divisionName} · Upside Sites`,divisionName);
+    else if(idx===n+2)openDrillDown(df,null,"upside",`${divisionName} · FY BU + Upside`,divisionName);
+  };
+  ctx.addEventListener("click",ctx._waterfallClickHandler);
   ctx.style.cursor="pointer";
 }
 
@@ -786,7 +625,20 @@ function renderWaterfallCharts(){
   let html="";
   DIVISIONS.forEach(div=>{
     const id=`chart-${div.name.toLowerCase().replace(/\s/g,"-").replace(/[^a-z0-9-]/g,"")}`;
-    html+=`<div class="chart-card"><div class="chart-header"><div class="chart-header-left"><div class="chart-title">${div.name}</div><div class="chart-subtitle">${div.ddl} · Budget: ${BUDGETS[div.name]||0}</div></div><button class="export-btn" onclick="exportChartToExcel('${id}','${div.name}',this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>Export</button></div><canvas id="${id}" class="chart-canvas"></canvas></div>`;
+    html+=`<div class="chart-card">
+      <div class="chart-header">
+        <div class="chart-header-left">
+          <div class="chart-title">${div.name}</div>
+          <div class="chart-subtitle">${div.ddl} · Budget: ${BUDGETS[div.name]||0}</div>
+          <div class="chart-hint">🖱 Click to View</div>
+        </div>
+        <button class="export-btn" onclick="exportChartToExcel('${id}','${div.name}',this)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export
+        </button>
+      </div>
+      <canvas id="${id}" class="chart-canvas"></canvas>
+    </div>`;
   });
   document.getElementById("division-charts").innerHTML=html;
   DIVISIONS.forEach(div=>{
@@ -795,37 +647,31 @@ function renderWaterfallCharts(){
   });
 }
 
-// ── Excel exports ────────────────────────────────────────────────────────────
 function exportTable2026(){
   const wb=XLSX.utils.book_new();
   const rows=[["Division","DDL","Prospect","SA","PC","Permitting","UC","Open","Total 2026","Budget","Gap","Current Achievement","Projected Achievement"]];
-  DIVISIONS.forEach(div=>{
-    const r=ALL_DATA.filter(x=>x.division===div.name&&is2026(x)),c=countByStatus(r);
-    const total=STATUSES.reduce((a,s)=>a+c[s],0),opened=c["Open"],budget=BUDGETS[div.name]||0;
-    rows.push([div.name,div.ddl,c["Prospect"],c["SA"],c["PC"],c["Permitting"],c["UC"],c["Open"],total,budget,total-budget,budget>0?(opened/budget):0,budget>0?(total/budget):0]);
-  });
+  DIVISIONS.forEach(div=>{const r=ALL_DATA.filter(x=>x.division===div.name&&is2026(x)),c=countByStatus(r),total=STATUSES.reduce((a,s)=>a+c[s],0),opened=c["Open"],budget=BUDGETS[div.name]||0;rows.push([div.name,div.ddl,c["Prospect"],c["SA"],c["PC"],c["Permitting"],c["UC"],c["Open"],total,budget,total-budget,budget>0?(opened/budget):0,budget>0?(total/budget):0]);});
   const t={s:{},total:0,budget:0,opened:0};STATUSES.forEach(s=>t.s[s]=0);
   DIVISIONS.forEach(div=>{const r=ALL_DATA.filter(x=>x.division===div.name&&is2026(x)),c=countByStatus(r);STATUSES.forEach(s=>t.s[s]+=c[s]);t.total+=STATUSES.reduce((a,s)=>a+c[s],0);t.budget+=BUDGETS[div.name]||0;t.opened+=c["Open"];});
   rows.push(["US&C Total","—",t.s["Prospect"],t.s["SA"],t.s["PC"],t.s["Permitting"],t.s["UC"],t.s["Open"],t.total,t.budget,t.total-t.budget,t.budget>0?(t.opened/t.budget):0,t.budget>0?(t.total/t.budget):0]);
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  const range=XLSX.utils.decode_range(ws["!ref"]);
+  const ws=XLSX.utils.aoa_to_sheet(rows);const range=XLSX.utils.decode_range(ws["!ref"]);
   for(let R=1;R<=range.e.r;R++){["L","M"].forEach(col=>{const cell=ws[col+(R+1)];if(cell){cell.t="n";cell.z="0%";}});}
   ws["!cols"]=[14,16,9,7,7,10,7,7,10,8,7,16,16].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb,ws,"2026 Pipeline");XLSX.writeFile(wb,"2026_Pipeline_vs_Budget.xlsx");
 }
 function exportTable2027(){
-  const wb=XLSX.utils.book_new(),s27=STATUSES.filter(s=>s!=="Open");
-  const rows=[["Division","DDL",...s27,"Total 2027+"]],totals={};s27.forEach(s=>totals[s]=0);
+  const wb=XLSX.utils.book_new(),s27=STATUSES.filter(s=>s!=="Open"),totals={};s27.forEach(s=>totals[s]=0);
+  const rows=[["Division","DDL",...s27,"Total 2027+"]];
   DIVISIONS.forEach(div=>{const r=ALL_DATA.filter(x=>x.division===div.name&&is2027PlusTable(x)),c=countByStatus(r),total=s27.reduce((a,s)=>a+c[s],0);rows.push([div.name,div.ddl,...s27.map(s=>c[s]),total]);s27.forEach(s=>totals[s]+=c[s]);});
   rows.push(["US&C Total","—",...s27.map(s=>totals[s]),s27.reduce((a,s)=>a+totals[s],0)]);
   const ws=XLSX.utils.aoa_to_sheet(rows);ws["!cols"]=[14,16,9,7,7,10,7,10].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb,ws,"2027+ Pipeline");XLSX.writeFile(wb,"2027_Pipeline.xlsx");
 }
 async function exportChartToExcel(canvasId,divisionName,btn){
-  const cd=CHART_DATA_MAP[canvasId]; if(!cd)return;
+  const cd=CHART_DATA_MAP[canvasId];if(!cd)return;
   const sites=(divisionName==="US&C Consolidated"?ALL_DATA.filter(r=>is2026(r)||isUpside(r)):ALL_DATA.filter(r=>r.division===divisionName&&(is2026(r)||isUpside(r)))).map(s=>({sipId:s.sipId||"",restNum:s.restNum||"",fz:s.fz||"",address:s.address||"",city:s.city||"",state:s.state||"",status:s.status||"",fzOpenDate:s.fzOpenDate||"",plkOpenDate:s.plkOpenDate||"",riskLevel:s.riskLevel||"",lastComment:s.lastComment||""}));
   const payload={divisionName,labels:cd.labels,displayValues:cd.displayValues,budget:cd.budget,fyBU:cd.fyBU,upsideCount:cd.upsideCount,gap:cd.gap,sites};
-  const orig=btn?btn.innerHTML:""; if(btn){btn.innerHTML="Exporting…";btn.disabled=true;}
+  const orig=btn?btn.innerHTML:"";if(btn){btn.innerHTML="Exporting…";btn.disabled=true;}
   try{
     const res=await fetch("/api/export_chart",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(payload)});
     if(!res.ok){const err=await res.json().catch(()=>({error:"Unknown"}));throw new Error(err.error||`Error ${res.status}`);}
@@ -836,19 +682,14 @@ async function exportChartToExcel(canvasId,divisionName,btn){
   finally{if(btn){btn.innerHTML=orig;btn.disabled=false;}}
 }
 
-// ── Data fetch ────────────────────────────────────────────────────────────────
 async function fetchData(){
   try{
-    const res=await fetch(API); if(!res.ok)throw new Error(`Server responded with ${res.status}`);
-    const data=await res.json(); if(!data.rows||!data.budgets)throw new Error("Invalid data structure");
-    ALL_DATA=data.rows; BUDGETS=data.budgets;
+    const res=await fetch(API);if(!res.ok)throw new Error(`Server responded with ${res.status}`);
+    const data=await res.json();if(!data.rows||!data.budgets)throw new Error("Invalid data structure");
+    ALL_DATA=data.rows;BUDGETS=data.budgets;
     document.getElementById("loading-overlay").style.display="none";
     document.getElementById("app").style.display="block";
-    renderKPIBanner();
-    renderVelocity();
-    renderTable2026();
-    renderTable2027();
-    renderWaterfallCharts();
+    renderKPIBanner();renderVelocity();renderTable2026();renderTable2027();renderWaterfallCharts();
   }catch(e){
     document.getElementById("loading-overlay").style.display="none";
     alert("Error loading pipeline data: "+e.message);
