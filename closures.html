@@ -255,7 +255,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
               <th>Budget</th><th>Gap</th>
               <th style="background:#eff6ff;color:#1d4ed8;">Current Ach.<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Closed / Budget)</span></th>
               <th style="background:#fff0f0;color:#991b1b;">Projected Ach.<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(LE / Budget)</span></th>
-              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">Click a segment to drill down</span></th>
+              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">Click to View</span></th>
             </tr>
           </thead>
           <tbody id="tbody-2026"></tbody>
@@ -277,7 +277,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
         <div class="legend-item2"><div class="legend-dot2" style="background:#C1272D;"></div>Definite</div>
         <div class="legend-item2"><div class="legend-dot2" style="background:#6b7280;"></div>Closed</div>
       </div>
-      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Rank: weighted score 40% Current Achievement + 60% Projected Achievement vs budget — fewer closures relative to budget = better rank. Click any Risk Mix segment or pill to drill into those sites.</p>
+      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Rank: weighted score 40% Current Achievement + 60% Projected Achievement vs budget — fewer closures relative to budget = better rank. Click any Risk Mix segment or pill to view those sites.</p>
     </div>
 
     <!-- Closure Reason Charts (side by side) -->
@@ -291,7 +291,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
             <div class="chart-header-left">
               <div class="chart-title-main">Closure LE</div>
               <div class="chart-subtitle">2026 LE by reason · waterfall · PLK controlled vs non-controlled</div>
-              <div class="chart-hint">🖱 Click a bar to drill into those sites</div>
+              <div class="chart-hint">🖱 Click to View</div>
             </div>
             <button class="export-btn" onclick="exportReasonChart('LE')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -310,7 +310,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
             <div class="chart-header-left">
               <div class="chart-title-main">Additional Closure Risk</div>
               <div class="chart-subtitle">2026 LE (Opp) by reason · waterfall · PLK controlled vs non-controlled</div>
-              <div class="chart-hint">🖱 Click a bar to drill into those sites</div>
+              <div class="chart-hint">🖱 Click to View</div>
             </div>
             <button class="export-btn" onclick="exportReasonChart('LE (Opp)')">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
@@ -347,7 +347,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
           <span id="fz-expand-icon">▼</span>
           <span id="fz-expand-label">Show all FZs</span>
         </button>
-        <p style="font-size:11px;color:#9ca3af;font-style:italic;">* Shows franchisees with at least 1 site across LE, LE (Opp), 2027 LE, 2028 LE, or Mitigate. Click any count to drill down.</p>
+        <p style="font-size:11px;color:#9ca3af;font-style:italic;">* Shows franchisees with at least 1 site across LE, LE (Opp), 2027 LE, 2028 LE, or Mitigate. Click any count to view.</p>
       </div>
     </div>
 
@@ -617,6 +617,10 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const displayVals=[...activeReasons.map(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl), grandTotal];
 
   const ctx=document.getElementById(canvasId);
+  // Destroy existing chart on this canvas to prevent glitching on re-render
+  const existing = Chart.getChart(ctx);
+  if (existing) existing.destroy();
+
   new Chart(ctx,{
     type:"bar",
     data:{
@@ -646,11 +650,11 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
             },
             afterBody:ctx=>{
               const i=ctx[0].dataIndex, lbl=labels[i];
-              if(lbl==="Total") return[];
+              if(lbl==="Total") return["· Click to View"];
               const barTotal=reasonCounts[lbl]?.ctrl+reasonCounts[lbl]?.nonCtrl||0;
               let run=0;
               for(let j=0;j<=i;j++) run+=reasonCounts[activeReasons[j]]?.ctrl+reasonCounts[activeReasons[j]]?.nonCtrl||0;
-              return[`Bar Total: ${barTotal}`, `Running Total: ${run}`];
+              return[`Bar Total: ${barTotal}`, `Running Total: ${run}`, "· Click to View"];
             }
           }
         }
@@ -667,24 +671,27 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
         const cCtx=chart.ctx; cCtx.save();
         cCtx.font="bold 11px -apple-system,sans-serif";
         cCtx.fillStyle="#374151"; cCtx.textAlign="center"; cCtx.textBaseline="bottom";
+        const meta1=chart.getDatasetMeta(1);
         const meta2=chart.getDatasetMeta(2);
         const meta3=chart.getDatasetMeta(3);
         displayVals.forEach((val,i)=>{
           if(!val) return;
           let bar;
-          if(i===n-1) { bar=meta3?.data[i]; }
-          else {
-            const meta1=chart.getDatasetMeta(1);
+          if(i===n-1) {
+            bar=meta3?.data[i];
+          } else {
             bar=nonCtrlData[i]>0 ? meta2?.data[i] : meta1?.data[i];
           }
-          if(bar) cCtx.fillText(val, bar.x, bar.y-3);
+          if(bar && bar.x != null && bar.y != null) cCtx.fillText(val, bar.x, bar.y-3);
         });
         cCtx.restore();
       }
     }]
   });
 
-  ctx.addEventListener("click",function(e){
+  // Remove old click handler to prevent stacking on re-render
+  if (ctx._reasonClickHandler) ctx.removeEventListener("click", ctx._reasonClickHandler);
+  ctx._reasonClickHandler = function(e){
     const ch=Chart.getChart(ctx); if(!ch)return;
     const pts=ch.getElementsAtEventForMode(e,"nearest",{intersect:true},false); if(!pts.length)return;
     const i=pts[0].index;
@@ -696,7 +703,8 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
     const reason=activeReasons[i];
     const bucket=canvasId.includes("opp")?"LE (Opp)":"LE";
     openDrillDown({bucket,reason},`US&C · ${bucket} · ${reason}`,`All divisions · ${bucket}`);
-  });
+  };
+  ctx.addEventListener("click", ctx._reasonClickHandler);
   ctx.style.cursor="pointer";
 }
 
