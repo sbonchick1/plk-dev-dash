@@ -391,7 +391,6 @@ const REASON_COLORS = {
   "Bad Trade Area":"#6b7280","California - Potential Closure":"#0ea5e9","Other":"#9ca3af"
 };
 
-// ── Risk level definitions — FIX: High Risk now uses #DC2626 matching dev-execution ──
 const CLOSURE_RISK_LEVELS = [
   { key:"Low Risk",        label:"Low",      color:"#059669", bg:"#D1FAE5", text:"#065F46" },
   { key:"Medium Risk",     label:"Medium",   color:"#fbbf24", bg:"#FEF3C7", text:"#92400E" },
@@ -594,7 +593,6 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
 
   const activeReasons=ALL_REASONS.filter(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl>0);
   const grandTotal=rows.length;
-  // Store for export
   const bucket = canvasId.includes("opp") ? "LE (Opp)" : "LE";
   const nonCtrlTotal = activeReasons.reduce((a,r)=>a+reasonCounts[r].nonCtrl, 0);
   REASON_CHART_DATA[bucket] = { reasons:activeReasons, counts:reasonCounts, grandTotal, nonCtrlTotal };
@@ -617,138 +615,184 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const displayVals=[...activeReasons.map(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl), grandTotal];
 
   const ctx=document.getElementById(canvasId);
-  // Destroy existing chart on this canvas to prevent glitching on re-render
   const existing = Chart.getChart(ctx);
   if (existing) existing.destroy();
 
-  // Pre-compute the top Y position for each bar (ctrl+nonCtrl stacked, or total bar)
-  // Used by the label plugin — computed fresh each draw from actual bar positions.
-  new Chart(ctx,{
-    type:"bar",
-    data:{
+  // ── FIX: single-fire label plugin using afterDraw (not afterDatasetsDraw) ──
+  // afterDraw fires ONCE after all datasets are rendered, preventing label flicker.
+  const labelPlugin = {
+    id: "labels_" + canvasId,
+    afterDraw(chart) {
+      const meta1 = chart.getDatasetMeta(1); // ctrl bars
+      const meta2 = chart.getDatasetMeta(2); // nonCtrl bars
+      const meta3 = chart.getDatasetMeta(3); // total bar
+      const cCtx  = chart.ctx;
+      cCtx.save();
+      cCtx.font = "bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+      cCtx.textAlign = "center";
+
+      displayVals.forEach((val, i) => {
+        if (!val && val !== 0) return;
+        let topY = null, barX = null;
+
+        if (i === n - 1) {
+          // Total bar — read from ds3
+          const b = meta3 && meta3.data[i];
+          if (b && b.x != null && b.y != null) { topY = b.y; barX = b.x; }
+        } else {
+          const b1 = meta1 && meta1.data[i];
+          const b2 = meta2 && meta2.data[i];
+          const ctrl    = ctrlData[i];
+          const nonCtrl = nonCtrlData[i];
+          if (ctrl > 0 && nonCtrl > 0 && b1 && b2) {
+            topY = Math.min(b1.y, b2.y);
+            barX = b2.x;
+          } else if (ctrl > 0 && b1 && b1.y != null) {
+            topY = b1.y; barX = b1.x;
+          } else if (nonCtrl > 0 && b2 && b2.y != null) {
+            topY = b2.y; barX = b2.x;
+          }
+        }
+
+        if (topY == null || barX == null) return;
+        cCtx.fillStyle = "#374151";
+        cCtx.textBaseline = "bottom";
+        cCtx.fillText(String(val), barX, topY - 3);
+      });
+
+      cCtx.restore();
+    }
+  };
+
+  new Chart(ctx, {
+    type: "bar",
+    data: {
       labels: wrappedLabels,
-      datasets:[
-        // ds0: invisible base (shifts ctrl bars up for waterfall effect)
-        {label:"_base",        data:baseData,    backgroundColor:"rgba(0,0,0,0)", borderColor:"rgba(0,0,0,0)", borderWidth:0, stack:"wf"},
-        // ds1: PLK Controlled (bottom of visible stack)
-        {label:"PLK Controlled", data:ctrlData,    backgroundColor:wrappedLabels.map((_,i)=>i===n-1?"rgba(0,0,0,0)":ctrlColor), borderRadius:0, stack:"wf"},
-        // ds2: Non-Controlled (top of visible stack)
-        {label:"Non-Controlled",  data:nonCtrlData, backgroundColor:wrappedLabels.map((_,i)=>i===n-1?"rgba(0,0,0,0)":nonCtrlColor), borderRadius:4, stack:"wf"},
-        // ds3: Total bar — separate stack so it starts from 0, only visible at last index
-        {label:"_total", data:wrappedLabels.map((_,i)=>i===n-1?grandTotal:0), backgroundColor:totalColor, borderRadius:4, stack:"wf2"},
+      datasets: [
+        // ds0: invisible base (waterfall offset)
+        {
+          label: "_base",
+          data: baseData,
+          backgroundColor: "rgba(0,0,0,0)",
+          borderColor: "rgba(0,0,0,0)",
+          borderWidth: 0,
+          stack: "wf"
+        },
+        // ds1: PLK Controlled
+        {
+          label: "PLK Controlled",
+          data: ctrlData,
+          backgroundColor: wrappedLabels.map((_,i) => i===n-1 ? "rgba(0,0,0,0)" : ctrlColor),
+          borderRadius: 0,
+          stack: "wf"
+        },
+        // ds2: Non-Controlled
+        {
+          label: "Non-Controlled",
+          data: nonCtrlData,
+          backgroundColor: wrappedLabels.map((_,i) => i===n-1 ? "rgba(0,0,0,0)" : nonCtrlColor),
+          borderRadius: 4,
+          stack: "wf"
+        },
+        // ds3: Total bar — separate stack, only last index
+        {
+          label: "_total",
+          data: wrappedLabels.map((_,i) => i===n-1 ? grandTotal : 0),
+          backgroundColor: totalColor,
+          borderRadius: 4,
+          stack: "wf2"
+        }
       ]
     },
-    options:{
-      responsive:true, maintainAspectRatio:true,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:"#1f2937", titleColor:"white", bodyColor:"white",
-          padding:10, cornerRadius:6, titleFont:{weight:"normal"}, bodyFont:{weight:"normal"},
-          // Match dev-execution pattern: filter to the hovered visible dataset,
-          // return a single label string so Chart.js auto-renders the color swatch
-          filter:item=>{
-            if(item.dataIndex===n-1) return item.datasetIndex===3;
-            // Show tooltip on whichever visible segment (ctrl or nonCtrl) is hovered
-            return item.datasetIndex===1||item.datasetIndex===2;
+    options: {
+      responsive: true,
+      maintainAspectRatio: true,
+      // ── FIX: use "nearest" with intersect:true so only ONE element triggers tooltip ──
+      interaction: {
+        mode: "nearest",
+        intersect: true
+      },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: "#1f2937",
+          titleColor: "white",
+          bodyColor: "white",
+          padding: 10,
+          cornerRadius: 6,
+          titleFont: { weight: "normal" },
+          bodyFont: { weight: "normal" },
+          // ── FIX: filter keeps exactly one item — the hovered segment ──
+          filter: item => {
+            // For the Total bar, only show ds3
+            if (item.dataIndex === n-1) return item.datasetIndex === 3;
+            // For reason bars, skip the invisible base (ds0) and show only the hovered visible segment
+            return item.datasetIndex === 1 || item.datasetIndex === 2;
           },
-          callbacks:{
-            title:items=>{
-              const i=items[0].dataIndex;
-              return i===n-1?"Total":labels[i];
+          // ── FIX: itemSort so the hovered dataset always renders first,
+          //    and we suppress the duplicate by only labelling one ──
+          callbacks: {
+            title: items => {
+              const i = items[0].dataIndex;
+              return i === n-1 ? "Total" : labels[i];
             },
-            label:item=>{
-              const i=item.dataIndex;
-              if(i===n-1) return `Total closures: ${grandTotal}  ·  Click to View`;
-              const lbl=labels[i];
-              const ctrl=reasonCounts[lbl]?.ctrl||0;
-              const nonCtrl=reasonCounts[lbl]?.nonCtrl||0;
-              const barTotal=ctrl+nonCtrl;
-              let run=0;
-              for(let j=0;j<=i;j++){
-                const r=activeReasons[j];
-                run+=(reasonCounts[r]?.ctrl||0)+(reasonCounts[r]?.nonCtrl||0);
+            label: item => {
+              const i = item.dataIndex;
+              if (i === n-1) return `Total closures: ${grandTotal}  ·  Click to View`;
+              const lbl = labels[i];
+              const ctrl    = reasonCounts[lbl]?.ctrl    || 0;
+              const nonCtrl = reasonCounts[lbl]?.nonCtrl || 0;
+              const barTotal = ctrl + nonCtrl;
+              let run = 0;
+              for (let j = 0; j <= i; j++) {
+                const r = activeReasons[j];
+                run += (reasonCounts[r]?.ctrl || 0) + (reasonCounts[r]?.nonCtrl || 0);
               }
-              const hoveredLbl=item.datasetIndex===1?"PLK Controlled":"Non-Controlled";
-              const hoveredVal=item.datasetIndex===1?ctrl:nonCtrl;
+              const hoveredLbl = item.datasetIndex === 1 ? "PLK Controlled" : "Non-Controlled";
+              const hoveredVal = item.datasetIndex === 1 ? ctrl : nonCtrl;
               return `${hoveredLbl}: ${hoveredVal}  |  Bar Total: ${barTotal}  |  Running: ${run}  ·  Click to View`;
             }
           }
         }
       },
-      scales:{
-        x:{stacked:true, grid:{display:false}, border:{display:false}, ticks:{color:"#374151", font:{size:11}, maxRotation:0, minRotation:0, autoSkip:false}},
-        y:{stacked:true, grid:{display:false}, border:{display:false}, ticks:{display:false}, beginAtZero:true}
+      scales: {
+        x: {
+          stacked: true,
+          grid: { display: false },
+          border: { display: false },
+          ticks: { color: "#374151", font: { size: 11 }, maxRotation: 0, minRotation: 0, autoSkip: false }
+        },
+        y: {
+          stacked: true,
+          grid: { display: false },
+          border: { display: false },
+          ticks: { display: false },
+          beginAtZero: true
+        }
       },
-      layout:{padding:{top:28}}
+      layout: { padding: { top: 28 } }
     },
-    plugins:[{
-      id:"labels_"+canvasId,
-      afterDatasetsDraw(chart){
-        // Fire after ALL datasets are drawn — avoids flicker from afterDraw timing
-        const cCtx=chart.ctx;
-        const meta1=chart.getDatasetMeta(1); // ctrl
-        const meta2=chart.getDatasetMeta(2); // nonCtrl
-        const meta3=chart.getDatasetMeta(3); // total bar
-        cCtx.save();
-        cCtx.font="bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-        cCtx.textAlign="center";
-
-        displayVals.forEach((val,i)=>{
-          if(!val && val!==0) return;
-          let topY=null, barX=null;
-
-          if(i===n-1){
-            // Total bar: read from ds3
-            const b=meta3?.data[i];
-            if(b && b.x!=null && b.y!=null){ topY=b.y; barX=b.x; }
-          } else {
-            // Reason bar: top of the stacked column = min(ctrl.y, nonCtrl.y)
-            // whichever dataset renders higher (smaller y) is the visual top
-            const b1=meta1?.data[i];
-            const b2=meta2?.data[i];
-            const ctrl=ctrlData[i], nonCtrl=nonCtrlData[i];
-            if(ctrl>0 && nonCtrl>0 && b1 && b2){
-              // both segments present: top is the nonCtrl bar's y
-              topY=Math.min(b1.y, b2.y);
-              barX=b2.x;
-            } else if(ctrl>0 && b1 && b1.y!=null){
-              topY=b1.y; barX=b1.x;
-            } else if(nonCtrl>0 && b2 && b2.y!=null){
-              topY=b2.y; barX=b2.x;
-            }
-          }
-
-          if(topY==null || barX==null) return;
-
-          // Draw label above the bar
-          cCtx.fillStyle="#374151";
-          cCtx.textBaseline="bottom";
-          cCtx.fillText(String(val), barX, topY-3);
-        });
-
-        cCtx.restore();
-      }
-    }]
+    plugins: [labelPlugin]
   });
 
-  // Remove old click handler to prevent stacking on re-render
+  // Remove old click handler before attaching new one
   if (ctx._reasonClickHandler) ctx.removeEventListener("click", ctx._reasonClickHandler);
-  ctx._reasonClickHandler = function(e){
-    const ch=Chart.getChart(ctx); if(!ch)return;
-    const pts=ch.getElementsAtEventForMode(e,"nearest",{intersect:true},false); if(!pts.length)return;
-    const i=pts[0].index;
-    if(i===n-1){
-      const bucket=canvasId.includes("opp")?"LE (Opp)":"LE";
-      openDrillDown({bucket},`US&C · ${bucket} · All Reasons`,`All divisions`);
+  ctx._reasonClickHandler = function(e) {
+    const ch = Chart.getChart(ctx); if (!ch) return;
+    const pts = ch.getElementsAtEventForMode(e, "nearest", { intersect: true }, false);
+    if (!pts.length) return;
+    const i = pts[0].index;
+    if (i === n-1) {
+      const bucket = canvasId.includes("opp") ? "LE (Opp)" : "LE";
+      openDrillDown({ bucket }, `US&C · ${bucket} · All Reasons`, `All divisions`);
       return;
     }
-    const reason=activeReasons[i];
-    const bucket=canvasId.includes("opp")?"LE (Opp)":"LE";
-    openDrillDown({bucket,reason},`US&C · ${bucket} · ${reason}`,`All divisions · ${bucket}`);
+    const reason = activeReasons[i];
+    const bucket = canvasId.includes("opp") ? "LE (Opp)" : "LE";
+    openDrillDown({ bucket, reason }, `US&C · ${bucket} · ${reason}`, `All divisions · ${bucket}`);
   };
   ctx.addEventListener("click", ctx._reasonClickHandler);
-  ctx.style.cursor="pointer";
+  ctx.style.cursor = "pointer";
 }
 
 function renderReasonCharts(){
