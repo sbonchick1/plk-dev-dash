@@ -720,7 +720,7 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
             if(lbl==="FY BU")          return`FY BU: ${fyBU}`;
             if(lbl==="Upside")         return`Upside sites: ${upsideCount}`;
             if(lbl==="FY BU + Upside") return`FY BU + Upside: ${fyBUPlusUpside}`;
-            if(lbl==="Gap to Budget")  return`Gap to Budget: ${gapToBudget>=0?"+":""}${gapToBudget}  (${fyBUPlusUpside} vs ${budget} budget)`;
+            if(lbl==="Gap to Budget")  return`Gap to Budget: ${gapToBudget}  (${fyBUPlusUpside} vs ${budget} budget)`;
             if(lbl==="Budget")         return`Budget: ${budget}`;
             return"";
           }}
@@ -746,7 +746,7 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
           const barH=Math.abs(bar.base-bar.y);
           const barTop=Math.min(bar.y,bar.base);
           const barMidY=(bar.y+bar.base)/2;
-          const label=String(i===labels.indexOf("Gap to Budget")?(gapToBudget>=0?"+"+gapToBudget:gapToBudget):val);
+          const label=String(i===labels.indexOf("Gap to Budget")?gapToBudget:val);
           const barCol=barColorByIdx[i]||"#374151";
 
           cCtx.save();
