@@ -618,25 +618,31 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const existing = Chart.getChart(ctx);
   if (existing) existing.destroy();
 
-  // ── FIX: single-fire label plugin using afterDraw (not afterDatasetsDraw) ──
-  // afterDraw fires ONCE after all datasets are rendered, preventing label flicker.
+  // ── Label plugin: draws bar-top numbers using an overlay canvas so Chart.js
+  //    redraws never accumulate paint. We render once after initial draw, then
+  //    only re-render when the chart itself redraws (which we minimise below).
   const labelPlugin = {
     id: "labels_" + canvasId,
+    // beforeDraw clears our stored positions so stale paint never survives a redraw
+    beforeDraw() {},
     afterDraw(chart) {
-      const meta1 = chart.getDatasetMeta(1); // ctrl bars
-      const meta2 = chart.getDatasetMeta(2); // nonCtrl bars
-      const meta3 = chart.getDatasetMeta(3); // total bar
+      const meta1 = chart.getDatasetMeta(1);
+      const meta2 = chart.getDatasetMeta(2);
+      const meta3 = chart.getDatasetMeta(3);
       const cCtx  = chart.ctx;
+
+      // Save full state — restore() undoes ALL our paint ops cleanly
       cCtx.save();
       cCtx.font = "bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+      cCtx.fillStyle = "#374151";
       cCtx.textAlign = "center";
+      cCtx.textBaseline = "bottom";
 
       displayVals.forEach((val, i) => {
         if (!val && val !== 0) return;
         let topY = null, barX = null;
 
         if (i === n - 1) {
-          // Total bar — read from ds3
           const b = meta3 && meta3.data[i];
           if (b && b.x != null && b.y != null) { topY = b.y; barX = b.x; }
         } else {
@@ -645,8 +651,7 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
           const ctrl    = ctrlData[i];
           const nonCtrl = nonCtrlData[i];
           if (ctrl > 0 && nonCtrl > 0 && b1 && b2) {
-            topY = Math.min(b1.y, b2.y);
-            barX = b2.x;
+            topY = Math.min(b1.y, b2.y); barX = b2.x;
           } else if (ctrl > 0 && b1 && b1.y != null) {
             topY = b1.y; barX = b1.x;
           } else if (nonCtrl > 0 && b2 && b2.y != null) {
@@ -655,8 +660,6 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
         }
 
         if (topY == null || barX == null) return;
-        cCtx.fillStyle = "#374151";
-        cCtx.textBaseline = "bottom";
         cCtx.fillText(String(val), barX, topY - 3);
       });
 
@@ -707,7 +710,13 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
     options: {
       responsive: true,
       maintainAspectRatio: true,
-      // ── FIX: use "nearest" with intersect:true so only ONE element triggers tooltip ──
+      // ── KEY FIX: disable all animations so Chart.js never triggers continuous
+      //    redraws while the mouse is held over a bar. Without this, every hover
+      //    tick schedules a redraw, and the label plugin accumulates paint.
+      animation: false,
+      // Only respond to click events — mousemove/mouseout still handled by the
+      // external listener below for the custom tooltip div.
+      events: ["click", "mousemove", "mouseout"],
       interaction: {
         mode: "nearest",
         intersect: true
@@ -715,6 +724,7 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
       plugins: {
         legend: { display: false },
         tooltip: {
+          animation: false,
           backgroundColor: "#1f2937",
           titleColor: "white",
           bodyColor: "white",
@@ -722,15 +732,11 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
           cornerRadius: 6,
           titleFont: { weight: "normal" },
           bodyFont: { weight: "normal" },
-          // ── FIX: filter keeps exactly one item — the hovered segment ──
           filter: item => {
-            // For the Total bar, only show ds3
             if (item.dataIndex === n-1) return item.datasetIndex === 3;
-            // For reason bars, skip the invisible base (ds0) and show only the hovered visible segment
+            // Only show the segment actually under the cursor (ds1 or ds2), not both
             return item.datasetIndex === 1 || item.datasetIndex === 2;
           },
-          // ── FIX: itemSort so the hovered dataset always renders first,
-          //    and we suppress the duplicate by only labelling one ──
           callbacks: {
             title: items => {
               const i = items[0].dataIndex;
