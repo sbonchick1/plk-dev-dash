@@ -568,8 +568,8 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
         legend:{display:false},
         tooltip:{
           backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
+          padding:10,cornerRadius:6,titleFont:{weight:"normal"},bodyFont:{weight:"normal"},
           filter:item=>item.datasetIndex===1,
-          callbacks:{label:ctx=>{
             const lbl=labels[ctx.dataIndex],idx=STATUSES.indexOf(lbl);
             if(idx>=0){let run=0;for(let i=0;i<=idx;i++)run+=values[i];return`${lbl}: ${values[idx]}  |  Running: ${run}  ·  Click to View`;}
             if(lbl==="FY BU")return`FY BU: ${fyBU}  ·  Click to View`;
