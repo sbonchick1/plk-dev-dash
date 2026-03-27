@@ -343,7 +343,6 @@ const RISK_LEVELS = [
   { key:"upside", label:"Upside", color:"#7C3AED", bg:"#EDE9FE", text:"#5B21B6" },
 ];
 
-
 const PLK = {orange:"#E8521A",teal:"#00A99D",purple:"#7B2D8B",red:"#C1272D"};
 const MS_PER_DAY = 86400000;
 
@@ -359,14 +358,12 @@ function achieveClass(p)    { return p>=90?"achievement-high":p>=70?"achievement
 function gapClass(g)        { return g>0?"gap-positive":g<0?"gap-negative":"gap-zero"; }
 function avgDays(rows, fn)  { const vals=rows.map(fn).filter(v=>v!==null&&v>0); return vals.length?Math.round(vals.reduce((a,b)=>a+b,0)/vals.length):null; }
 
-// Convert days to a human-friendly months string, e.g. "2.3 mo"
 function daysToMonths(d) {
   if (d == null) return null;
   return (d / 30.44).toFixed(1) + ' mo';
 }
 
 // ── KPI Banner ──────────────────────────────────────────────────────────────
-// CHANGE 1: Sites in Permitting now appears before Sites in UC
 function renderKPIBanner() {
   const now      = new Date();
   const yearEnd  = new Date(now.getFullYear(), 11, 31);
@@ -375,8 +372,8 @@ function renderKPIBanner() {
 
   const bu2026   = ALL_DATA.filter(r=>is2026(r));
   const opened   = bu2026.filter(r=>r.status==="Open").length;
-  const inPerm   = bu2026.filter(r=>r.status==="Permitting").length;  // BEFORE UC
-  const inUC     = bu2026.filter(r=>r.status==="UC").length;           // AFTER Permitting
+  const inPerm   = bu2026.filter(r=>r.status==="Permitting").length;
+  const inUC     = bu2026.filter(r=>r.status==="UC").length;
   const total2026= STATUSES.reduce((a,s)=>a+bu2026.filter(r=>r.status===s).length,0);
   const ltg      = Math.max(0, totalBudget - opened);
   const projAch  = totalBudget>0?Math.round(total2026/totalBudget*100):0;
@@ -391,7 +388,6 @@ function renderKPIBanner() {
       cls: currAch>=90?"kpi-good":"" },
     { label:"Openings LTG",            value:ltg,      sub:"Left to go vs budget",
       color:"#DC2626", extra:"", cls: ltg===0?"kpi-good":"" },
-    // PERMITTING now before UC
     { label:"Sites in Permitting",     value:inPerm,   sub:"Active permitting",
       color:"#F7941D", extra:"", cls:"" },
     { label:"Sites in UC",             value:inUC,     sub:"Under construction",
@@ -418,21 +414,16 @@ function renderKPIBanner() {
 }
 
 // ── Velocity Section ────────────────────────────────────────────────────────
-// CHANGE 2: All sites with dates (not just BU+Upside), SA→Open total timeline added,
-//           days + months shown, progress bars removed
 function renderVelocity() {
-  // CHANGE: use ALL pipeline sites with dates, not filtered to BU/Upside
   const allWithDates = ALL_DATA.filter(r => r.saStartMs);
 
   const saToPC   = avgDays(allWithDates, r=> (r.pcStartMs   && r.saStartMs)          ? (r.pcStartMs   - r.saStartMs)          / MS_PER_DAY : null);
   const pcToPerm = avgDays(allWithDates, r=> (r.permitStartedMs && r.pcStartMs)       ? (r.permitStartedMs - r.pcStartMs)      / MS_PER_DAY : null);
   const permToUC = avgDays(allWithDates, r=> (r.ucStartMs   && r.permitCompletedMs)   ? (r.ucStartMs   - r.permitCompletedMs)  / MS_PER_DAY : null);
 
-  // UC→Open: opened sites only, FZ Open Date − UC Start
   const openSites = ALL_DATA.filter(r => r.status==="Open" && r.ucStartMs && r.fzOpenDateMs);
   const ucToOpen  = avgDays(openSites, r => (r.fzOpenDateMs - r.ucStartMs) / MS_PER_DAY);
 
-  // CHANGE: SA→Open total timeline — opened sites with both SA Start and FZ Open Date
   const saToOpenSites = ALL_DATA.filter(r => r.status==="Open" && r.saStartMs && r.fzOpenDateMs);
   const saToOpen = avgDays(saToOpenSites, r => (r.fzOpenDateMs - r.saStartMs) / MS_PER_DAY);
 
@@ -455,7 +446,6 @@ function renderVelocity() {
     </div>`;
   }).join("");
 
-  // CHANGE: SA→Open total timeline card — visually differentiated
   const saOpenMonths = daysToMonths(saToOpen);
   html += `<div class="velocity-card velocity-total">
     <div class="velocity-stage">SA → Open (Total Timeline)</div>
@@ -468,8 +458,6 @@ function renderVelocity() {
 
   document.getElementById("velocity-grid").innerHTML = html;
 }
-
-// ── 2026 Table ──────────────────────────────────────────────────────────────
 
 // ── Risk Mix cell builder ─────────────────────────────────────────────────────
 function buildRiskMixCell(divName, nLow, nMed, nHigh, nUp) {
@@ -527,13 +515,6 @@ function renderTable2026() {
   divStats.forEach(({div,counts,total,opened,budget,gap,currPct,projPct,nLow,nMed,nHigh,nUp})=>{
     const rank=rankMap[div.name], rn=rank+1;
     const rColor=RANK_COLORS[Math.min(rank,5)], rBg=RANK_BG[Math.min(rank,5)];
-    const rTotal=nLow+nMed+nHigh+nUp||1;
-    const minibar=`<div class="risk-minibar" title="Low:${nLow} Med:${nMed} High:${nHigh} Upside:${nUp}">
-      <div class="risk-seg" style="width:${nLow/rTotal*100}%;background:#059669;"></div>
-      <div class="risk-seg" style="width:${nMed/rTotal*100}%;background:#fbbf24;"></div>
-      <div class="risk-seg" style="width:${nHigh/rTotal*100}%;background:#DC2626;"></div>
-      <div class="risk-seg" style="width:${nUp/rTotal*100}%;background:#7C3AED;"></div>
-    </div><div style="font-size:10px;color:#9ca3af;margin-top:3px;">${nLow}L · ${nMed}M · ${nHigh}H · ${nUp}U</div>`;
     html+=`<tr style="background:${rBg};border-left:4px solid ${rColor};">
       <td style="padding-left:10px;"><span class="rank-pill rank-${rn}">${rn}</span></td>
       <td class="division-cell">${div.name}</td>
@@ -631,7 +612,6 @@ function openDrillDown(divisionName,status,riskFilter,title,subtitle,riskLevels)
   else if(riskFilter==="upside") sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&isUpside(r)&&(status===null||r.status===status));
   else if(riskFilter==="2027")   sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&is2027PlusTable(r)&&(status===null||r.status===status));
   else sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&(status===null||r.status===status));
-  // Pre-filter by risk level if coming from a risk mix segment click
   if(riskLevels && riskLevels.length>0) {
     sites=sites.filter(r=>riskLevels.includes((r.riskLevel||"").trim().toLowerCase()));
   }
@@ -679,33 +659,17 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
   const fyBUPlusUpside=fyBU+upsideCount;
   const gapToBudget=fyBUPlusUpside-budget; // positive = above budget, negative = below
 
-  // ── New 9-column structure ────────────────────────────────────────────────
-  // Prospect SA PC Permitting UC Open | FY BU | Upside | FY BU+Upside | Gap to Budget | Budget
-  // Waterfall: first 6 stack cumulatively (standard waterfall)
-  //            FY BU, Upside, FY BU+Upside, Gap to Budget, Budget all start from 0 (standalone)
   const labels=[...STATUSES,"FY BU","Upside","FY BU + Upside","Gap to Budget","Budget"];
 
-  // displayValues: the number shown on each bar label
   const displayValues=[
     ...values,
     fyBU,
     upsideCount,
     fyBUPlusUpside,
-    gapToBudget,   // can be positive or negative — show signed
+    gapToBudget,
     budget
   ];
 
-  // Bar heights (always positive for chart rendering)
-  const barHeights=[
-    ...values,
-    fyBU,
-    upsideCount,
-    fyBUPlusUpside,
-    Math.abs(gapToBudget),
-    budget
-  ];
-
-  // Base offsets (all standalone bars start from 0)
   const baseData=[],barData=[],barColors=[];
   let cum=0;
   STATUSES.forEach((s,i)=>{
@@ -720,8 +684,14 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
   baseData.push(fyBU); barData.push(upsideCount);        barColors.push(PLK.orange);
   // FY BU + Upside — standalone reference bar, purple
   baseData.push(0); barData.push(fyBUPlusUpside);        barColors.push(PLK.purple);
-  // Gap to Budget — standalone, PLK red
-  baseData.push(0); barData.push(Math.abs(gapToBudget)); barColors.push(PLK.red);
+
+  // ── KEY FIX: Gap to Budget floats from FY BU + Upside level ──────────────
+  // If below budget (negative gap): base sits at budget level, bar hangs UP to fyBUPlusUpside
+  // If above budget (positive gap): base sits at fyBUPlusUpside, bar builds UP to budget
+  // Either way the bar visually spans between fyBUPlusUpside and budget
+  const gapBase = gapToBudget < 0 ? fyBUPlusUpside + gapToBudget : fyBUPlusUpside;
+  baseData.push(gapBase); barData.push(Math.abs(gapToBudget)); barColors.push(PLK.red);
+
   // Budget — standalone, teal
   baseData.push(0); barData.push(budget);                barColors.push(PLK.teal);
 
@@ -731,7 +701,6 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
     budget,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,gap:fyBU-budget
   };
 
-  // Bar color lookup by index for the label plugin
   const barColorByIdx=barColors;
 
   new Chart(ctx,{
@@ -772,7 +741,7 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
         const meta=chart.getDatasetMeta(1); if(!meta?.data)return;
         const cCtx=chart.ctx;
         const FONT="bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-        const MIN_BAR_H=18; // minimum bar height to fit label inside
+        const MIN_BAR_H=18;
 
         displayValues.forEach((val,i)=>{
           if(val===null||val===undefined)return;
@@ -788,12 +757,10 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
           cCtx.textAlign="center";
 
           if(barH>=MIN_BAR_H){
-            // Fits inside — white text centered in bar
             cCtx.fillStyle="#FFFFFF";
             cCtx.textBaseline="middle";
             cCtx.fillText(label,bar.x,barMidY);
           } else if(barH>0){
-            // Too short to fit inside — black text above bar, no background
             cCtx.fillStyle="#374151";
             cCtx.textBaseline="bottom";
             cCtx.fillText(label,bar.x,barTop-3);
@@ -813,7 +780,6 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
     else if(idx===n)      openDrillDown(df,null,"2026",`${divisionName} · Full BU Pipeline`,divisionName);
     else if(idx===n+1)    openDrillDown(df,null,"upside",`${divisionName} · Upside Sites`,divisionName);
     else if(idx===n+2)    openDrillDown(df,null,"upside",`${divisionName} · FY BU + Upside`,divisionName);
-    // Gap to Budget and Budget bars are informational — no drill-down
   });
   ctx.style.cursor="pointer";
 }
