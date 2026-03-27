@@ -249,7 +249,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
               <th class="left" style="width:30px;"></th>
               <th class="left">Division</th>
               <th style="background:#fee2e2;color:#991b1b;">LE<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Definite 2026)</span></th>
-              <th style="background:#fef3c7;color:#92400e;">LE (Opp)<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Upside Risk)</span></th>
+              <th style="background:#fef3c7;color:#92400e;">LE (Opp)<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Downside Risk)</span></th>
               <th style="background:#f0fdf4;color:#166534;">Closed YTD</th>
               <th>Budget</th><th>Gap</th>
               <th style="background:#eff6ff;color:#1d4ed8;">Current Ach.<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Closed / Budget)</span></th>
@@ -467,12 +467,10 @@ function renderKPIBanner() {
     {label:"2026 LE Closures",       value:leCount,       sub:`of ${totalBudget} budget`,    color:"#C1272D",
      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#C1272D;width:${Math.min(100,projAch)}%"></div></div>`,
      cls:projAch>=100?"kpi-urgent":""},
-    {label:"LE (Opp) — Upside Risk", value:leOppCount,    sub:"Additional 2026 risk",         color:"#E8521A",extra:"",cls:""},
+    {label:"LE (Opp) — Downside Risk", value:leOppCount,    sub:"Additional 2026 risk",         color:"#E8521A",extra:"",cls:""},
     {label:"Closed YTD",             value:closedYTD,     sub:`of ${totalBudget} budget`,     color:"#6b7280",
      extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#6b7280;width:${Math.min(100,currAch)}%"></div></div>`,cls:""},
     {label:"Closures LTG",           value:ltg,           sub:"Left to go vs budget",          color:"#F7941D",extra:"",cls:ltg===0?"kpi-good":""},
-    {label:"% Controllable (LE)",    value:ctrlPct+"%",   sub:`${ctrlCount} of ${leCount} LE`, color:"#7B2D8B",
-     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#7B2D8B;width:${ctrlPct}%"></div></div>`,cls:""},
     {label:"Avg 2025 ARS",           value:fmt$(avgARS),  sub:"2026 LE units",                 color:"#00A99D",extra:"",cls:""},
     {label:"Avg TTM EBITDA",         value:fmt$(avgEBITDA),sub:"2026 LE units",                color:"#1d4ed8",extra:"",cls:avgEBITDA!=null&&avgEBITDA<0?"kpi-urgent":""},
     {label:"Current Achievement",    value:currAch+"%",   sub:"Closed vs budget",              color:"#1d4ed8",
