@@ -673,40 +673,63 @@ function updatePills(f){
 }
 function removePill(key,val){FSTATE[key].delete(val);syncCheckboxes(key);updateBtn(key);applyFilters();}
 
-// ── White centered bar labels plugin ─────────────────────────────────────────
-const WHITE_LABELS_PLUGIN = {
-  id: 'whiteBarLabels',
-  afterDraw(chart) {
+// ── Above-bar black labels plugin ────────────────────────────────────────────
+// Draws value labels just above each bar in black at a fixed readable size.
+// Skips a label if it would horizontally overlap the previous label drawn
+// in the same dataset pass (prevents crowding on grouped/multi-dataset charts).
+const BAR_LABELS_PLUGIN = {
+  id: 'barLabelsAbove',
+  afterDatasetsDraw(chart) {
     const ctx = chart.ctx;
+    const FONT_SIZE = 10;       // fixed — always readable, never scales down
+    const GAP = 4;              // px gap between top of bar and bottom of label
     ctx.save();
+    ctx.font = `bold ${FONT_SIZE}px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif`;
+    ctx.fillStyle = '#374151';  // dark gray — readable on white background
     ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
+    ctx.textBaseline = 'bottom';
+
     chart.data.datasets.forEach((ds, di) => {
       const meta = chart.getDatasetMeta(di);
-      if (meta.type !== 'bar') return;
+      if (meta.hidden || meta.type !== 'bar') return;
+
+      // Track last drawn label's x-center & half-width to detect overlap
+      let lastX = -Infinity;
+      let lastHalfW = 0;
+
       meta.data.forEach((bar, i) => {
         const val = ds.data[i];
         if (val == null || val === 0) return;
-        const barH = Math.abs(bar.base - bar.y);
-        if (barH < 14) return; // too short to label
-        const midY = (bar.y + bar.base) / 2;
-        // Scale font based on bar height, min 8, max 12
-        const fs = Math.min(12, Math.max(8, Math.floor(barH * 0.35)));
-        ctx.font = `bold ${fs}px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif`;
-        ctx.fillStyle = '#FFFFFF';
-        // Format: $ values get abbreviated, counts are whole numbers
+
+        // Format value
         let label;
-        if (Math.abs(val) >= 1e6)      label = '$' + (val/1e6).toFixed(2) + 'M';
-        else if (Math.abs(val) >= 1e3) label = '$' + (val/1e3).toFixed(0) + 'K';
-        else if (Number.isInteger(val) || Math.abs(val) < 100) label = val % 1 === 0 ? String(val) : val.toFixed(2);
-        else                           label = val.toFixed(1);
-        ctx.fillText(label, bar.x, midY);
+        const abs = Math.abs(val);
+        if (abs >= 1e6)       label = '$' + (val / 1e6).toFixed(1) + 'M';
+        else if (abs >= 1e3)  label = '$' + (val / 1e3).toFixed(0) + 'K';
+        else if (val % 1 === 0) label = String(val);
+        else                  label = val.toFixed(2);
+
+        const labelW = ctx.measureText(label).width;
+        const halfW  = labelW / 2 + 2; // 2px breathing room each side
+
+        // Skip if this label's left edge would overlap previous label's right edge
+        if (bar.x - halfW < lastX + lastHalfW + 2) return;
+
+        // Draw above the top of the bar (bar.y is the top pixel)
+        const y = bar.y - GAP;
+
+        // Skip if y is outside the chart area (clipped by canvas top)
+        if (y - FONT_SIZE < chart.chartArea.top - 4) return;
+
+        ctx.fillText(label, bar.x, y);
+        lastX = bar.x;
+        lastHalfW = halfW;
       });
     });
     ctx.restore();
   }
 };
-Chart.register(WHITE_LABELS_PLUGIN);
+Chart.register(BAR_LABELS_PLUGIN);
 
 // ── Chart helpers ─────────────────────────────────────────────────────────────
 function dc(id){if(CHS[id]){CHS[id].destroy();delete CHS[id];}}
@@ -720,18 +743,20 @@ const TIP_BASE = {backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white"
 function bar(id, labels, datasets, opts={}) {
   dc(id);
   const ctx = document.getElementById(id); if (!ctx) return;
+  const extra = opts.extra || {};
   CHS[id] = new Chart(ctx, {
     type: "bar",
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: true,
+      layout: { padding: { top: 22, ...((extra.layout||{}).padding||{}) } },
       plugins: {
         legend: { display: opts.legend || false, labels: { color: "#6b7280", font: { size: 11 } } },
         tooltip: opts.tooltip || TIP_BASE,
-        whiteBarLabels: {} // enable plugin (registered globally)
+        barLabelsAbove: {}
       },
       scales: opts.scaleOverride ? opts.scaleOverride : SCALE_CFG,
-      ...(opts.extra || {})
+      ...Object.fromEntries(Object.entries(extra).filter(([k])=>k!=='layout'))
     }
   });
 }
