@@ -242,7 +242,6 @@ tbody td{padding:12px 12px;color:#374151;}
               <th class="left">Division</th>
               <th style="background:#fef3c7;color:#92400e;">Prospect</th>
               <th style="background:#dbeafe;color:#1d4ed8;">Site Approvals<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(SA)</span></th>
-              <th>Total Early<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Prospect + SA)</span></th>
               <th style="background:#f0fdf4;color:#166534;">SA Target</th>
               <th>Gap (SA vs Target)</th>
               <th style="background:#eff6ff;color:#1d4ed8;">SA Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(SA / Target)</span></th>
@@ -344,18 +343,15 @@ function renderKPIBanner() {
   const total     = prospects + sas;
   const totalTarget = Object.values(SA_TARGETS).reduce((a,b)=>a+b,0);
   const saAch = totalTarget > 0 ? Math.round(sas / totalTarget * 100) : null;
-  const ratio = prospects > 0 ? (sas / prospects).toFixed(1) : "—";
 
   const cards = [
     { l:"Total Prospects",     v:prospects,    s:"Active in pipeline",          c:"#F7941D", cls:"" },
-    { l:"Site Approvals (SA)", v:sas,          s:"Approved sites",              c:"#E8521A", cls:"" },
+    { l:"Site Approvals (SA) YTD", v:sas,      s:"Approved sites in 2026",      c:"#E8521A", cls:"" },
     { l:"SA Target",           v:totalTarget||"—", s:"US&C combined",           c:"#059669", cls:"" },
     { l:"SA Achievement",      v:saAch!=null?saAch+"%":"—", s:`${sas} of ${totalTarget} target`,
       c:saAch!=null&&saAch>=90?"#059669":"#DC2626",
       cls:saAch!=null&&saAch>=90?"kpi-good":saAch!=null&&saAch<70?"kpi-urgent":"",
       extra:saAch!=null?`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:${saAch>=90?"#059669":"#DC2626"};width:${Math.min(100,saAch)}%"></div></div>`:"" },
-    { l:"SA → Prospect Ratio", v:ratio,        s:"SAs per prospect",            c:"#7B2D8B", cls:"" },
-    { l:"Total Early Pipeline",v:total,        s:"Prospect + SA",               c:"#00A99D", cls:"" },
   ];
 
   document.getElementById("kpi-banner").innerHTML = cards.map(c=>`
@@ -442,7 +438,6 @@ function renderTable() {
       </td>
       ${clickableCell(prospects,div,"Prospect",`${div} · Prospects`)}
       ${clickableCell(sas,div,"SA",`${div} · Site Approvals`)}
-      ${clickableCell(total,div,null,`${div} · All Early-Stage`)}
       <td class="number-cell">${target||"—"}</td>
       <td class="number-cell ${gapClass(gap)}">${target?((gap>=0?"+":"")+gap):"—"}</td>
       <td class="number-cell">${target?`<span class="ach-badge ${achieveClass(achPct)}">${achPct.toFixed(0)}%</span>`:"—"}</td>
@@ -467,7 +462,6 @@ function renderTable() {
     <td class="division-cell">US&amp;C Total</td>
     ${clickableCell(totals.prospects,"US&C","Prospect","US&C · All Prospects")}
     ${clickableCell(totals.sas,"US&C","SA","US&C · All Site Approvals")}
-    ${clickableCell(totals.total,"US&C",null,"US&C · All Early-Stage")}
     <td class="number-cell">${totals.target||"—"}</td>
     <td class="number-cell ${gapClass(tGap)}">${totals.target?((tGap>=0?"+":"")+tGap):"—"}</td>
     <td class="number-cell">${totals.target?`<span class="ach-badge ${achieveClass(tAch)}">${tAch.toFixed(0)}%</span>`:"—"}</td>
@@ -720,18 +714,18 @@ function exportModalToExcel(){
 }
 function exportTable(){
   const wb=XLSX.utils.book_new();
-  const rows=[["Division","REM","Prospects","Site Approvals","Total Early-Stage","SA Target","Gap (SA vs Target)","SA Achievement %"]];
+  const rows=[["Division","REM","Prospects","Site Approvals","SA Target","Gap (SA vs Target)","SA Achievement %"]];
   DIVISIONS.forEach(div=>{
     const rem=remForDiv(div);
     const prospects=ALL_DATA.filter(r=>r.division===div&&r.status==="Prospect").length;
     const sas=ALL_DATA.filter(r=>r.division===div&&r.status==="SA").length;
     const target=SA_TARGETS[div]||0;
-    rows.push([div,rem.name,prospects,sas,prospects+sas,target,sas-target,target>0?(sas/target):0]);
+    rows.push([div,rem.name,prospects,sas,target,sas-target,target>0?(sas/target):0]);
   });
   const ws=XLSX.utils.aoa_to_sheet(rows);
   const range=XLSX.utils.decode_range(ws["!ref"]);
   for(let R=1;R<=range.e.r;R++){const c=ws["H"+(R+1)];if(c){c.t="n";c.z="0%";}}
-  ws["!cols"]=[14,18,10,14,14,10,16,16].map(w=>({wch:w}));
+  ws["!cols"]=[14,18,10,14,10,16,16].map(w=>({wch:w}));
   XLSX.utils.book_append_sheet(wb,ws,"REM Pipeline");
   XLSX.writeFile(wb,"REM_Pipeline_Summary.xlsx");
 }
