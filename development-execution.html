@@ -69,7 +69,7 @@ tbody td{padding:13px 14px;color:#374151;}
 .ach-current{background:#eff6ff;color:#1d4ed8;}
 .ach-projected{background:#f0fdf4;color:#166534;}
 .risk-minibar{display:flex;height:8px;border-radius:4px;overflow:hidden;min-width:80px;gap:1px;}
-.risk-seg{height:100%;transition:width 0.4s;}
+
 .rank-pill{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;font-size:11px;font-weight:800;margin-right:6px;flex-shrink:0;}
 .rank-1{background:#059669;color:white;}.rank-2{background:#34d399;color:white;}
 .rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
@@ -127,6 +127,19 @@ tbody td{padding:13px 14px;color:#374151;}
 .overlay-title{font-size:18px;font-weight:600;color:#374151;}
 .overlay-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
 @media(max-width:768px){.container{padding:24px;}.page-title{font-size:28px;}.division-charts-grid{grid-template-columns:1fr;}.kpi-banner{grid-template-columns:repeat(2,1fr);}}
+
+/* ── Risk Mix cell ── */
+.risk-mix-cell{min-width:130px;}
+.risk-bar{display:flex;height:14px;border-radius:6px;overflow:hidden;gap:2px;margin-bottom:8px;}
+.risk-seg{height:100%;cursor:pointer;transition:opacity 0.15s,filter 0.15s;min-width:4px;}
+.risk-seg:hover{opacity:0.82;filter:brightness(1.08);}
+.risk-seg[data-count="0"]{cursor:default;opacity:0.2;}
+.risk-seg[data-count="0"]:hover{opacity:0.2;filter:none;}
+.risk-pills{display:flex;flex-wrap:wrap;gap:4px;}
+.risk-pill-item{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:filter 0.15s;white-space:nowrap;}
+.risk-pill-item:hover{filter:brightness(0.9);}
+.risk-pill-item.zero{opacity:0.32;cursor:default;pointer-events:none;}
+.risk-pill-item .rp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -239,7 +252,7 @@ tbody td{padding:13px 14px;color:#374151;}
               <th>Total 2026</th><th>Budget</th><th>Gap</th>
               <th style="background:#eff6ff;color:#1d4ed8;">Current Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Opened / Budget)</span></th>
               <th style="background:#f0fdf4;color:#166534;">Projected Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(Bottom-Up / Budget)</span></th>
-              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix</th>
+              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">Click a segment to drill down</span></th>
             </tr>
           </thead>
           <tbody id="tbody-2026"></tbody>
@@ -323,6 +336,14 @@ const RISK_2026       = ["low","medium","high"];
 const RISK_2027_TABLE = ["2027+","upside 100","upside"];
 const RANK_COLORS = ["#059669","#34d399","#fbbf24","#fb923c","#f87171","#DC2626"];
 const RANK_BG     = ["rgba(209,250,229,0.35)","rgba(187,247,208,0.25)","rgba(254,249,195,0.35)","rgba(254,215,170,0.25)","rgba(254,202,202,0.25)","rgba(254,226,226,0.35)"];
+const RISK_LEVELS = [
+  { key:"low",    label:"Low",    color:"#059669", bg:"#D1FAE5", text:"#065F46" },
+  { key:"medium", label:"Medium", color:"#fbbf24", bg:"#FEF3C7", text:"#92400E" },
+  { key:"high",   label:"High",   color:"#DC2626", bg:"#FEE2E2", text:"#991B1B" },
+  { key:"upside", label:"Upside", color:"#7C3AED", bg:"#EDE9FE", text:"#5B21B6" },
+];
+
+
 const PLK = {orange:"#E8521A",teal:"#00A99D",purple:"#7B2D8B",red:"#C1272D"};
 const MS_PER_DAY = 86400000;
 
@@ -449,6 +470,34 @@ function renderVelocity() {
 }
 
 // ── 2026 Table ──────────────────────────────────────────────────────────────
+
+// ── Risk Mix cell builder ─────────────────────────────────────────────────────
+function buildRiskMixCell(divName, nLow, nMed, nHigh, nUp) {
+  const total = nLow + nMed + nHigh + nUp || 1;
+  const counts = { low:nLow, medium:nMed, high:nHigh, upside:nUp };
+  const edd = divName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+  const barSegs = RISK_LEVELS.map(rl => {
+    const cnt = counts[rl.key];
+    const pct = Math.max((cnt/total*100), cnt>0?4:0);
+    const clickAttr = cnt>0
+      ? `onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`
+      : '';
+    return `<div class="risk-seg" style="width:${pct}%;background:${rl.color};" data-count="${cnt}" title="${rl.label}: ${cnt} site${cnt!==1?'s':''}" ${clickAttr}></div>`;
+  }).join('');
+
+  const pills = RISK_LEVELS.map(rl => {
+    const cnt = counts[rl.key];
+    const zeroClass = cnt===0 ? ' zero' : '';
+    const clickAttr = cnt>0
+      ? `onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`
+      : '';
+    return `<span class="risk-pill-item${zeroClass}" style="background:${rl.bg};color:${rl.text};border-color:${cnt>0?rl.color:'transparent'};" ${clickAttr} title="${rl.label}: ${cnt} site${cnt!==1?'s':''}"><span class="rp-dot" style="background:${rl.color};"></span>${rl.label} <strong>${cnt}</strong></span>`;
+  }).join('');
+
+  return `<td class="risk-mix-cell"><div class="risk-bar">${barSegs}</div><div class="risk-pills">${pills}</div></td>`;
+}
+
 function renderTable2026() {
   const divStats = DIVISIONS.map(div=>{
     const rows   = ALL_DATA.filter(r=>r.division===div.name&&is2026(r));
@@ -474,7 +523,7 @@ function renderTable2026() {
   const rankMap={};
   [...divStats].sort((a,b)=>a.wScore-b.wScore).forEach((d,i)=>rankMap[d.div.name]=i);
 
-  const totals={s:{},total:0,budget:0,opened:0};
+  const totals={s:{},total:0,budget:0,opened:0,nLow:0,nMed:0,nHigh:0,nUp:0};
   STATUSES.forEach(s=>totals.s[s]=0);
   let html="";
 
@@ -498,10 +547,11 @@ function renderTable2026() {
       <td class="number-cell ${gapClass(gap)}">${gap>=0?"+":""}${gap}</td>
       <td class="number-cell"><span class="achievement-badge ${achieveClass(currPct)} ach-current">${currPct.toFixed(0)}%</span></td>
       <td class="number-cell"><span class="achievement-badge ${achieveClass(projPct)} ach-projected">${projPct.toFixed(0)}%</span></td>
-      <td style="min-width:100px;">${minibar}</td>
+      ${buildRiskMixCell(div.name,nLow,nMed,nHigh,nUp)}
     </tr>`;
     STATUSES.forEach(s=>totals.s[s]+=counts[s]);
-    totals.total+=total; totals.budget+=budget; totals.opened+=opened;
+    totals.total+=total;totals.budget+=budget;totals.opened+=opened;
+    totals.nLow+=nLow;totals.nMed+=nMed;totals.nHigh+=nHigh;totals.nUp+=nUp;
   });
 
   const tGap=totals.total-totals.budget;
@@ -515,7 +565,7 @@ function renderTable2026() {
     <td class="number-cell ${gapClass(tGap)}">${tGap>=0?"+":""}${tGap}</td>
     <td class="number-cell"><span class="achievement-badge ${achieveClass(tCurr)} ach-current">${tCurr.toFixed(0)}%</span></td>
     <td class="number-cell"><span class="achievement-badge ${achieveClass(tProj)} ach-projected">${tProj.toFixed(0)}%</span></td>
-    <td></td>
+    ${buildRiskMixCell("US&C",totals.nLow,totals.nMed,totals.nHigh,totals.nUp)}
   </tr>`;
   document.getElementById("tbody-2026").innerHTML=html;
 }
@@ -578,16 +628,20 @@ function resetModalFilters(){
   document.querySelectorAll("#modal-thead-row th").forEach(th=>th.classList.remove("sort-asc","sort-desc"));
   renderModalTable();
 }
-function openDrillDown(divisionName,status,riskFilter,title,subtitle){
+function openDrillDown(divisionName,status,riskFilter,title,subtitle,riskLevels){
   let sites;
   if(riskFilter==="2026")   sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&is2026(r)&&(status===null||r.status===status));
   else if(riskFilter==="upside") sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&isUpside(r)&&(status===null||r.status===status));
   else if(riskFilter==="2027")   sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&is2027PlusTable(r)&&(status===null||r.status===status));
   else sites=ALL_DATA.filter(r=>(divisionName==="US&C"||r.division===divisionName)&&(status===null||r.status===status));
+  // Pre-filter by risk level if coming from a risk mix segment click
+  if(riskLevels && riskLevels.length>0) {
+    sites=sites.filter(r=>riskLevels.includes((r.riskLevel||"").trim().toLowerCase()));
+  }
   MODAL_SITES=sites; MODAL_TITLE_TEXT=title;
   document.getElementById("modal-title").textContent=title;
   document.getElementById("modal-subtitle").textContent=subtitle;
-  document.getElementById("modal-filter-risk").value="";
+  document.getElementById("modal-filter-risk").value=riskLevels&&riskLevels.length===1?riskLevels[0]:"";
   document.getElementById("modal-filter-status").value="";
   modalSortCol=-1;modalSortDir=1;
   document.querySelectorAll("#modal-thead-row th").forEach(th=>th.classList.remove("sort-asc","sort-desc"));
@@ -622,56 +676,165 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
   const ctx=document.getElementById(canvasId); if(!ctx)return;
   const values=STATUSES.map(s=>data[s]);
   const fyBU=values.reduce((a,b)=>a+b,0);
-  const upsideCount=divisionName==="US&C Consolidated"?ALL_DATA.filter(r=>isUpside(r)).length:ALL_DATA.filter(r=>r.division===divisionName&&isUpside(r)).length;
-  const labels=[...STATUSES,"FY BU","Upside","Budget"];
-  const displayValues=[...values,fyBU,fyBU+upsideCount,budget];
+  const upsideCount=divisionName==="US&C Consolidated"
+    ?ALL_DATA.filter(r=>isUpside(r)).length
+    :ALL_DATA.filter(r=>r.division===divisionName&&isUpside(r)).length;
+  const fyBUPlusUpside=fyBU+upsideCount;
+  const gapToBudget=fyBUPlusUpside-budget; // positive = above budget, negative = below
+
+  // ── New 9-column structure ────────────────────────────────────────────────
+  // Prospect SA PC Permitting UC Open | FY BU | Upside | FY BU+Upside | Gap to Budget | Budget
+  // Waterfall: first 6 stack cumulatively (standard waterfall)
+  //            FY BU, Upside, FY BU+Upside, Gap to Budget, Budget all start from 0 (standalone)
+  const labels=[...STATUSES,"FY BU","Upside","FY BU + Upside","Gap to Budget","Budget"];
+
+  // displayValues: the number shown on each bar label
+  const displayValues=[
+    ...values,
+    fyBU,
+    upsideCount,
+    fyBUPlusUpside,
+    gapToBudget,   // can be positive or negative — show signed
+    budget
+  ];
+
+  // Bar heights (always positive for chart rendering)
+  const barHeights=[
+    ...values,
+    fyBU,
+    upsideCount,
+    fyBUPlusUpside,
+    Math.abs(gapToBudget),
+    budget
+  ];
+
+  // Base offsets (all standalone bars start from 0)
   const baseData=[],barData=[],barColors=[];
   let cum=0;
-  STATUSES.forEach((s,i)=>{baseData.push(cum);barData.push(values[i]);barColors.push(PLK.orange);cum+=values[i];});
-  baseData.push(0);barData.push(fyBU);barColors.push(PLK.purple);
-  baseData.push(fyBU);barData.push(upsideCount);barColors.push(PLK.red);
-  baseData.push(0);barData.push(budget);barColors.push(PLK.teal);
-  CHART_DATA_MAP[canvasId]={division:divisionName,labels,displayValues:[...values,fyBU,upsideCount,budget],budget,fyBU,upsideCount,gap:fyBU-budget};
+  STATUSES.forEach((s,i)=>{
+    baseData.push(cum);
+    barData.push(values[i]);
+    barColors.push(PLK.orange);
+    cum+=values[i];
+  });
+  // FY BU — standalone, purple
+  baseData.push(0); barData.push(fyBU);                  barColors.push(PLK.purple);
+  // Upside — stacks on top of FY BU (waterfall), orange
+  baseData.push(fyBU); barData.push(upsideCount);        barColors.push(PLK.orange);
+  // FY BU + Upside — standalone reference bar, purple
+  baseData.push(0); barData.push(fyBUPlusUpside);        barColors.push(PLK.purple);
+  // Gap to Budget — standalone, PLK red
+  baseData.push(0); barData.push(Math.abs(gapToBudget)); barColors.push(PLK.red);
+  // Budget — standalone, teal
+  baseData.push(0); barData.push(budget);                barColors.push(PLK.teal);
+
+  CHART_DATA_MAP[canvasId]={
+    division:divisionName,labels,
+    displayValues:[...values,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,budget],
+    budget,fyBU,upsideCount,fyBUPlusUpside,gapToBudget,gap:fyBU-budget
+  };
+
+  // Bar color lookup by index for the label plugin
+  const barColorByIdx=barColors;
+
   new Chart(ctx,{
     type:"bar",
     data:{labels,datasets:[
       {label:"_base",data:baseData,backgroundColor:"rgba(0,0,0,0)",borderColor:"rgba(0,0,0,0)",borderWidth:0,stack:"waterfall"},
       {label:"_bars",data:barData,backgroundColor:barColors,borderRadius:4,barPercentage:0.6,stack:"waterfall"}
     ]},
-    options:{responsive:true,maintainAspectRatio:true,
-      plugins:{legend:{display:false},tooltip:{backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",filter:item=>item.datasetIndex===1,
-        callbacks:{label:ctx=>{
-          const lbl=labels[ctx.dataIndex];
-          if(lbl==="FY BU")return`FY BU: ${fyBU}  |  Gap vs Budget: ${fyBU-budget>=0?"+":""}${fyBU-budget}`;
-          if(lbl==="Upside")return`Upside: ${upsideCount}  |  FY BU + Upside: ${fyBU+upsideCount}`;
-          if(lbl==="Budget")return`Budget: ${budget}`;
-          const idx=STATUSES.indexOf(lbl);
-          if(idx>=0){let run=0;for(let i=0;i<=idx;i++)run+=values[i];return`${lbl}: ${values[idx]}  |  Running Total: ${run}`;}
-          return"";
-        }}}},
-      scales:{x:{stacked:true,grid:{display:false},border:{display:false},ticks:{color:"#6b7280",font:{size:11}}},y:{stacked:true,grid:{display:false},border:{display:false},ticks:{display:false},beginAtZero:true}},
-      layout:{padding:{top:32}}},
-    plugins:[{id:"lbl_"+canvasId,afterDraw(chart){
-      const meta=chart.getDatasetMeta(1); if(!meta?.data)return;
-      const cCtx=chart.ctx; cCtx.save();
-      cCtx.font="bold 12px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-      cCtx.fillStyle="#FFFFFF";cCtx.textAlign="center";cCtx.textBaseline="middle";
-      displayValues.forEach((val,i)=>{
-        if(!val&&val!==0)return;
-        const bar=meta.data[i]; if(!bar)return;
-        const barH=bar.base-bar.y; if(barH<14)return;
-        cCtx.fillText(val,bar.x,(bar.y+bar.base)/2);
-      });
-      cCtx.restore();
-    }}]
+    options:{
+      responsive:true,maintainAspectRatio:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",
+          filter:item=>item.datasetIndex===1,
+          callbacks:{label:ctx=>{
+            const lbl=labels[ctx.dataIndex];
+            const idx=STATUSES.indexOf(lbl);
+            if(idx>=0){let run=0;for(let i=0;i<=idx;i++)run+=values[i];return`${lbl}: ${values[idx]}  |  Running: ${run}`;}
+            if(lbl==="FY BU")          return`FY BU: ${fyBU}`;
+            if(lbl==="Upside")         return`Upside sites: ${upsideCount}`;
+            if(lbl==="FY BU + Upside") return`FY BU + Upside: ${fyBUPlusUpside}`;
+            if(lbl==="Gap to Budget")  return`Gap to Budget: ${gapToBudget>=0?"+":""}${gapToBudget}  (${fyBUPlusUpside} vs ${budget} budget)`;
+            if(lbl==="Budget")         return`Budget: ${budget}`;
+            return"";
+          }}
+        }
+      },
+      scales:{
+        x:{stacked:true,grid:{display:false},border:{display:false},ticks:{color:"#6b7280",font:{size:11}}},
+        y:{stacked:true,grid:{display:false},border:{display:false},ticks:{display:false},beginAtZero:true}
+      },
+      layout:{padding:{top:28}}
+    },
+    plugins:[{
+      id:"lbl_"+canvasId,
+      afterDraw(chart){
+        const meta=chart.getDatasetMeta(1); if(!meta?.data)return;
+        const cCtx=chart.ctx;
+        const FONT="bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+        const MIN_BAR_H=18; // minimum bar height to fit label inside
+
+        displayValues.forEach((val,i)=>{
+          if(val===null||val===undefined)return;
+          const bar=meta.data[i]; if(!bar)return;
+          const barH=Math.abs(bar.base-bar.y);
+          const barTop=Math.min(bar.y,bar.base);
+          const barMidY=(bar.y+bar.base)/2;
+          const label=String(i===labels.indexOf("Gap to Budget")&&val>=0?"+"+val:val);
+          const barCol=barColorByIdx[i]||"#374151";
+
+          cCtx.save();
+          cCtx.font=FONT;
+          cCtx.textAlign="center";
+
+          if(barH>=MIN_BAR_H){
+            // Fits inside — white text centered in bar
+            cCtx.fillStyle="#FFFFFF";
+            cCtx.textBaseline="middle";
+            cCtx.fillText(label,bar.x,barMidY);
+          } else if(barH>0){
+            // Too short — draw colored pill above bar
+            const tw=cCtx.measureText(label).width;
+            const pad=4, rh=16, rw=tw+pad*2, rx=bar.x-rw/2, ry=barTop-rh-3;
+            // Pill background
+            cCtx.fillStyle=barCol;
+            const radius=4;
+            cCtx.beginPath();
+            cCtx.moveTo(rx+radius,ry);
+            cCtx.lineTo(rx+rw-radius,ry);
+            cCtx.quadraticCurveTo(rx+rw,ry,rx+rw,ry+radius);
+            cCtx.lineTo(rx+rw,ry+rh-radius);
+            cCtx.quadraticCurveTo(rx+rw,ry+rh,rx+rw-radius,ry+rh);
+            cCtx.lineTo(rx+radius,ry+rh);
+            cCtx.quadraticCurveTo(rx,ry+rh,rx,ry+rh-radius);
+            cCtx.lineTo(rx,ry+radius);
+            cCtx.quadraticCurveTo(rx,ry,rx+radius,ry);
+            cCtx.closePath();
+            cCtx.fill();
+            // White text in pill
+            cCtx.fillStyle="#FFFFFF";
+            cCtx.textBaseline="middle";
+            cCtx.fillText(label,bar.x,ry+rh/2);
+          }
+          cCtx.restore();
+        });
+      }
+    }]
   });
+
   ctx.addEventListener("click",function(e){
     const chart=Chart.getChart(ctx); if(!chart)return;
     const pts=chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false); if(!pts.length)return;
     const idx=pts[0].index, df=divisionName==="US&C Consolidated"?"US&C":divisionName;
-    if(idx<STATUSES.length)openDrillDown(df,STATUSES[idx],"2026",`${divisionName} · ${STATUSES[idx]}`,`${divisionName} · ${STATUSES[idx]}`);
-    else if(idx===STATUSES.length)openDrillDown(df,null,"2026",`${divisionName} · Full BU Pipeline`,divisionName);
-    else if(idx===STATUSES.length+1)openDrillDown(df,null,"upside",`${divisionName} · Upside Sites`,divisionName);
+    const n=STATUSES.length;
+    if(idx<n)             openDrillDown(df,STATUSES[idx],"2026",`${divisionName} · ${STATUSES[idx]}`,`${divisionName} · ${STATUSES[idx]}`);
+    else if(idx===n)      openDrillDown(df,null,"2026",`${divisionName} · Full BU Pipeline`,divisionName);
+    else if(idx===n+1)    openDrillDown(df,null,"upside",`${divisionName} · Upside Sites`,divisionName);
+    else if(idx===n+2)    openDrillDown(df,null,"upside",`${divisionName} · FY BU + Upside`,divisionName);
+    // Gap to Budget and Budget bars are informational — no drill-down
   });
   ctx.style.cursor="pointer";
 }
