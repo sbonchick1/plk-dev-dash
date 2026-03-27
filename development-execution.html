@@ -657,7 +657,7 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
     ?ALL_DATA.filter(r=>isUpside(r)).length
     :ALL_DATA.filter(r=>r.division===divisionName&&isUpside(r)).length;
   const fyBUPlusUpside=fyBU+upsideCount;
-  const gapToBudget=fyBUPlusUpside-budget; // positive = above budget, negative = below
+  const gapToBudget=budget-fyBUPlusUpside; // positive = gap to fill, negative = over budget
 
   const labels=[...STATUSES,"FY BU","Upside","FY BU + Upside","Gap to Budget","Budget"];
 
@@ -685,12 +685,9 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
   // FY BU + Upside — standalone reference bar, purple
   baseData.push(0); barData.push(fyBUPlusUpside);        barColors.push(PLK.purple);
 
-  // ── KEY FIX: Gap to Budget floats from FY BU + Upside level ──────────────
-  // If below budget (negative gap): base sits at budget level, bar hangs UP to fyBUPlusUpside
-  // If above budget (positive gap): base sits at fyBUPlusUpside, bar builds UP to budget
-  // Either way the bar visually spans between fyBUPlusUpside and budget
-  const gapBase = gapToBudget < 0 ? fyBUPlusUpside + gapToBudget : fyBUPlusUpside;
-  baseData.push(gapBase); barData.push(Math.abs(gapToBudget)); barColors.push(PLK.red);
+  // Gap to Budget — always starts where FY BU + Upside left off
+  // gapToBudget = budget - fyBUPlusUpside: positive = still need to reach budget, negative = over budget
+  baseData.push(fyBUPlusUpside); barData.push(Math.abs(gapToBudget)); barColors.push(PLK.red);
 
   // Budget — standalone, teal
   baseData.push(0); barData.push(budget);                barColors.push(PLK.teal);
@@ -749,7 +746,7 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
           const barH=Math.abs(bar.base-bar.y);
           const barTop=Math.min(bar.y,bar.base);
           const barMidY=(bar.y+bar.base)/2;
-          const label=String(i===labels.indexOf("Gap to Budget")&&val>=0?"+"+val:val);
+          const label=String(i===labels.indexOf("Gap to Budget")?(gapToBudget>=0?"+"+gapToBudget:gapToBudget):val);
           const barCol=barColorByIdx[i]||"#374151";
 
           cCtx.save();
