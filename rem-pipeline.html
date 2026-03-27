@@ -546,7 +546,7 @@ function createDivisionChart(divName, canvasId) {
         legend: { display: false },
         tooltip: {
           backgroundColor: "#1f2937", titleColor: "white", bodyColor: "white",
-          padding: 10, cornerRadius: 6,
+          padding: 10, cornerRadius: 6, titleFont:{weight:"normal"}, bodyFont:{weight:"normal"},
           callbacks: {
             label: ctx => {
               const lbl = labels[ctx.dataIndex];
