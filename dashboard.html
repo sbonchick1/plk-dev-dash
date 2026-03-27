@@ -88,7 +88,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .chart-hint{font-size:11px;color:#E8521A;margin-bottom:12px;display:flex;align-items:center;gap:4px;font-weight:500;}
 .chart-hint svg{flex-shrink:0;}
 .footnote{font-size:10px;color:#9ca3af;margin-top:10px;font-style:italic;border-top:1px solid #f3f4f6;padding-top:8px;line-height:1.5;}
-canvas{max-height:260px;}
+/* FIX: reduced canvas max-height to leave room for bottom legend */
+canvas{max-height:230px;}
 canvas.clickable{cursor:pointer;}
 
 /* ── Chart export button ── */
@@ -577,12 +578,10 @@ const FSTATE={yr:new Set(YEARS.map(String)),div:new Set(DIVS),arch:new Set(ARCHS
 const FMETA={yr:{items:YEARS.map(String),allLabel:"All Years"},div:{items:DIVS,allLabel:"All Divisions"},arch:{items:ARCHS,allLabel:"All Types"},urb:{items:URBS,allLabel:"All Urbanicities"},fss:{items:GRADES,allLabel:"All Grades"}};
 
 // ── Chart export store ────────────────────────────────────────────────────────
-// Maps canvasId → { title, headers[], rows[][] }
 const CHART_EXPORT = {};
 
 function storeChartExport(id, title, headers, rows) {
   CHART_EXPORT[id] = { title, headers, rows };
-  // Inject export button into the card header if not already there
   const card = document.getElementById('card-' + id);
   if (card && !card.querySelector('.chart-export-btn')) {
     const hdr = card.querySelector('.chart-card-header');
@@ -601,7 +600,6 @@ function exportChartData(id) {
   if (!ed) return;
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet([ed.headers, ...ed.rows]);
-  // Auto-width columns
   const maxW = ed.headers.map((h, i) => {
     const colVals = [h, ...ed.rows.map(r => String(r[i] ?? ''))];
     return { wch: Math.min(40, Math.max(...colVals.map(v => v.length)) + 2) };
@@ -674,8 +672,6 @@ function updatePills(f){
 function removePill(key,val){FSTATE[key].delete(val);syncCheckboxes(key);updateBtn(key);applyFilters();}
 
 // ── Bar labels above plugin ──────────────────────────────────────────────────
-// Draws every label — no skipping, no overlap detection, no clip guards.
-// Uses rotation for narrow bars (grouped charts) so text never crowds.
 const BAR_LABELS_PLUGIN = {
   id: 'barLabelsAbove',
   afterDatasetsDraw(chart) {
@@ -686,7 +682,6 @@ const BAR_LABELS_PLUGIN = {
       const meta = chart.getDatasetMeta(di);
       if (meta.hidden || meta.type !== 'bar') return;
 
-      // Measure actual rendered bar width to decide orientation
       const firstBar = meta.data.find(b => b && b.width > 0);
       if (!firstBar) return;
       const barWidth = firstBar.width;
@@ -712,7 +707,6 @@ const BAR_LABELS_PLUGIN = {
         ctx.fillStyle = '#374151';
 
         if (rotate) {
-          // Rotated 90deg anticlockwise — text reads bottom-to-top beside bar
           ctx.translate(x, y);
           ctx.rotate(-Math.PI / 2);
           ctx.textAlign = 'left';
@@ -739,6 +733,7 @@ const SCALE_CFG = {
 };
 const TIP_BASE = {backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",padding:10,cornerRadius:6};
 
+// FIX: legend position moved to 'bottom', increased top padding to 36 so labels don't crowd legend
 function bar(id, labels, datasets, opts={}) {
   dc(id);
   const ctx = document.getElementById(id); if (!ctx) return;
@@ -748,9 +743,9 @@ function bar(id, labels, datasets, opts={}) {
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: true,
-      layout: { padding: { top: 22, ...((extra.layout||{}).padding||{}) } },
+      layout: { padding: { top: 36, ...((extra.layout||{}).padding||{}) } },
       plugins: {
-        legend: { display: opts.legend || false, labels: { color: "#6b7280", font: { size: 11 } } },
+        legend: { display: opts.legend || false, position: "bottom", labels: { color: "#6b7280", font: { size: 11 }, boxWidth: 12, padding: 16 } },
         tooltip: opts.tooltip || TIP_BASE,
         barLabelsAbove: {}
       },
@@ -880,9 +875,6 @@ function renderAll(){
     const ab=r.filter(x=>x.arsBench!=null),eb=r.filter(x=>x.ebitdaBench!=null);
     return{yr,rows:r,ab,eb,count:r.length,avgARS:ab.length?mean(ab.map(x=>x.arsBench)):0,avgEB:eb.length?mean(eb.map(x=>x.ebitdaBench)):0};
   });
-
-  const tip=(label,extra)=>({...TIP_BASE,callbacks:{label:ctx=>`${label}: ${ctx.raw}`,afterLabel:()=>extra||"Click to view"}});
-  const tipFmt=(fmtFn,count)=>({...TIP_BASE,callbacks:{label:ctx=>fmtFn(ctx.raw),afterLabel:ctx=>`Restaurants: ${count(ctx)}  ·  Click to view`}});
 
   // ── Overview ──────────────────────────────────────────────────────────────
   bar("c-openings-year", activeYears,
