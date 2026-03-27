@@ -479,20 +479,17 @@ function buildRiskMixCell(divName, nLow, nMed, nHigh, nUp) {
 
   const barSegs = RISK_LEVELS.map(rl => {
     const cnt = counts[rl.key];
-    const pct = Math.max((cnt/total*100), cnt>0?4:0);
-    const clickAttr = cnt>0
-      ? `onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`
-      : '';
+    if(cnt === 0) return '';
+    const pct = Math.max((cnt/total*100), 4);
+    const clickAttr = `onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`;
     return `<div class="risk-seg" style="width:${pct}%;background:${rl.color};" data-count="${cnt}" title="${rl.label}: ${cnt} site${cnt!==1?'s':''}" ${clickAttr}></div>`;
   }).join('');
 
   const pills = RISK_LEVELS.map(rl => {
     const cnt = counts[rl.key];
-    const zeroClass = cnt===0 ? ' zero' : '';
-    const clickAttr = cnt>0
-      ? `onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`
-      : '';
-    return `<span class="risk-pill-item${zeroClass}" style="background:${rl.bg};color:${rl.text};border-color:${cnt>0?rl.color:'transparent'};" ${clickAttr} title="${rl.label}: ${cnt} site${cnt!==1?'s':''}"><span class="rp-dot" style="background:${rl.color};"></span>${rl.label} <strong>${cnt}</strong></span>`;
+    if(cnt === 0) return '';
+    const clickAttr = `onclick="openDrillDown('${edd}',null,'2026','${edd} · ${rl.label} Risk','${edd}',['${rl.key}'])"`;
+    return `<span class="risk-pill-item" style="background:${rl.bg};color:${rl.text};border-color:${rl.color};" ${clickAttr} title="${rl.label}: ${cnt} site${cnt!==1?'s':''}"><span class="rp-dot" style="background:${rl.color};"></span>${rl.label} <strong>${cnt}</strong></span>`;
   }).join('');
 
   return `<td class="risk-mix-cell"><div class="risk-bar">${barSegs}</div><div class="risk-pills">${pills}</div></td>`;
@@ -796,28 +793,10 @@ function createWaterfallChart(canvasId,divisionName,data,budget){
             cCtx.textBaseline="middle";
             cCtx.fillText(label,bar.x,barMidY);
           } else if(barH>0){
-            // Too short — draw colored pill above bar
-            const tw=cCtx.measureText(label).width;
-            const pad=4, rh=16, rw=tw+pad*2, rx=bar.x-rw/2, ry=barTop-rh-3;
-            // Pill background
-            cCtx.fillStyle=barCol;
-            const radius=4;
-            cCtx.beginPath();
-            cCtx.moveTo(rx+radius,ry);
-            cCtx.lineTo(rx+rw-radius,ry);
-            cCtx.quadraticCurveTo(rx+rw,ry,rx+rw,ry+radius);
-            cCtx.lineTo(rx+rw,ry+rh-radius);
-            cCtx.quadraticCurveTo(rx+rw,ry+rh,rx+rw-radius,ry+rh);
-            cCtx.lineTo(rx+radius,ry+rh);
-            cCtx.quadraticCurveTo(rx,ry+rh,rx,ry+rh-radius);
-            cCtx.lineTo(rx,ry+radius);
-            cCtx.quadraticCurveTo(rx,ry,rx+radius,ry);
-            cCtx.closePath();
-            cCtx.fill();
-            // White text in pill
-            cCtx.fillStyle="#FFFFFF";
-            cCtx.textBaseline="middle";
-            cCtx.fillText(label,bar.x,ry+rh/2);
+            // Too short to fit inside — black text above bar, no background
+            cCtx.fillStyle="#374151";
+            cCtx.textBaseline="bottom";
+            cCtx.fillText(label,bar.x,barTop-3);
           }
           cCtx.restore();
         });
