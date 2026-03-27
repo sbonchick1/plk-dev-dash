@@ -9,8 +9,6 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;background:#f9fafb;min-height:100vh;color:#1a1a1a;}
-
-/* ── Page shell ── */
 .container{max-width:1700px;margin:0 auto;padding:40px;}
 .breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:14px;color:#9b9b9b;}
 .breadcrumb a{color:#9b9b9b;text-decoration:none;}.breadcrumb a:hover{color:#E8521A;}
@@ -21,21 +19,15 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 .refresh-btn{background:none;border:1px solid #e5e7eb;border-radius:5px;padding:3px 10px;font-size:12px;color:#6b7280;cursor:pointer;}
 .refresh-btn:hover{border-color:#E8521A;color:#E8521A;}
-
-/* ── Sections ── */
 .section{background:white;border-radius:16px;padding:28px 32px;margin-bottom:28px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #f0f0f0;flex-wrap:wrap;gap:10px;}
 .section-title{font-size:17px;font-weight:700;color:#1a1a1a;display:flex;align-items:center;gap:8px;}
-
-/* ── KPI Banner ── */
 .kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin-bottom:28px;}
 .kpi-card{background:white;border-radius:12px;padding:18px 20px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#E8521A);}
 .kpi-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-weight:600;}
 .kpi-value{font-size:26px;font-weight:800;color:#1a1a1a;line-height:1;margin-bottom:4px;}
 .kpi-sub{font-size:11px;color:#9ca3af;}
-
-/* ── Filters bar ── */
 .filters-bar{background:white;border-radius:12px;padding:16px 20px;margin-bottom:20px;border:1px solid #e5e7eb;display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
 .filter-group{display:flex;flex-direction:column;gap:4px;position:relative;}
 .filter-label{font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.7px;}
@@ -60,44 +52,32 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .cb-option label{font-size:12px;color:#374151;cursor:pointer;}
 .filters-reset-all{background:none;border:1px solid #e5e7eb;border-radius:7px;padding:6px 14px;font-size:12px;color:#6b7280;cursor:pointer;white-space:nowrap;align-self:flex-end;}
 .filters-reset-all:hover{border-color:#E8521A;color:#E8521A;}
-
-/* ── Active pills ── */
 .pills-bar{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:20px;min-height:0;}
 .pills-bar:empty{display:none;}
 .pill{background:#FFF5F0;color:#E8521A;border:1px solid #fdd5c5;border-radius:99px;padding:3px 10px;font-size:11px;font-weight:600;}
 .pill-x{margin-left:4px;cursor:pointer;opacity:0.6;font-size:10px;}
 .pill-x:hover{opacity:1;}
 .pill-label{font-size:11px;color:#9ca3af;font-weight:500;}
-
-/* ── Tabs ── */
 .tabs-bar{display:flex;gap:4px;margin-bottom:20px;background:white;border-radius:10px;padding:5px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
 .tab{padding:8px 18px;background:none;border:none;color:#6b7280;border-radius:7px;cursor:pointer;font-size:13px;font-weight:500;transition:all .15s;white-space:nowrap;}
 .tab:hover{color:#E8521A;background:#fff5f0;}
 .tab.active{color:#E8521A;background:#FFF5F0;font-weight:700;}
 .tab-content{display:none;}
 .tab-content.active{display:block;}
-
-/* ── Chart grid ── */
 .chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
 .chart-card{background:white;border-radius:12px;padding:22px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
 .chart-card.span2{grid-column:1/-1;}
-/* Chart card header: title+hint on left, export btn on right */
 .chart-card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:3px;}
 .chart-card-header-left{flex:1;min-width:0;}
 .chart-title{font-size:14px;font-weight:700;color:#1a1a1a;margin-bottom:3px;}
 .chart-hint{font-size:11px;color:#E8521A;margin-bottom:12px;display:flex;align-items:center;gap:4px;font-weight:500;}
 .chart-hint svg{flex-shrink:0;}
 .footnote{font-size:10px;color:#9ca3af;margin-top:10px;font-style:italic;border-top:1px solid #f3f4f6;padding-top:8px;line-height:1.5;}
-/* FIX: reduced canvas max-height to leave room for bottom legend */
 canvas{max-height:230px;}
 canvas.clickable{cursor:pointer;}
-
-/* ── Chart export button ── */
 .chart-export-btn{display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:7px;padding:6px 12px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:all .2s;flex-shrink:0;}
 .chart-export-btn:hover{background:#dcfce7;border-color:#4ade80;}
 .chart-export-btn svg{width:12px;height:12px;}
-
-/* ── Modal ── */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .modal-overlay.open{opacity:1;pointer-events:auto;}
 .modal{background:white;border-radius:16px;width:100%;max-width:1200px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.2);transform:translateY(20px);transition:transform 0.2s;}
@@ -142,15 +122,12 @@ canvas.clickable{cursor:pointer;}
 .profit-pos{color:#059669;font-weight:600;}
 .profit-neg{color:#C1272D;font-weight:600;}
 .profit-na{color:#9ca3af;}
-
-/* ── Loading overlay ── */
 .overlay{position:fixed;inset:0;background:#f9fafb;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
 .spinner{width:48px;height:48px;border:4px solid #E8521A;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
 @keyframes spin{to{transform:rotate(360deg)}}
 .overlay-title{font-size:18px;font-weight:600;color:#374151;}
 .overlay-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
 .retry-btn{background:#E8521A;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;margin-top:16px;}
-
 @media(max-width:900px){.chart-grid{grid-template-columns:1fr;}.container{padding:24px;}.page-title{font-size:28px;}.filters-bar{gap:8px;}}
 </style>
 </head>
@@ -168,7 +145,6 @@ canvas.clickable{cursor:pointer;}
   <button class="retry-btn" onclick="fetchData()">↻ Try Again</button>
 </div>
 
-<!-- ── Drill-down Modal ── -->
 <div class="modal-overlay" id="drill-modal">
   <div class="modal">
     <div class="modal-header">
@@ -186,30 +162,11 @@ canvas.clickable{cursor:pointer;}
     </div>
     <div class="modal-filterbar">
       <span class="modal-filter-label">Filter:</span>
-      <select class="modal-select" id="mf-yr" onchange="renderModal()">
-        <option value="">All Years</option>
-        <option>2020</option><option>2021</option><option>2022</option>
-        <option>2023</option><option>2024</option><option>2025</option>
-      </select>
-      <select class="modal-select" id="mf-div" onchange="renderModal()">
-        <option value="">All Divisions</option>
-        <option>Northeast</option><option>Southeast</option><option>Central</option>
-        <option>West</option><option>Canada</option><option>Non-Trad</option>
-      </select>
-      <select class="modal-select" id="mf-arch" onchange="renderModal()">
-        <option value="">All Architecture</option>
-        <option>Freestanding</option><option>Inline</option>
-        <option>Foodcourt</option><option>Ghost Kitchen</option>
-      </select>
-      <select class="modal-select" id="mf-urb" onchange="renderModal()">
-        <option value="">All Urbanicity</option>
-        <option>CBD</option><option>Urban</option><option>Dense Suburban</option>
-        <option>Suburban</option><option>Rural</option>
-      </select>
-      <select class="modal-select" id="mf-fss" onchange="renderModal()">
-        <option value="">All FSS Grades</option>
-        <option>A</option><option>B</option><option>C</option><option>D</option><option>F</option>
-      </select>
+      <select class="modal-select" id="mf-yr" onchange="renderModal()"><option value="">All Years</option><option>2020</option><option>2021</option><option>2022</option><option>2023</option><option>2024</option><option>2025</option></select>
+      <select class="modal-select" id="mf-div" onchange="renderModal()"><option value="">All Divisions</option><option>Northeast</option><option>Southeast</option><option>Central</option><option>West</option><option>Canada</option><option>Non-Trad</option></select>
+      <select class="modal-select" id="mf-arch" onchange="renderModal()"><option value="">All Architecture</option><option>Freestanding</option><option>Inline</option><option>Foodcourt</option><option>Ghost Kitchen</option></select>
+      <select class="modal-select" id="mf-urb" onchange="renderModal()"><option value="">All Urbanicity</option><option>CBD</option><option>Urban</option><option>Dense Suburban</option><option>Suburban</option><option>Rural</option></select>
+      <select class="modal-select" id="mf-fss" onchange="renderModal()"><option value="">All FSS Grades</option><option>A</option><option>B</option><option>C</option><option>D</option><option>F</option></select>
       <button class="modal-reset" onclick="resetModalFilters()">Reset</button>
       <span class="modal-count" id="modal-count"></span>
     </div>
@@ -237,18 +194,13 @@ canvas.clickable{cursor:pointer;}
   </div>
 </div>
 
-<!-- ── Main App ── -->
 <div id="app" style="display:none;">
 <div class="container">
-
   <div class="breadcrumb">
-    <a href="/">Home</a>
-    <span style="color:#d0d0d0">/</span>
-    <a href="/nro-hub">NRO Performance Hub</a>
-    <span style="color:#d0d0d0">/</span>
+    <a href="/">Home</a><span style="color:#d0d0d0">/</span>
+    <a href="/nro-hub">NRO Performance Hub</a><span style="color:#d0d0d0">/</span>
     <span>Performance Dashboard</span>
   </div>
-
   <h1 class="page-title">NRO Performance Dashboard</h1>
   <p class="page-subtitle">New restaurant opening performance across multiple dimensions, 2020–2025</p>
   <div class="page-meta">
@@ -256,79 +208,36 @@ canvas.clickable{cursor:pointer;}
     <span id="page-meta-txt">Loading…</span>
     <button class="refresh-btn" onclick="fetchData()">↻ Refresh</button>
   </div>
-
-  <!-- KPI Banner -->
   <div class="kpi-banner" id="kpis"></div>
-
-  <!-- Filters -->
   <div class="filters-bar">
     <div class="filter-group">
       <span class="filter-label">Year</span>
-      <button class="cb-trigger" id="btn-yr" onclick="togglePanel('yr')">
-        <span id="lbl-yr">All Years</span>
-        <span class="cb-reset" onclick="event.stopPropagation();selectAll('yr')" title="Reset">✕</span>
-        <span class="cb-arrow">▼</span>
-      </button>
-      <div class="cb-panel" id="panel-yr">
-        <div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('yr')">Select All</button><button class="cb-clear" onclick="clearAll('yr')">Clear</button></div>
-        <div class="cb-options" id="opts-yr"></div>
-      </div>
+      <button class="cb-trigger" id="btn-yr" onclick="togglePanel('yr')"><span id="lbl-yr">All Years</span><span class="cb-reset" onclick="event.stopPropagation();selectAll('yr')" title="Reset">✕</span><span class="cb-arrow">▼</span></button>
+      <div class="cb-panel" id="panel-yr"><div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('yr')">Select All</button><button class="cb-clear" onclick="clearAll('yr')">Clear</button></div><div class="cb-options" id="opts-yr"></div></div>
     </div>
     <div class="filter-group">
       <span class="filter-label">Division</span>
-      <button class="cb-trigger" id="btn-div" onclick="togglePanel('div')">
-        <span id="lbl-div">All Divisions</span>
-        <span class="cb-reset" onclick="event.stopPropagation();selectAll('div')" title="Reset">✕</span>
-        <span class="cb-arrow">▼</span>
-      </button>
-      <div class="cb-panel" id="panel-div">
-        <div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('div')">Select All</button><button class="cb-clear" onclick="clearAll('div')">Clear</button></div>
-        <div class="cb-options" id="opts-div"></div>
-      </div>
+      <button class="cb-trigger" id="btn-div" onclick="togglePanel('div')"><span id="lbl-div">All Divisions</span><span class="cb-reset" onclick="event.stopPropagation();selectAll('div')" title="Reset">✕</span><span class="cb-arrow">▼</span></button>
+      <div class="cb-panel" id="panel-div"><div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('div')">Select All</button><button class="cb-clear" onclick="clearAll('div')">Clear</button></div><div class="cb-options" id="opts-div"></div></div>
     </div>
     <div class="filter-group">
       <span class="filter-label">Architecture Type</span>
-      <button class="cb-trigger" id="btn-arch" onclick="togglePanel('arch')">
-        <span id="lbl-arch">All Types</span>
-        <span class="cb-reset" onclick="event.stopPropagation();selectAll('arch')" title="Reset">✕</span>
-        <span class="cb-arrow">▼</span>
-      </button>
-      <div class="cb-panel" id="panel-arch">
-        <div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('arch')">Select All</button><button class="cb-clear" onclick="clearAll('arch')">Clear</button></div>
-        <div class="cb-options" id="opts-arch"></div>
-      </div>
+      <button class="cb-trigger" id="btn-arch" onclick="togglePanel('arch')"><span id="lbl-arch">All Types</span><span class="cb-reset" onclick="event.stopPropagation();selectAll('arch')" title="Reset">✕</span><span class="cb-arrow">▼</span></button>
+      <div class="cb-panel" id="panel-arch"><div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('arch')">Select All</button><button class="cb-clear" onclick="clearAll('arch')">Clear</button></div><div class="cb-options" id="opts-arch"></div></div>
     </div>
     <div class="filter-group">
       <span class="filter-label">Urbanicity</span>
-      <button class="cb-trigger" id="btn-urb" onclick="togglePanel('urb')">
-        <span id="lbl-urb">All Urbanicities</span>
-        <span class="cb-reset" onclick="event.stopPropagation();selectAll('urb')" title="Reset">✕</span>
-        <span class="cb-arrow">▼</span>
-      </button>
-      <div class="cb-panel" id="panel-urb">
-        <div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('urb')">Select All</button><button class="cb-clear" onclick="clearAll('urb')">Clear</button></div>
-        <div class="cb-options" id="opts-urb"></div>
-      </div>
+      <button class="cb-trigger" id="btn-urb" onclick="togglePanel('urb')"><span id="lbl-urb">All Urbanicities</span><span class="cb-reset" onclick="event.stopPropagation();selectAll('urb')" title="Reset">✕</span><span class="cb-arrow">▼</span></button>
+      <div class="cb-panel" id="panel-urb"><div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('urb')">Select All</button><button class="cb-clear" onclick="clearAll('urb')">Clear</button></div><div class="cb-options" id="opts-urb"></div></div>
     </div>
     <div class="filter-group">
       <span class="filter-label">FSS Grade</span>
-      <button class="cb-trigger" id="btn-fss" onclick="togglePanel('fss')">
-        <span id="lbl-fss">All Grades</span>
-        <span class="cb-reset" onclick="event.stopPropagation();selectAll('fss')" title="Reset">✕</span>
-        <span class="cb-arrow">▼</span>
-      </button>
-      <div class="cb-panel" id="panel-fss">
-        <div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('fss')">Select All</button><button class="cb-clear" onclick="clearAll('fss')">Clear</button></div>
-        <div class="cb-options" id="opts-fss"></div>
-      </div>
+      <button class="cb-trigger" id="btn-fss" onclick="togglePanel('fss')"><span id="lbl-fss">All Grades</span><span class="cb-reset" onclick="event.stopPropagation();selectAll('fss')" title="Reset">✕</span><span class="cb-arrow">▼</span></button>
+      <div class="cb-panel" id="panel-fss"><div class="cb-panel-header"><button class="cb-select-all" onclick="selectAll('fss')">Select All</button><button class="cb-clear" onclick="clearAll('fss')">Clear</button></div><div class="cb-options" id="opts-fss"></div></div>
     </div>
     <button class="filters-reset-all" onclick="resetAllFilters()">Reset All</button>
   </div>
-
-  <!-- Active filter pills -->
   <div class="pills-bar" id="pills-bar"></div>
-
-  <!-- Tabs -->
   <div class="tabs-bar">
     <button class="tab active" onclick="switchTab('overview',this)">📊 Overview</button>
     <button class="tab" onclick="switchTab('division',this)">🗺 Division</button>
@@ -337,228 +246,53 @@ canvas.clickable{cursor:pointer;}
     <button class="tab" onclick="switchTab('fss',this)">⭐ FSS</button>
   </div>
 
-  <!-- ── Overview ── -->
   <div id="tab-overview" class="tab-content active">
     <div class="chart-grid">
-      <div class="chart-card" id="card-c-openings-year">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Restaurant Openings by Year</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-openings-year" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-div-pie">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Openings by Division</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-div-pie" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-ars-bench">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg ARS by Opening Year</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-ars-bench" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div>
-      </div>
-      <div class="chart-card" id="card-c-ebitda-bench">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg EBITDA by Opening Year</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-ebitda-bench" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div>
-      </div>
+      <div class="chart-card" id="card-c-openings-year"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Restaurant Openings by Year</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-openings-year" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-div-pie"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Openings by Division</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-div-pie" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-ars-bench"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg ARS by Opening Year</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-ars-bench" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div></div>
+      <div class="chart-card" id="card-c-ebitda-bench"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg EBITDA by Opening Year</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-ebitda-bench" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div></div>
     </div>
   </div>
 
-  <!-- ── Division ── -->
   <div id="tab-division" class="tab-content">
     <div class="chart-grid">
-      <div class="chart-card" id="card-c-div-mix">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Division Mix</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-div-mix" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-div-count">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Opening Count by Year &amp; Division</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-div-count" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-div-ars">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg ARS by Opening Year &amp; Division</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-div-ars" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div>
-      </div>
-      <div class="chart-card" id="card-c-div-eb">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg EBITDA $ by Opening Year &amp; Division</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-div-eb" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div>
-      </div>
+      <div class="chart-card" id="card-c-div-mix"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Division Mix</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-div-mix" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-div-count"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Opening Count by Year &amp; Division</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-div-count" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-div-ars"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg ARS by Opening Year &amp; Division</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-div-ars" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div></div>
+      <div class="chart-card" id="card-c-div-eb"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg EBITDA $ by Opening Year &amp; Division</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-div-eb" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div></div>
     </div>
   </div>
 
-  <!-- ── Architecture ── -->
   <div id="tab-architecture" class="tab-content">
     <div class="chart-grid">
-      <div class="chart-card" id="card-c-arch-pie">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Architecture Type Mix</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-arch-pie" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-arch-count">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Opening Count by Year &amp; Architecture Type</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-arch-count" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-arch-ars">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg ARS by Opening Year &amp; Architecture Type</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-arch-ars" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div>
-      </div>
-      <div class="chart-card" id="card-c-arch-eb">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg EBITDA $ by Opening Year &amp; Architecture Type</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-arch-eb" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div>
-      </div>
+      <div class="chart-card" id="card-c-arch-pie"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Architecture Type Mix</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-arch-pie" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-arch-count"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Opening Count by Year &amp; Architecture Type</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-arch-count" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-arch-ars"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg ARS by Opening Year &amp; Architecture Type</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-arch-ars" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div></div>
+      <div class="chart-card" id="card-c-arch-eb"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg EBITDA $ by Opening Year &amp; Architecture Type</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-arch-eb" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div></div>
     </div>
   </div>
 
-  <!-- ── Urbanicity ── -->
   <div id="tab-urbanicity" class="tab-content">
     <div class="chart-grid">
-      <div class="chart-card" id="card-c-urb-pie">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Urbanicity Mix</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-urb-pie" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-urb-count">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Opening Count by Year &amp; Urbanicity</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-urb-count" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-urb-ars">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg ARS by Opening Year &amp; Urbanicity</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-urb-ars" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div>
-      </div>
-      <div class="chart-card" id="card-c-urb-eb">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg EBITDA $ by Opening Year &amp; Urbanicity</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-urb-eb" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div>
-      </div>
+      <div class="chart-card" id="card-c-urb-pie"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Urbanicity Mix</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-urb-pie" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-urb-count"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Opening Count by Year &amp; Urbanicity</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-urb-count" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-urb-ars"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg ARS by Opening Year &amp; Urbanicity</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-urb-ars" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div></div>
+      <div class="chart-card" id="card-c-urb-eb"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg EBITDA $ by Opening Year &amp; Urbanicity</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-urb-eb" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div></div>
     </div>
   </div>
 
-  <!-- ── FSS ── -->
   <div id="tab-fss" class="tab-content">
     <div class="chart-grid">
-      <div class="chart-card" id="card-c-fss-grade">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">FSS Grade Distribution</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-fss-grade" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-fss-year">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg FSS Score by Opening Year</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-fss-year" class="clickable"></canvas>
-      </div>
-      <div class="chart-card" id="card-c-fss-ars">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg ARS by Opening Year &amp; FSS Grade</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-fss-ars" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div>
-      </div>
-      <div class="chart-card" id="card-c-fss-eb">
-        <div class="chart-card-header">
-          <div class="chart-card-header-left">
-            <div class="chart-title">Avg EBITDA $ by Opening Year &amp; FSS Grade</div>
-            <div class="chart-hint">↖ Click bars to see site details</div>
-          </div>
-        </div>
-        <canvas id="c-fss-eb" class="clickable"></canvas>
-        <div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div>
-      </div>
+      <div class="chart-card" id="card-c-fss-grade"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">FSS Grade Distribution</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-fss-grade" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-fss-year"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg FSS Score by Opening Year</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-fss-year" class="clickable"></canvas></div>
+      <div class="chart-card" id="card-c-fss-ars"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg ARS by Opening Year &amp; FSS Grade</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-fss-ars" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM ARS is used. For 6–12 months, Annualized ARS is used. Under 6 months is excluded.</div></div>
+      <div class="chart-card" id="card-c-fss-eb"><div class="chart-card-header"><div class="chart-card-header-left"><div class="chart-title">Avg EBITDA $ by Opening Year &amp; FSS Grade</div><div class="chart-hint">↖ Click bars to see site details</div></div></div><canvas id="c-fss-eb" class="clickable"></canvas><div class="footnote">For openings &gt;12 months, TTM EBITDA $ is used. For 6–12 months, Annualized EBITDA $ is used. Under 6 months is excluded.</div></div>
     </div>
   </div>
 
-</div><!-- /container -->
-</div><!-- /app -->
+</div>
+</div>
 
 <script>
 const API = "/api/sheet";
@@ -577,7 +311,6 @@ let ALL=[], CHS={};
 const FSTATE={yr:new Set(YEARS.map(String)),div:new Set(DIVS),arch:new Set(ARCHS),urb:new Set(URBS),fss:new Set(GRADES)};
 const FMETA={yr:{items:YEARS.map(String),allLabel:"All Years"},div:{items:DIVS,allLabel:"All Divisions"},arch:{items:ARCHS,allLabel:"All Types"},urb:{items:URBS,allLabel:"All Urbanicities"},fss:{items:GRADES,allLabel:"All Grades"}};
 
-// ── Chart export store ────────────────────────────────────────────────────────
 const CHART_EXPORT = {};
 
 function storeChartExport(id, title, headers, rows) {
@@ -596,32 +329,25 @@ function storeChartExport(id, title, headers, rows) {
 }
 
 function exportChartData(id) {
-  const ed = CHART_EXPORT[id];
-  if (!ed) return;
+  const ed = CHART_EXPORT[id]; if (!ed) return;
   const wb = XLSX.utils.book_new();
   const ws = XLSX.utils.aoa_to_sheet([ed.headers, ...ed.rows]);
-  const maxW = ed.headers.map((h, i) => {
-    const colVals = [h, ...ed.rows.map(r => String(r[i] ?? ''))];
-    return { wch: Math.min(40, Math.max(...colVals.map(v => v.length)) + 2) };
-  });
+  const maxW = ed.headers.map((h, i) => { const colVals = [h, ...ed.rows.map(r => String(r[i] ?? ''))]; return { wch: Math.min(40, Math.max(...colVals.map(v => v.length)) + 2) }; });
   ws['!cols'] = maxW;
   XLSX.utils.book_append_sheet(wb, ws, 'Chart Data');
   const safe = ed.title.replace(/[^a-zA-Z0-9 &]/g, '_').replace(/\s+/g, '_');
   XLSX.writeFile(wb, `NRO_${safe}.xlsx`);
 }
 
-// ── Modal state ───────────────────────────────────────────────────────────────
 let MODAL_BASE=[], mSortCol='openYear', mSortDir=1;
 const fmt$=n=>n==null?"—":Math.abs(n)>=1e6?`$${(n/1e6).toFixed(2)}M`:`$${(n/1e3).toFixed(0)}K`;
 const mean=arr=>arr.length?arr.reduce((a,b)=>a+b,0)/arr.length:null;
 
-// ── Filter helpers ────────────────────────────────────────────────────────────
 function buildFilterPanels(){
   Object.entries(FMETA).forEach(([key,meta])=>{
     document.getElementById("opts-"+key).innerHTML=meta.items.map(item=>`
       <div class="cb-option" onclick="toggleItem('${key}','${item}')">
-        <input type="checkbox" id="cb-${key}-${item.replace(/\s/g,'_')}" value="${item}" checked
-          onclick="event.stopPropagation();toggleItem('${key}','${item}')">
+        <input type="checkbox" id="cb-${key}-${item.replace(/\s/g,'_')}" value="${item}" checked onclick="event.stopPropagation();toggleItem('${key}','${item}')">
         <label for="cb-${key}-${item.replace(/\s/g,'_')}">${item}</label>
       </div>`).join("");
   });
@@ -650,11 +376,7 @@ function togglePanel(key){
   openPanel=isOpen?key:null;
 }
 function closeAllPanels(){
-  if(openPanel){
-    document.getElementById("panel-"+openPanel)?.classList.remove("open");
-    document.getElementById("btn-"+openPanel)?.classList.remove("open");
-    openPanel=null;
-  }
+  if(openPanel){document.getElementById("panel-"+openPanel)?.classList.remove("open");document.getElementById("btn-"+openPanel)?.classList.remove("open");openPanel=null;}
 }
 document.addEventListener("click",e=>{if(openPanel&&!e.target.closest(".filter-group"))closeAllPanels();});
 
@@ -663,58 +385,45 @@ function applyF(rows,f){return rows.filter(r=>f.yrs.has(String(r.openYear))&&(r.
 function updatePills(f){
   const keyMap={yrs:'yr',divs:'div',archs:'arch',urbs:'urb',fsss:'fss'};
   let html="",any=false;
-  Object.entries(keyMap).forEach(([fk,mk])=>{
-    const s=f[fk],m=FMETA[mk];
-    if(s.size<m.items.length){any=true;[...s].forEach(v=>{html+=`<span class="pill">${v}<span class="pill-x" onclick="removePill('${mk}','${v}')">✕</span></span>`;});}
-  });
+  Object.entries(keyMap).forEach(([fk,mk])=>{const s=f[fk],m=FMETA[mk];if(s.size<m.items.length){any=true;[...s].forEach(v=>{html+=`<span class="pill">${v}<span class="pill-x" onclick="removePill('${mk}','${v}')">✕</span></span>`;});}});
   document.getElementById("pills-bar").innerHTML=any?`<span class="pill-label">Active filters:</span>${html}`:"";
 }
 function removePill(key,val){FSTATE[key].delete(val);syncCheckboxes(key);updateBtn(key);applyFilters();}
 
-// ── Bar labels above plugin ──────────────────────────────────────────────────
+// ── FIX 1: afterDraw (not afterDatasetsDraw) — fires once per full render ──
 const BAR_LABELS_PLUGIN = {
   id: 'barLabelsAbove',
-  afterDatasetsDraw(chart) {
+  afterDraw(chart) {
     const GAP = 3;
     const FONT_SIZE = 10;
-
     chart.data.datasets.forEach((ds, di) => {
       const meta = chart.getDatasetMeta(di);
       if (meta.hidden || meta.type !== 'bar') return;
-
       const firstBar = meta.data.find(b => b && b.width > 0);
       if (!firstBar) return;
       const barWidth = firstBar.width;
       const rotate = barWidth < 24;
-
       meta.data.forEach((bar, i) => {
         const val = ds.data[i];
         if (val == null || val === 0) return;
-
         let label;
         const abs = Math.abs(val);
         if (abs >= 1e6)         label = '$' + (val / 1e6).toFixed(1) + 'M';
         else if (abs >= 1e3)    label = '$' + (val / 1e3).toFixed(0) + 'K';
         else if (val % 1 === 0) label = String(val);
         else                    label = val.toFixed(2);
-
         const x = bar.x;
         const y = bar.y - GAP;
-
         const ctx = chart.ctx;
         ctx.save();
         ctx.font = `bold ${FONT_SIZE}px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif`;
         ctx.fillStyle = '#374151';
-
         if (rotate) {
-          ctx.translate(x, y);
-          ctx.rotate(-Math.PI / 2);
-          ctx.textAlign = 'left';
-          ctx.textBaseline = 'middle';
+          ctx.translate(x, y); ctx.rotate(-Math.PI / 2);
+          ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
           ctx.fillText(label, 2, 0);
         } else {
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'bottom';
+          ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
           ctx.fillText(label, x, y);
         }
         ctx.restore();
@@ -724,16 +433,17 @@ const BAR_LABELS_PLUGIN = {
 };
 Chart.register(BAR_LABELS_PLUGIN);
 
-// ── Chart helpers ─────────────────────────────────────────────────────────────
 function dc(id){if(CHS[id]){CHS[id].destroy();delete CHS[id];}}
 
 const SCALE_CFG = {
   x:{grid:{display:false},border:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},
   y:{display:false,grid:{display:false},border:{display:false},beginAtZero:true}
 };
-const TIP_BASE = {backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",padding:10,cornerRadius:6,titleFont:{weight:"normal"},bodyFont:{weight:"normal"}};
 
-// FIX: legend position moved to 'bottom', increased top padding to 36 so labels don't crowd legend
+// ── FIX 2: animation:false in TIP_BASE — stops tooltip fade from triggering redraws ──
+const TIP_BASE = {animation:false,backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",padding:10,cornerRadius:6,titleFont:{weight:"normal"},bodyFont:{weight:"normal"}};
+
+// ── FIX 3: animation:false in bar() helper — stops hover-driven redraw loop ──
 function bar(id, labels, datasets, opts={}) {
   dc(id);
   const ctx = document.getElementById(id); if (!ctx) return;
@@ -743,6 +453,8 @@ function bar(id, labels, datasets, opts={}) {
     data: { labels, datasets },
     options: {
       responsive: true, maintainAspectRatio: true,
+      animation: false,
+      interaction: { mode: "nearest", intersect: true },
       layout: { padding: { top: 36, ...((extra.layout||{}).padding||{}) } },
       plugins: {
         legend: { display: opts.legend || false, position: "bottom", labels: { color: "#6b7280", font: { size: 11 }, boxWidth: 12, padding: 16 } },
@@ -780,7 +492,6 @@ function addClick(id, fn) {
   };
 }
 
-// ── Modal ─────────────────────────────────────────────────────────────────────
 function openModal(rows,title,subtitle){
   MODAL_BASE=rows; mSortCol='openYear'; mSortDir=1;
   document.getElementById("modal-title").textContent=title;
@@ -794,9 +505,7 @@ function closeModal(){document.getElementById("drill-modal").classList.remove("o
 document.getElementById("drill-modal").addEventListener("click",e=>{if(e.target===document.getElementById("drill-modal"))closeModal();});
 
 function getModalFiltered(){
-  const yr=document.getElementById("mf-yr").value,div=document.getElementById("mf-div").value,
-    arch=document.getElementById("mf-arch").value,urb=document.getElementById("mf-urb").value,
-    fss=document.getElementById("mf-fss").value;
+  const yr=document.getElementById("mf-yr").value,div=document.getElementById("mf-div").value,arch=document.getElementById("mf-arch").value,urb=document.getElementById("mf-urb").value,fss=document.getElementById("mf-fss").value;
   return MODAL_BASE.filter(r=>(!yr||String(r.openYear)===yr)&&(!div||r.div===div)&&(!arch||r.arch===arch)&&(!urb||r.urb===urb)&&(!fss||r.fssGrade===fss));
 }
 function resetModalFilters(){["mf-yr","mf-div","mf-arch","mf-urb","mf-fss"].forEach(id=>document.getElementById(id).value="");renderModal();}
@@ -824,8 +533,7 @@ function renderModal(){
     const ebClass=r.annEB!=null?(r.annEB>=0?"profit-pos":"profit-neg"):"profit-na";
     const epClass=r.ebPct!=null?(r.ebPct>=0?"profit-pos":"profit-neg"):"profit-na";
     return`<tr>
-      <td><strong>${r.restNum||"—"}</strong></td>
-      <td>${r.openYear||"—"}</td><td>${r.div||"—"}</td><td>${r.state||"—"}</td>
+      <td><strong>${r.restNum||"—"}</strong></td><td>${r.openYear||"—"}</td><td>${r.div||"—"}</td><td>${r.state||"—"}</td>
       <td>${r.arch||"—"}</td><td>${r.urb||"—"}</td><td>${r.deal||"—"}</td>
       <td class="r">${fmt$(r.arsBench)}</td>
       <td class="r ${ebClass}">${fmt$(r.annEB)}</td>
@@ -849,12 +557,9 @@ function exportModal(){
   XLSX.writeFile(wb,`NRO_Drill_${Date.now()}.xlsx`);
 }
 
-// ── Main render ───────────────────────────────────────────────────────────────
 function renderAll(){
   const f=getF(),filt=applyF(ALL,f);
   updatePills(f);
-
-  // KPIs
   const withEB=filt.filter(r=>r.annEB!=null);
   const profCount=withEB.filter(r=>r.annEB>0).length;
   const ebVals=filt.filter(r=>r.ebPct!=null).map(r=>r.ebPct);
@@ -876,160 +581,111 @@ function renderAll(){
     return{yr,rows:r,ab,eb,count:r.length,avgARS:ab.length?mean(ab.map(x=>x.arsBench)):0,avgEB:eb.length?mean(eb.map(x=>x.ebitdaBench)):0};
   });
 
-  // ── Overview ──────────────────────────────────────────────────────────────
-  bar("c-openings-year", activeYears,
-    [{data:yrData.map(d=>d.count), backgroundColor:PLK.orange, borderRadius:5}],
-    {tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Openings: ${ctx.raw}  ·  Click to View`}}});
+  bar("c-openings-year",activeYears,[{data:yrData.map(d=>d.count),backgroundColor:PLK.orange,borderRadius:5}],{tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Openings: ${ctx.raw}  ·  Click to View`}}});
   addClick("c-openings-year",(_,i)=>openModal(yrData[i].rows,`${activeYears[i]} Restaurant Openings`,`${yrData[i].rows.length} restaurants opened in ${activeYears[i]}`));
-  storeChartExport('c-openings-year','Openings by Year',['Year','Count'],
-    activeYears.map((yr,i)=>[yr, yrData[i].count]));
+  storeChartExport('c-openings-year','Openings by Year',['Year','Count'],activeYears.map((yr,i)=>[yr,yrData[i].count]));
 
   const divKeys=DIVS.filter(d=>f.divs.has(d)&&filt.filter(r=>r.div===d).length>0);
   pie("c-div-pie",divKeys,divKeys.map(d=>filt.filter(r=>r.div===d).length),divKeys.map(d=>DIV_C[d]));
   addClick("c-div-pie",(_,i)=>{const rows=filt.filter(r=>r.div===divKeys[i]);openModal(rows,`${divKeys[i]} Division`,`${rows.length} restaurants`);});
-  storeChartExport('c-div-pie','Openings by Division',['Division','Count'],
-    divKeys.map(d=>[d, filt.filter(r=>r.div===d).length]));
+  storeChartExport('c-div-pie','Openings by Division',['Division','Count'],divKeys.map(d=>[d,filt.filter(r=>r.div===d).length]));
 
-  bar("c-ars-bench", activeYears,
-    [{data:yrData.map(d=>d.avgARS), backgroundColor:PLK.teal, borderRadius:5}],
-    {tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Avg ARS: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${yrData[ctx.dataIndex].ab.length}  ·  Click to View`}}});
+  bar("c-ars-bench",activeYears,[{data:yrData.map(d=>d.avgARS),backgroundColor:PLK.teal,borderRadius:5}],{tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Avg ARS: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${yrData[ctx.dataIndex].ab.length}  ·  Click to View`}}});
   addClick("c-ars-bench",(_,i)=>openModal(yrData[i].ab,`${activeYears[i]} — ARS Data`,`${yrData[i].ab.length} restaurants with ARS data`));
-  storeChartExport('c-ars-bench','Avg ARS by Year',['Year','Avg ARS ($)'],
-    activeYears.map((yr,i)=>[yr, Math.round(yrData[i].avgARS)]));
+  storeChartExport('c-ars-bench','Avg ARS by Year',['Year','Avg ARS ($)'],activeYears.map((yr,i)=>[yr,Math.round(yrData[i].avgARS)]));
 
-  bar("c-ebitda-bench", activeYears,
-    [{data:yrData.map(d=>d.avgEB), backgroundColor:yrData.map(d=>d.avgEB>=0?PLK.purple:PLK.red), borderRadius:5}],
-    {tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Avg EBITDA: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${yrData[ctx.dataIndex].eb.length}  ·  Click to View`}}});
+  bar("c-ebitda-bench",activeYears,[{data:yrData.map(d=>d.avgEB),backgroundColor:yrData.map(d=>d.avgEB>=0?PLK.purple:PLK.red),borderRadius:5}],{tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Avg EBITDA: ${fmt$(ctx.raw)}`,afterLabel:ctx=>`Restaurants: ${yrData[ctx.dataIndex].eb.length}  ·  Click to View`}}});
   addClick("c-ebitda-bench",(_,i)=>openModal(yrData[i].eb,`${activeYears[i]} — EBITDA Data`,`${yrData[i].eb.length} restaurants with EBITDA data`));
-  storeChartExport('c-ebitda-bench','Avg EBITDA by Year',['Year','Avg EBITDA ($)'],
-    activeYears.map((yr,i)=>[yr, Math.round(yrData[i].avgEB)]));
+  storeChartExport('c-ebitda-bench','Avg EBITDA by Year',['Year','Avg EBITDA ($)'],activeYears.map((yr,i)=>[yr,Math.round(yrData[i].avgEB)]));
 
-  // ── Division ──────────────────────────────────────────────────────────────
   const activeDivs=DIVS.filter(d=>f.divs.has(d));
   pie("c-div-mix",divKeys,divKeys.map(d=>filt.filter(r=>r.div===d).length),divKeys.map(d=>DIV_C[d]));
   addClick("c-div-mix",(_,i)=>{const rows=filt.filter(r=>r.div===divKeys[i]);openModal(rows,`${divKeys[i]} Division`,`${rows.length} restaurants`);});
-  storeChartExport('c-div-mix','Division Mix',['Division','Count'],
-    divKeys.map(d=>[d, filt.filter(r=>r.div===d).length]));
+  storeChartExport('c-div-mix','Division Mix',['Division','Count'],divKeys.map(d=>[d,filt.filter(r=>r.div===d).length]));
 
   const dCnt=activeDivs.map(d=>activeYears.map(yr=>ALL.filter(x=>x.openYear===yr&&x.div===d&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))).length));
   const dARS=activeDivs.map(d=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.div===d&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.arsBench!=null);return{v:r.length?mean(r.map(x=>x.arsBench)):0,r};}));
   const dEB=activeDivs.map(d=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.div===d&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.ebitdaBench!=null);return{v:r.length?mean(r.map(x=>x.ebitdaBench)):0,r};}));
 
-  bar("c-div-count",activeYears,activeDivs.map((d,di)=>({label:d,backgroundColor:DIV_C[d],borderRadius:3,data:dCnt[di]})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} sites · Click to View`}}});
+  bar("c-div-count",activeYears,activeDivs.map((d,di)=>({label:d,backgroundColor:DIV_C[d],borderRadius:3,data:dCnt[di]})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} sites · Click to View`}}});
   addClick("c-div-count",(di,yi)=>{const d=activeDivs[di],yr=activeYears[yi];const rows=ALL.filter(x=>x.openYear===yr&&x.div===d&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade)));openModal(rows,`${d} · ${yr}`,`${rows.length} restaurants`);});
-  storeChartExport('c-div-count','Opening Count by Year & Division',['Year',...activeDivs,'Total'],
-    activeYears.map((yr,yi)=>[yr,...activeDivs.map((_,di)=>dCnt[di][yi]),activeDivs.reduce((s,_,di)=>s+dCnt[di][yi],0)]));
+  storeChartExport('c-div-count','Opening Count by Year & Division',['Year',...activeDivs,'Total'],activeYears.map((yr,yi)=>[yr,...activeDivs.map((_,di)=>dCnt[di][yi]),activeDivs.reduce((s,_,di)=>s+dCnt[di][yi],0)]));
 
-  bar("c-div-ars",activeYears,activeDivs.map((d,di)=>({label:d,backgroundColor:DIV_C[d],borderRadius:3,data:dARS[di].map(x=>x.v)})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
+  bar("c-div-ars",activeYears,activeDivs.map((d,di)=>({label:d,backgroundColor:DIV_C[d],borderRadius:3,data:dARS[di].map(x=>x.v)})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
   addClick("c-div-ars",(di,yi)=>openModal(dARS[di][yi].r,`${activeDivs[di]} · ${activeYears[yi]} — ARS`,`${dARS[di][yi].r.length} restaurants`));
-  storeChartExport('c-div-ars','Avg ARS by Year & Division',['Year',...activeDivs],
-    activeYears.map((yr,yi)=>[yr,...activeDivs.map((_,di)=>Math.round(dARS[di][yi].v))]));
+  storeChartExport('c-div-ars','Avg ARS by Year & Division',['Year',...activeDivs],activeYears.map((yr,yi)=>[yr,...activeDivs.map((_,di)=>Math.round(dARS[di][yi].v))]));
 
-  bar("c-div-eb",activeYears,activeDivs.map((d,di)=>({label:d,backgroundColor:DIV_C[d],borderRadius:3,data:dEB[di].map(x=>x.v)})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
+  bar("c-div-eb",activeYears,activeDivs.map((d,di)=>({label:d,backgroundColor:DIV_C[d],borderRadius:3,data:dEB[di].map(x=>x.v)})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
   addClick("c-div-eb",(di,yi)=>openModal(dEB[di][yi].r,`${activeDivs[di]} · ${activeYears[yi]} — EBITDA`,`${dEB[di][yi].r.length} restaurants`));
-  storeChartExport('c-div-eb','Avg EBITDA by Year & Division',['Year',...activeDivs],
-    activeYears.map((yr,yi)=>[yr,...activeDivs.map((_,di)=>Math.round(dEB[di][yi].v))]));
+  storeChartExport('c-div-eb','Avg EBITDA by Year & Division',['Year',...activeDivs],activeYears.map((yr,yi)=>[yr,...activeDivs.map((_,di)=>Math.round(dEB[di][yi].v))]));
 
-  // ── Architecture ──────────────────────────────────────────────────────────
   const activeArchs=ARCHS.filter(a=>f.archs.has(a));
   const archKeys=activeArchs.filter(a=>filt.filter(r=>r.arch===a).length>0);
   pie("c-arch-pie",archKeys,archKeys.map(a=>filt.filter(r=>r.arch===a).length),archKeys.map(a=>ARCH_C[a]));
   addClick("c-arch-pie",(_,i)=>{const rows=filt.filter(r=>r.arch===archKeys[i]);openModal(rows,`${archKeys[i]}`,`${rows.length} restaurants`);});
-  storeChartExport('c-arch-pie','Architecture Type Mix',['Architecture Type','Count'],
-    archKeys.map(a=>[a, filt.filter(r=>r.arch===a).length]));
+  storeChartExport('c-arch-pie','Architecture Type Mix',['Architecture Type','Count'],archKeys.map(a=>[a,filt.filter(r=>r.arch===a).length]));
 
   const aCnt=activeArchs.map(a=>activeYears.map(yr=>ALL.filter(x=>x.openYear===yr&&x.arch===a&&(x.div==null||f.divs.has(x.div))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))).length));
   const aARS=activeArchs.map(a=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.arch===a&&(x.div==null||f.divs.has(x.div))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.arsBench!=null);return{v:r.length?mean(r.map(x=>x.arsBench)):0,r};}));
   const aEB=activeArchs.map(a=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.arch===a&&(x.div==null||f.divs.has(x.div))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.ebitdaBench!=null);return{v:r.length?mean(r.map(x=>x.ebitdaBench)):0,r};}));
 
-  bar("c-arch-count",activeYears,activeArchs.map((a,ai)=>({label:a,backgroundColor:ARCH_C[a],borderRadius:3,data:aCnt[ai]})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} sites · Click to View`}}});
+  bar("c-arch-count",activeYears,activeArchs.map((a,ai)=>({label:a,backgroundColor:ARCH_C[a],borderRadius:3,data:aCnt[ai]})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} sites · Click to View`}}});
   addClick("c-arch-count",(ai,yi)=>{const a=activeArchs[ai],yr=activeYears[yi];const rows=ALL.filter(x=>x.openYear===yr&&x.arch===a&&(x.div==null||f.divs.has(x.div))&&(x.urb==null||f.urbs.has(x.urb))&&(x.fssGrade==null||f.fsss.has(x.fssGrade)));openModal(rows,`${a} · ${yr}`,`${rows.length} restaurants`);});
-  storeChartExport('c-arch-count','Opening Count by Year & Architecture',['Year',...activeArchs,'Total'],
-    activeYears.map((yr,yi)=>[yr,...activeArchs.map((_,ai)=>aCnt[ai][yi]),activeArchs.reduce((s,_,ai)=>s+aCnt[ai][yi],0)]));
+  storeChartExport('c-arch-count','Opening Count by Year & Architecture',['Year',...activeArchs,'Total'],activeYears.map((yr,yi)=>[yr,...activeArchs.map((_,ai)=>aCnt[ai][yi]),activeArchs.reduce((s,_,ai)=>s+aCnt[ai][yi],0)]));
 
-  bar("c-arch-ars",activeYears,activeArchs.map((a,ai)=>({label:a,backgroundColor:ARCH_C[a],borderRadius:3,data:aARS[ai].map(x=>x.v)})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
+  bar("c-arch-ars",activeYears,activeArchs.map((a,ai)=>({label:a,backgroundColor:ARCH_C[a],borderRadius:3,data:aARS[ai].map(x=>x.v)})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
   addClick("c-arch-ars",(ai,yi)=>openModal(aARS[ai][yi].r,`${activeArchs[ai]} · ${activeYears[yi]} — ARS`,`${aARS[ai][yi].r.length} restaurants`));
-  storeChartExport('c-arch-ars','Avg ARS by Year & Architecture',['Year',...activeArchs],
-    activeYears.map((yr,yi)=>[yr,...activeArchs.map((_,ai)=>Math.round(aARS[ai][yi].v))]));
+  storeChartExport('c-arch-ars','Avg ARS by Year & Architecture',['Year',...activeArchs],activeYears.map((yr,yi)=>[yr,...activeArchs.map((_,ai)=>Math.round(aARS[ai][yi].v))]));
 
-  bar("c-arch-eb",activeYears,activeArchs.map((a,ai)=>({label:a,backgroundColor:ARCH_C[a],borderRadius:3,data:aEB[ai].map(x=>x.v)})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
+  bar("c-arch-eb",activeYears,activeArchs.map((a,ai)=>({label:a,backgroundColor:ARCH_C[a],borderRadius:3,data:aEB[ai].map(x=>x.v)})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
   addClick("c-arch-eb",(ai,yi)=>openModal(aEB[ai][yi].r,`${activeArchs[ai]} · ${activeYears[yi]} — EBITDA`,`${aEB[ai][yi].r.length} restaurants`));
-  storeChartExport('c-arch-eb','Avg EBITDA by Year & Architecture',['Year',...activeArchs],
-    activeYears.map((yr,yi)=>[yr,...activeArchs.map((_,ai)=>Math.round(aEB[ai][yi].v))]));
+  storeChartExport('c-arch-eb','Avg EBITDA by Year & Architecture',['Year',...activeArchs],activeYears.map((yr,yi)=>[yr,...activeArchs.map((_,ai)=>Math.round(aEB[ai][yi].v))]));
 
-  // ── Urbanicity ────────────────────────────────────────────────────────────
   const activeUrbs=URBS.filter(u=>f.urbs.has(u));
   const urbKeys=activeUrbs.filter(u=>filt.filter(r=>r.urb===u).length>0);
   pie("c-urb-pie",urbKeys,urbKeys.map(u=>filt.filter(r=>r.urb===u).length),urbKeys.map(u=>URB_C[u]));
   addClick("c-urb-pie",(_,i)=>{const rows=filt.filter(r=>r.urb===urbKeys[i]);openModal(rows,`${urbKeys[i]}`,`${rows.length} restaurants`);});
-  storeChartExport('c-urb-pie','Urbanicity Mix',['Urbanicity','Count'],
-    urbKeys.map(u=>[u, filt.filter(r=>r.urb===u).length]));
+  storeChartExport('c-urb-pie','Urbanicity Mix',['Urbanicity','Count'],urbKeys.map(u=>[u,filt.filter(r=>r.urb===u).length]));
 
   const uCnt=activeUrbs.map(u=>activeYears.map(yr=>ALL.filter(x=>x.openYear===yr&&x.urb===u&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))).length));
   const uARS=activeUrbs.map(u=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.urb===u&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.arsBench!=null);return{v:r.length?mean(r.map(x=>x.arsBench)):0,r};}));
   const uEB=activeUrbs.map(u=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.urb===u&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.fssGrade==null||f.fsss.has(x.fssGrade))&&x.ebitdaBench!=null);return{v:r.length?mean(r.map(x=>x.ebitdaBench)):0,r};}));
 
-  bar("c-urb-count",activeYears,activeUrbs.map((u,ui)=>({label:u,backgroundColor:URB_C[u],borderRadius:3,data:uCnt[ui]})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} sites · Click to View`}}});
+  bar("c-urb-count",activeYears,activeUrbs.map((u,ui)=>({label:u,backgroundColor:URB_C[u],borderRadius:3,data:uCnt[ui]})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw} sites · Click to View`}}});
   addClick("c-urb-count",(ui,yi)=>{const u=activeUrbs[ui],yr=activeYears[yi];const rows=ALL.filter(x=>x.openYear===yr&&x.urb===u&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.fssGrade==null||f.fsss.has(x.fssGrade)));openModal(rows,`${u} · ${yr}`,`${rows.length} restaurants`);});
-  storeChartExport('c-urb-count','Opening Count by Year & Urbanicity',['Year',...activeUrbs,'Total'],
-    activeYears.map((yr,yi)=>[yr,...activeUrbs.map((_,ui)=>uCnt[ui][yi]),activeUrbs.reduce((s,_,ui)=>s+uCnt[ui][yi],0)]));
+  storeChartExport('c-urb-count','Opening Count by Year & Urbanicity',['Year',...activeUrbs,'Total'],activeYears.map((yr,yi)=>[yr,...activeUrbs.map((_,ui)=>uCnt[ui][yi]),activeUrbs.reduce((s,_,ui)=>s+uCnt[ui][yi],0)]));
 
-  bar("c-urb-ars",activeYears,activeUrbs.map((u,ui)=>({label:u,backgroundColor:URB_C[u],borderRadius:3,data:uARS[ui].map(x=>x.v)})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
+  bar("c-urb-ars",activeYears,activeUrbs.map((u,ui)=>({label:u,backgroundColor:URB_C[u],borderRadius:3,data:uARS[ui].map(x=>x.v)})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
   addClick("c-urb-ars",(ui,yi)=>openModal(uARS[ui][yi].r,`${activeUrbs[ui]} · ${activeYears[yi]} — ARS`,`${uARS[ui][yi].r.length} restaurants`));
-  storeChartExport('c-urb-ars','Avg ARS by Year & Urbanicity',['Year',...activeUrbs],
-    activeYears.map((yr,yi)=>[yr,...activeUrbs.map((_,ui)=>Math.round(uARS[ui][yi].v))]));
+  storeChartExport('c-urb-ars','Avg ARS by Year & Urbanicity',['Year',...activeUrbs],activeYears.map((yr,yi)=>[yr,...activeUrbs.map((_,ui)=>Math.round(uARS[ui][yi].v))]));
 
-  bar("c-urb-eb",activeYears,activeUrbs.map((u,ui)=>({label:u,backgroundColor:URB_C[u],borderRadius:3,data:uEB[ui].map(x=>x.v)})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
+  bar("c-urb-eb",activeYears,activeUrbs.map((u,ui)=>({label:u,backgroundColor:URB_C[u],borderRadius:3,data:uEB[ui].map(x=>x.v)})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
   addClick("c-urb-eb",(ui,yi)=>openModal(uEB[ui][yi].r,`${activeUrbs[ui]} · ${activeYears[yi]} — EBITDA`,`${uEB[ui][yi].r.length} restaurants`));
-  storeChartExport('c-urb-eb','Avg EBITDA by Year & Urbanicity',['Year',...activeUrbs],
-    activeYears.map((yr,yi)=>[yr,...activeUrbs.map((_,ui)=>Math.round(uEB[ui][yi].v))]));
+  storeChartExport('c-urb-eb','Avg EBITDA by Year & Urbanicity',['Year',...activeUrbs],activeYears.map((yr,yi)=>[yr,...activeUrbs.map((_,ui)=>Math.round(uEB[ui][yi].v))]));
 
-  // ── FSS ───────────────────────────────────────────────────────────────────
   const activeGrades=GRADES.filter(g=>f.fsss.has(g));
-  bar("c-fss-grade",activeGrades,
-    [{data:activeGrades.map(g=>filt.filter(r=>r.fssGrade===g).length),backgroundColor:activeGrades.map(g=>GRADE_C[g]),borderRadius:5}],
-    {tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Grade ${activeGrades[ctx.dataIndex]}: ${ctx.raw} sites · Click to View`}}});
+  bar("c-fss-grade",activeGrades,[{data:activeGrades.map(g=>filt.filter(r=>r.fssGrade===g).length),backgroundColor:activeGrades.map(g=>GRADE_C[g]),borderRadius:5}],{tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Grade ${activeGrades[ctx.dataIndex]}: ${ctx.raw} sites · Click to View`}}});
   addClick("c-fss-grade",(_,i)=>{const rows=filt.filter(r=>r.fssGrade===activeGrades[i]);openModal(rows,`FSS Grade ${activeGrades[i]}`,`${rows.length} restaurants`);});
-  storeChartExport('c-fss-grade','FSS Grade Distribution',['FSS Grade','Count'],
-    activeGrades.map(g=>[g, filt.filter(r=>r.fssGrade===g).length]));
+  storeChartExport('c-fss-grade','FSS Grade Distribution',['FSS Grade','Count'],activeGrades.map(g=>[g,filt.filter(r=>r.fssGrade===g).length]));
 
   const fyData=activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&x.fssScore!=null);return{v:r.length?mean(r.map(x=>x.fssScore)):0,r};});
-  bar("c-fss-year",activeYears,
-    [{data:fyData.map(d=>d.v),backgroundColor:PLK.purple,borderRadius:5}],
-    {
-      scaleOverride:{
-        x:{grid:{display:false},border:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},
-        y:{display:false,min:0,max:5,grid:{display:false},border:{display:false},beginAtZero:true}
-      },
-      tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Avg FSS Score: ${ctx.raw.toFixed(2)}`,afterLabel:ctx=>`Restaurants: ${fyData[ctx.dataIndex].r.length}  ·  Click to View`}}
-    });
+  bar("c-fss-year",activeYears,[{data:fyData.map(d=>d.v),backgroundColor:PLK.purple,borderRadius:5}],{
+    scaleOverride:{x:{grid:{display:false},border:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},y:{display:false,min:0,max:5,grid:{display:false},border:{display:false},beginAtZero:true}},
+    tooltip:{...TIP_BASE,callbacks:{label:ctx=>`Avg FSS Score: ${ctx.raw.toFixed(2)}`,afterLabel:ctx=>`Restaurants: ${fyData[ctx.dataIndex].r.length}  ·  Click to View`}}
+  });
   addClick("c-fss-year",(_,i)=>openModal(fyData[i].r,`${activeYears[i]} — FSS Data`,`${fyData[i].r.length} restaurants with FSS score`));
-  storeChartExport('c-fss-year','Avg FSS Score by Year',['Year','Avg FSS Score'],
-    activeYears.map((yr,i)=>[yr, fyData[i].v ? fyData[i].v.toFixed(2) : 0]));
+  storeChartExport('c-fss-year','Avg FSS Score by Year',['Year','Avg FSS Score'],activeYears.map((yr,i)=>[yr,fyData[i].v?fyData[i].v.toFixed(2):0]));
 
   const gARS=activeGrades.map(g=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.fssGrade===g&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&x.arsBench!=null);return{v:r.length?mean(r.map(x=>x.arsBench)):0,r};}));
   const gEB=activeGrades.map(g=>activeYears.map(yr=>{const r=ALL.filter(x=>x.openYear===yr&&x.fssGrade===g&&(x.div==null||f.divs.has(x.div))&&(x.arch==null||f.archs.has(x.arch))&&(x.urb==null||f.urbs.has(x.urb))&&x.ebitdaBench!=null);return{v:r.length?mean(r.map(x=>x.ebitdaBench)):0,r};}));
 
-  bar("c-fss-ars",activeYears,activeGrades.map((g,gi)=>({label:`Grade ${g}`,backgroundColor:GRADE_C[g],borderRadius:3,data:gARS[gi].map(x=>x.v)})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
+  bar("c-fss-ars",activeYears,activeGrades.map((g,gi)=>({label:`Grade ${g}`,backgroundColor:GRADE_C[g],borderRadius:3,data:gARS[gi].map(x=>x.v)})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
   addClick("c-fss-ars",(gi,yi)=>openModal(gARS[gi][yi].r,`Grade ${activeGrades[gi]} · ${activeYears[yi]} — ARS`,`${gARS[gi][yi].r.length} restaurants`));
-  storeChartExport('c-fss-ars','Avg ARS by Year & FSS Grade',['Year',...activeGrades.map(g=>`Grade ${g}`)],
-    activeYears.map((yr,yi)=>[yr,...activeGrades.map((_,gi)=>Math.round(gARS[gi][yi].v))]));
+  storeChartExport('c-fss-ars','Avg ARS by Year & FSS Grade',['Year',...activeGrades.map(g=>`Grade ${g}`)],activeYears.map((yr,yi)=>[yr,...activeGrades.map((_,gi)=>Math.round(gARS[gi][yi].v))]));
 
-  bar("c-fss-eb",activeYears,activeGrades.map((g,gi)=>({label:`Grade ${g}`,backgroundColor:GRADE_C[g],borderRadius:3,data:gEB[gi].map(x=>x.v)})),
-    {legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
+  bar("c-fss-eb",activeYears,activeGrades.map((g,gi)=>({label:`Grade ${g}`,backgroundColor:GRADE_C[g],borderRadius:3,data:gEB[gi].map(x=>x.v)})),{legend:true,tooltip:{...TIP_BASE,callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt$(ctx.raw)}`,afterLabel:()=>"· Click to View"}}});
   addClick("c-fss-eb",(gi,yi)=>openModal(gEB[gi][yi].r,`Grade ${activeGrades[gi]} · ${activeYears[yi]} — EBITDA`,`${gEB[gi][yi].r.length} restaurants`));
-  storeChartExport('c-fss-eb','Avg EBITDA by Year & FSS Grade',['Year',...activeGrades.map(g=>`Grade ${g}`)],
-    activeYears.map((yr,yi)=>[yr,...activeGrades.map((_,gi)=>Math.round(gEB[gi][yi].v))]));
+  storeChartExport('c-fss-eb','Avg EBITDA by Year & FSS Grade',['Year',...activeGrades.map(g=>`Grade ${g}`)],activeYears.map((yr,yi)=>[yr,...activeGrades.map((_,gi)=>Math.round(gEB[gi][yi].v))]));
 }
 
 function applyFilters(){renderAll();}
