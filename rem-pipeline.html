@@ -73,20 +73,26 @@ tbody td{padding:12px 12px;color:#374151;}
 .rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
 .rank-5{background:#f87171;color:white;}.rank-6{background:#DC2626;color:white;}
 
-/* Risk mini-bar */
-.risk-minibar{display:flex;height:8px;border-radius:4px;overflow:hidden;min-width:80px;gap:1px;}
-.risk-seg{height:100%;}
+/* ── Risk Mix cell — matches dev-execution style ── */
+.risk-mix-cell{min-width:160px;}
+.risk-bar{display:flex;height:14px;border-radius:6px;overflow:hidden;gap:2px;margin-bottom:8px;}
+.risk-seg{height:100%;cursor:pointer;transition:opacity 0.15s,filter 0.15s;min-width:4px;}
+.risk-seg:hover{opacity:0.82;filter:brightness(1.08);}
+.risk-seg[data-count="0"]{cursor:default;opacity:0.2;}
+.risk-seg[data-count="0"]:hover{opacity:0.2;filter:none;}
+.risk-pills{display:flex;flex-wrap:wrap;gap:4px;}
+.risk-pill-item{display:inline-flex;align-items:center;gap:4px;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:filter 0.15s;white-space:nowrap;}
+.risk-pill-item:hover{filter:brightness(0.9);}
+.risk-pill-item.zero{opacity:0.32;cursor:default;pointer-events:none;}
+.risk-pill-item .rp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
 
 /* Charts */
-.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .chart-card{background:white;border-radius:12px;padding:22px;border:1px solid #e5e7eb;}
 .chart-card.left-accent{border-top:4px solid #E8521A;}
-.chart-card.right-accent{border-top:4px solid #7B2D8B;}
 .chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;gap:12px;}
 .chart-header-left{flex:1;}
 .chart-title-main{font-size:15px;font-weight:800;color:#1a1a1a;margin-bottom:2px;}
 .chart-subtitle{font-size:12px;color:#6b7280;margin-bottom:14px;}
-.chart-canvas{max-height:300px;}
 .chart-legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;}
 .legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
@@ -135,7 +141,7 @@ tbody td{padding:12px 12px;color:#374151;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .overlay-title{font-size:18px;font-weight:600;color:#374151;}
 .overlay-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
-@media(max-width:900px){.charts-grid{grid-template-columns:1fr;}.container{padding:24px;}}
+@media(max-width:900px){.container{padding:24px;}}
 </style>
 </head>
 <body>
@@ -242,7 +248,7 @@ tbody td{padding:12px 12px;color:#374151;}
               <th style="background:#f0fdf4;color:#166534;">SA Target</th>
               <th>Gap (SA vs Target)</th>
               <th style="background:#eff6ff;color:#1d4ed8;">SA Achievement<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(SA / Target)</span></th>
-              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">(all early-stage)</span></th>
+              <th style="background:#faf5ff;color:#6b21a8;">Risk Mix<br><span style="font-weight:400;font-size:9px;text-transform:none;letter-spacing:0">Click a segment to drill down</span></th>
             </tr>
           </thead>
           <tbody id="tbody-main"></tbody>
@@ -263,10 +269,10 @@ tbody td{padding:12px 12px;color:#374151;}
         <div class="legend-item2"><div class="legend-dot" style="background:#DC2626;"></div>High</div>
         <div class="legend-item2"><div class="legend-dot" style="background:#7C3AED;"></div>Upside</div>
       </div>
-      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* SA Achievement = Site Approvals ÷ SA Target. Rank based on SA achievement relative to target — higher is better. Click any count to drill into individual sites.</p>
+      <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* SA Achievement = Site Approvals ÷ SA Target. Rank based on SA achievement relative to target — higher is better. Click any Risk Mix segment or pill to drill into those sites.</p>
     </div>
 
-    <!-- Charts — single combined chart -->
+    <!-- Charts -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📈</span>Pipeline Visual Analysis</div>
@@ -303,6 +309,14 @@ const REMS = [
   { name:"Kevin Fitzgerald",divs:["Canada"],                color:"#1d4ed8" },
 ];
 
+// ── Risk level definitions for early-stage pipeline ──────────────────────────
+const REM_RISK_LEVELS = [
+  { key:"low",    label:"Low",    color:"#059669", bg:"#D1FAE5", text:"#065F46" },
+  { key:"medium", label:"Medium", color:"#fbbf24", bg:"#FEF3C7", text:"#92400E" },
+  { key:"high",   label:"High",   color:"#DC2626", bg:"#FEE2E2", text:"#991B1B" },
+  { key:"upside", label:"Upside", color:"#7C3AED", bg:"#EDE9FE", text:"#5B21B6" },
+];
+
 function remForDiv(div) {
   return REMS.find(r => r.divs.includes(div)) || { name:"—", color:"#9ca3af" };
 }
@@ -313,6 +327,30 @@ let modalSortCol = -1, modalSortDir = 1;
 
 function achieveClass(p) { return p >= 90 ? "ach-high" : p >= 70 ? "ach-medium" : "ach-low"; }
 function gapClass(g) { return g > 0 ? "gap-positive" : g < 0 ? "gap-negative" : "gap-zero"; }
+
+// ── Risk Mix cell builder — matches dev-execution style ─────────────────────
+function buildRiskMixCell(divName, nLow, nMed, nHigh, nUp) {
+  const total = nLow + nMed + nHigh + nUp || 1;
+  const counts = { low:nLow, medium:nMed, high:nHigh, upside:nUp };
+  const edd = divName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+
+  const barSegs = REM_RISK_LEVELS.map(rl => {
+    const cnt = counts[rl.key] || 0;
+    if (cnt === 0) return '';
+    const pct = Math.max((cnt / total * 100), 4);
+    const clickAttr = `onclick="openRiskDrillDown('${edd}','${rl.key}','${edd} · ${rl.label} Risk')"`;
+    return `<div class="risk-seg" style="width:${pct}%;background:${rl.color};" data-count="${cnt}" title="${rl.label}: ${cnt} site${cnt!==1?'s':''}" ${clickAttr}></div>`;
+  }).join('');
+
+  const pills = REM_RISK_LEVELS.map(rl => {
+    const cnt = counts[rl.key] || 0;
+    if (cnt === 0) return '';
+    const clickAttr = `onclick="openRiskDrillDown('${edd}','${rl.key}','${edd} · ${rl.label} Risk')"`;
+    return `<span class="risk-pill-item" style="background:${rl.bg};color:${rl.text};border-color:${rl.color};" ${clickAttr} title="${rl.label}: ${cnt} site${cnt!==1?'s':''}"><span class="rp-dot" style="background:${rl.color};"></span>${rl.label} <strong>${cnt}</strong></span>`;
+  }).join('');
+
+  return `<td class="risk-mix-cell"><div class="risk-bar">${barSegs}</div><div class="risk-pills">${pills}</div></td>`;
+}
 
 // ── KPI Banner ─────────────────────────────────────────────────────────────
 function renderKPIBanner() {
@@ -404,19 +442,12 @@ function renderTable() {
   const rankMap = {};
   sorted.forEach((d,i) => rankMap[d.div] = i);
 
-  const totals = { prospects:0, sas:0, total:0, target:0 };
+  const totals = { prospects:0, sas:0, total:0, target:0, nLow:0, nMed:0, nHigh:0, nUp:0 };
   let html = "";
 
   divStats.forEach(({div,prospects,sas,total,target,gap,achPct,nLow,nMed,nHigh,nUp,rem}) => {
     const rank = rankMap[div], rn = rank + 1;
     const rColor = RANK_COLORS[Math.min(rank,5)], rBg = RANK_BG[Math.min(rank,5)];
-    const rTotal = nLow+nMed+nHigh+nUp || 1;
-    const minibar = `<div class="risk-minibar" title="Low:${nLow} Med:${nMed} High:${nHigh} Upside:${nUp}">
-      <div class="risk-seg" style="width:${nLow/rTotal*100}%;background:#059669;"></div>
-      <div class="risk-seg" style="width:${nMed/rTotal*100}%;background:#fbbf24;"></div>
-      <div class="risk-seg" style="width:${nHigh/rTotal*100}%;background:#DC2626;"></div>
-      <div class="risk-seg" style="width:${nUp/rTotal*100}%;background:#7C3AED;"></div>
-    </div><div style="font-size:10px;color:#9ca3af;margin-top:3px;">${nLow}L·${nMed}M·${nHigh}H·${nUp}U</div>`;
 
     html += `<tr style="background:${rBg};border-left:4px solid ${rColor};">
       <td style="padding-left:10px;"><span class="rank-pill rank-${rn}">${rn}</span></td>
@@ -430,13 +461,17 @@ function renderTable() {
       <td class="number-cell">${target||"—"}</td>
       <td class="number-cell ${gapClass(gap)}">${target?((gap>=0?"+":"")+gap):"—"}</td>
       <td class="number-cell">${target?`<span class="ach-badge ${achieveClass(achPct)}">${achPct.toFixed(0)}%</span>`:"—"}</td>
-      <td style="min-width:100px;">${minibar}</td>
+      ${buildRiskMixCell(div,nLow,nMed,nHigh,nUp)}
     </tr>`;
 
     totals.prospects += prospects;
     totals.sas       += sas;
     totals.total     += total;
     totals.target    += target;
+    totals.nLow      += nLow;
+    totals.nMed      += nMed;
+    totals.nHigh     += nHigh;
+    totals.nUp       += nUp;
   });
 
   const tGap = totals.sas - totals.target;
@@ -451,7 +486,7 @@ function renderTable() {
     <td class="number-cell">${totals.target||"—"}</td>
     <td class="number-cell ${gapClass(tGap)}">${totals.target?((tGap>=0?"+":"")+tGap):"—"}</td>
     <td class="number-cell">${totals.target?`<span class="ach-badge ${achieveClass(tAch)}">${tAch.toFixed(0)}%</span>`:"—"}</td>
-    <td></td>
+    ${buildRiskMixCell("US&C",totals.nLow,totals.nMed,totals.nHigh,totals.nUp)}
   </tr>`;
 
   document.getElementById("tbody-main").innerHTML = html;
@@ -464,13 +499,24 @@ function clickableCell(count, divName, status, label) {
   return `<td class="number-cell clickable" onclick="openDrillDown('${ed}',${es},'${el}')"><span>${count}</span></td>`;
 }
 
-// ── Single combined chart — NO gridlines, NO y-axis ────────────────────────
+// ── Risk drill-down helper ──────────────────────────────────────────────────
+function openRiskDrillDown(divName, riskKey, title) {
+  let sites = ALL_DATA;
+  if (divName && divName !== "US&C") sites = sites.filter(r => r.division === divName);
+  sites = sites.filter(r => (r.riskLevel || "").trim().toLowerCase() === riskKey);
+  MODAL_SITES = sites; MODAL_TITLE_TEXT = title;
+  document.getElementById("modal-title").textContent = title;
+  document.getElementById("modal-subtitle").textContent = `${divName} · ${riskKey} risk · ${sites.length} site${sites.length!==1?"s":""}`;
+  resetModalFilters();
+  document.getElementById("drill-modal").classList.add("open");
+}
+
+// ── Chart ──────────────────────────────────────────────────────────────────
 function renderCharts() {
   const prospects = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="Prospect").length);
   const sas       = DIVISIONS.map(d => ALL_DATA.filter(r=>r.division===d&&r.status==="SA").length);
   const targets   = DIVISIONS.map(d => SA_TARGETS[d]||0);
-
-  const xLabels = DIVISIONS.map(d => [d, "("+remForDiv(d).name+")"]);
+  const xLabels   = DIVISIONS.map(d => [d, "("+remForDiv(d).name+")"]);
 
   const ctx = document.getElementById("chart-combined");
   const chart = new Chart(ctx, {
@@ -478,64 +524,33 @@ function renderCharts() {
     data:{
       labels: xLabels,
       datasets:[
-        {
-          label:"Prospect",
-          data: prospects,
-          backgroundColor:"#7B2D8B",
-          borderRadius:4,
-          barPercentage:0.72,
-          categoryPercentage:0.75,
-          order:1,
-        },
-        {
-          label:"Site Approvals (SA)",
-          data: sas,
-          backgroundColor:"#E8521A",
-          borderRadius:4,
-          barPercentage:0.72,
-          categoryPercentage:0.75,
-          order:1,
-        },
-        {
-          label:"SA Target",
-          data: targets,
-          backgroundColor:"#00A99D",
-          borderRadius:4,
-          barPercentage:0.72,
-          categoryPercentage:0.75,
-          order:1,
-        },
+        { label:"Prospect", data:prospects, backgroundColor:"#7B2D8B", borderRadius:4, barPercentage:0.72, categoryPercentage:0.75, order:1 },
+        { label:"Site Approvals (SA)", data:sas, backgroundColor:"#E8521A", borderRadius:4, barPercentage:0.72, categoryPercentage:0.75, order:1 },
+        { label:"SA Target", data:targets, backgroundColor:"#00A99D", borderRadius:4, barPercentage:0.72, categoryPercentage:0.75, order:1 },
       ]
     },
     options:{
-      responsive:true,
-      maintainAspectRatio:true,
+      responsive:true, maintainAspectRatio:true,
       plugins:{
         legend:{display:false},
         tooltip:{
-          backgroundColor:"#1f2937",
-          titleColor:"white",
-          bodyColor:"white",
-          padding:12,
-          cornerRadius:6,
+          backgroundColor:"#1f2937", titleColor:"white", bodyColor:"white", padding:12, cornerRadius:6,
           callbacks:{
             title: ctx => [DIVISIONS[ctx[0].dataIndex]+"  ·  "+remForDiv(DIVISIONS[ctx[0].dataIndex]).name],
             label: ctx => {
-              const i   = ctx.dataIndex;
-              const lbl = ctx.dataset.label;
+              const i=ctx.dataIndex, lbl=ctx.dataset.label;
               if(lbl==="Site Approvals (SA)"){
-                const t   = targets[i];
-                const ach = t>0 ? Math.round(sas[i]/t*100) : null;
+                const t=targets[i], ach=t>0?Math.round(sas[i]/t*100):null;
                 return `Site Approvals: ${ctx.raw}${ach!=null?" ("+ach+"% of target)":""}`;
               }
               if(lbl==="SA Target"){
-                const gap = sas[i] - targets[i];
+                const gap=sas[i]-targets[i];
                 return `SA Target: ${ctx.raw}  |  Gap: ${gap>=0?"+":""}${gap}`;
               }
               return `${lbl}: ${ctx.raw}`;
             },
             afterBody: ctx => {
-              const ds = ctx[0].datasetIndex;
+              const ds=ctx[0].datasetIndex;
               if(ds===0||ds===1) return ["▶ Click to view sites"];
               return [];
             }
@@ -543,43 +558,24 @@ function renderCharts() {
         }
       },
       scales:{
-        x:{
-          grid:{display:false},
-          border:{display:false},
-          ticks:{
-            color:"#9ca3af",
-            font:{size:10},
-            maxRotation:0,
-            callback: function(val, idx){ return xLabels[idx]; }
-          }
-        },
-        y:{
-          display:false,       // ← hide y-axis entirely
-          grid:{display:false},
-          border:{display:false},
-          beginAtZero:true
-        }
+        x:{ grid:{display:false}, border:{display:false}, ticks:{color:"#9ca3af", font:{size:10}, maxRotation:0, callback: function(val,idx){ return xLabels[idx]; }} },
+        y:{ display:false, grid:{display:false}, border:{display:false}, beginAtZero:true }
       },
       layout:{padding:{top:10}}
     },
     plugins:[{
       id:"barLabels",
       afterDraw(chart){
-        const cCtx = chart.ctx;
+        const cCtx=chart.ctx;
         cCtx.save();
-        cCtx.font = "bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-        cCtx.textAlign = "center";
-        cCtx.textBaseline = "middle";
-        cCtx.fillStyle = "#FFFFFF";
-        chart.data.datasets.forEach((ds, dsIdx) => {
-          const meta = chart.getDatasetMeta(dsIdx);
-          meta.data.forEach((bar, i) => {
-            const val = ds.data[i];
-            if(!val) return;
-            const barHeight = bar.base - bar.y;
-            if(barHeight < 16) return;
-            const midY = bar.y + barHeight / 2;
-            cCtx.fillText(val, bar.x, midY);
+        cCtx.font="bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
+        cCtx.textAlign="center"; cCtx.textBaseline="middle"; cCtx.fillStyle="#FFFFFF";
+        chart.data.datasets.forEach((ds,dsIdx)=>{
+          const meta=chart.getDatasetMeta(dsIdx);
+          meta.data.forEach((bar,i)=>{
+            const val=ds.data[i]; if(!val)return;
+            const barHeight=bar.base-bar.y; if(barHeight<16)return;
+            cCtx.fillText(val, bar.x, bar.y+barHeight/2);
           });
         });
         cCtx.restore();
@@ -587,17 +583,16 @@ function renderCharts() {
     }]
   });
 
-  ctx.style.cursor = "pointer";
-  ctx.addEventListener("click", function(e){
-    const pts = chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false);
-    if(!pts.length) return;
-    const dsIdx   = pts[0].datasetIndex;
-    const divIdx  = pts[0].index;
-    if(dsIdx === 2) return;
-    const divName = DIVISIONS[divIdx];
-    const status  = dsIdx===0 ? "Prospect" : "SA";
-    const label   = `${divName} · ${dsIdx===0?"Prospects":"Site Approvals"}`;
-    openDrillDown(divName, status, label);
+  ctx.style.cursor="pointer";
+  ctx.addEventListener("click",function(e){
+    const pts=chart.getElementsAtEventForMode(e,"nearest",{intersect:true},false);
+    if(!pts.length)return;
+    const dsIdx=pts[0].datasetIndex, divIdx=pts[0].index;
+    if(dsIdx===2)return;
+    const divName=DIVISIONS[divIdx];
+    const status=dsIdx===0?"Prospect":"SA";
+    const label=`${divName} · ${dsIdx===0?"Prospects":"Site Approvals"}`;
+    openDrillDown(divName,status,label);
   });
 }
 
@@ -610,7 +605,7 @@ function renderModalTable(){
   const riskF  = document.getElementById("modal-filter-risk").value.toLowerCase();
   const statusF= document.getElementById("modal-filter-status").value;
   let sites = MODAL_SITES.filter(s=>{
-    const rl = (s.riskLevel||"").trim().toLowerCase();
+    const rl=(s.riskLevel||"").trim().toLowerCase();
     return (!riskF||rl===riskF) && (!statusF||s.status===statusF);
   });
   if(modalSortCol>=0) sites=[...sites].sort((a,b)=>getSiteRow(a)[modalSortCol].localeCompare(getSiteRow(b)[modalSortCol],undefined,{sensitivity:"base"})*modalSortDir);
