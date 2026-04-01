@@ -887,12 +887,21 @@ iframe { border: none; flex: 1; }
       <div class="tour-stage">
 
         <!-- PANEL 0: DRILL DOWN — live data from /api/pipeline -->
-        <div class="tour-panel active" id="tp-0">
-          <div class="tph"><span class="tph-tag" style="background:rgba(232,82,26,.1);color:var(--plk-orange)">FEATURE 01 · DRILL-DOWN</span><h2 class="tph-title">Click any number → instant site list</h2><p class="tph-desc">This is your real live 2026 Pipeline table — pulled right now from Smartsheet. Every number is clickable. Click any status count and a panel opens with real rest numbers, FZ names, cities, risk levels, and open dates.</p></div>
-          <div style="flex:1;display:flex;flex-direction:column;gap:10px;min-height:0">
-            <div class="mock-browser" style="overflow:auto;flex-shrink:0">
+        <div class="tour-panel active" id="tp-0" style="padding:16px 24px 60px;gap:10px">
+          <!-- Compact single-line header -->
+          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+            <span class="tph-tag" style="background:rgba(232,82,26,.1);color:var(--plk-orange);white-space:nowrap">FEATURE 01 · DRILL-DOWN</span>
+            <div>
+              <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">Click any number → instant site list</div>
+              <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">Real live 2026 Pipeline from Smartsheet — every number opens the actual sites behind it</div>
+            </div>
+          </div>
+          <!-- Side-by-side: table left, site detail right — both fill remaining height -->
+          <div style="flex:1;display:grid;grid-template-columns:1fr 340px;gap:12px;min-height:0">
+            <!-- Left: table -->
+            <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
               <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
-              <div style="padding:8px;min-width:0">
+              <div style="padding:8px;overflow:auto;flex:1;min-height:0">
                 <div id="pdt-status" style="font-family:var(--font-mono);font-size:10px;color:var(--plk-muted);padding:6px 4px;display:flex;align-items:center;gap:8px">
                   <span id="pdt-spinner" style="display:inline-block;width:12px;height:12px;border:2px solid var(--plk-orange);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></span>
                   Loading live data from Smartsheet…
@@ -912,99 +921,167 @@ iframe { border: none; flex: 1; }
                 </table>
               </div>
             </div>
-            <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-height:120px;max-height:200px">
-              <div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted)">SITE DETAIL</div>
+            <!-- Right: site detail — fills full height beside table -->
+            <div style="display:flex;flex-direction:column;gap:6px;min-height:0">
+              <div style="font-family:var(--font-mono);font-size:10px;color:var(--plk-muted);flex-shrink:0">SITE DETAIL</div>
               <div id="drill-modal" style="flex:1;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(232,82,26,.15);border:2px solid var(--plk-orange);display:flex;flex-direction:column;min-height:0">
-                <div id="drill-placeholder" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--plk-muted);font-family:var(--font-body);font-size:13px;gap:6px;padding:20px;text-align:center">
+                <div id="drill-placeholder" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--plk-muted);font-family:var(--font-body);font-size:12px;gap:6px;padding:20px;text-align:center">
                   <div style="font-size:28px">👈</div>
                   <div>Click any number in the table to see the real sites</div>
                 </div>
                 <div id="drill-filled" style="display:none;flex-direction:column;flex:1;min-height:0">
-                  <div style="padding:10px 14px 8px;background:var(--plk-orange);flex-shrink:0;display:flex;align-items:center;gap:8px">
-                    <span style="font-family:var(--font-body);font-size:13px;font-weight:700;color:white" id="drill-title">Sites</span>
-                    <span style="font-family:var(--font-mono);font-size:10px;background:rgba(255,255,255,.25);color:white;padding:2px 8px;border-radius:50px" id="drill-badge">0 sites</span>
-                    <span onclick="closeDrill()" style="margin-left:auto;cursor:pointer;color:rgba(255,255,255,.8);font-size:14px">✕</span>
+                  <div style="padding:8px 12px 6px;background:var(--plk-orange);flex-shrink:0;display:flex;align-items:center;gap:8px">
+                    <span style="font-family:var(--font-body);font-size:12px;font-weight:700;color:white" id="drill-title">Sites</span>
+                    <span style="font-family:var(--font-mono);font-size:9px;background:rgba(255,255,255,.25);color:white;padding:1px 6px;border-radius:50px" id="drill-badge">0 sites</span>
+                    <span onclick="closeDrill()" style="margin-left:auto;cursor:pointer;color:rgba(255,255,255,.8);font-size:13px">✕</span>
                   </div>
-                  <div style="display:grid;grid-template-columns:.6fr 1.2fr 1fr .35fr .75fr 1fr;gap:4px;padding:5px 10px;background:#f9fafb;flex-shrink:0;font-family:var(--font-mono);font-size:9px;color:var(--plk-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #eee">
+                  <div style="display:grid;grid-template-columns:.6fr 1.1fr .9fr .3fr .7fr .9fr;gap:3px;padding:4px 8px;background:#f9fafb;flex-shrink:0;font-family:var(--font-mono);font-size:8.5px;color:var(--plk-muted);text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #eee">
                     <span>Rest #</span><span>FZ</span><span>City</span><span>ST</span><span>Risk</span><span>PLK Open Date</span>
                   </div>
-                  <div id="drill-rows" style="overflow-y:auto;flex:1;padding:0 10px 8px"></div>
+                  <div id="drill-rows" style="overflow-y:auto;flex:1;padding:0 8px 6px"></div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="tour-cta-row" style="margin-top:8px"><span class="tour-hint-txt">👆 Click any <strong>number</strong> — real live sites from your Smartsheet</span><button class="tour-next-btn" onclick="tourGo(1)">Next feature →</button></div>
+          <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 Click any <strong>number</strong> — real live sites from your Smartsheet</span><button class="tour-next-btn" onclick="tourGo(1)">Next feature →</button></div>
         </div>
-        <!-- PANEL 1: RISK MIX — all 6 divisions, result panel outside browser -->
-        <div class="tour-panel" id="tp-1">
-          <div class="tph"><span class="tph-tag" style="background:rgba(109,40,217,.1);color:#6D28D9">FEATURE 02 · RISK MIX</span><h2 class="tph-title">Color-coded risk — filter with one click</h2><p class="tph-desc">Every division row has a segmented color bar. Click any segment or pill badge → a results panel opens showing every site in that bucket with full FZ detail. Works across all 6 divisions.</p></div>
+        <!-- PANEL 1: RISK MIX — live iframe of dev-execution -->
+        <div class="tour-panel" id="tp-1" style="padding:16px 24px 60px;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+            <span class="tph-tag" style="background:rgba(109,40,217,.1);color:#6D28D9;white-space:nowrap">FEATURE 02 · RISK MIX</span>
+            <div>
+              <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">Color-coded risk — click to filter</div>
+              <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">On the 2026 Pipeline table, click any colored risk segment or pill badge to instantly filter to those sites</div>
+            </div>
+            <a href="https://plk-dev-dash.vercel.app/development-execution" target="_blank" style="margin-left:auto;flex-shrink:0;background:var(--plk-dark);color:white;border-radius:7px;padding:6px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">↗ Open Full</a>
+          </div>
           <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0">
-            <div class="mock-browser" style="overflow:auto">
+            <!-- Left: live iframe -->
+            <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
               <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
-              <div style="padding:10px 12px;font-size:11px">
-                <div class="rm-thead" style="font-size:10px;margin-bottom:4px"><span>Division</span><span>Bud</span><span>LE</span><span style="flex:2.5">Risk Mix</span></div>
-                <div class="rm-row" style="font-size:11px"><span>Northeast</span><span>28</span><span>24</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:54%" onclick="rfilt('NE','Low','FZ-00011 · Boston MA','FZ-00045 · Providence RI','FZ-00082 · Hartford CT','FZ-00017 · Worcester MA','FZ-00061 · Springfield MA','FZ-00074 · Bridgeport CT','FZ-00088 · New Haven CT')"></div><div class="rms rms-med" style="width:29%" onclick="rfilt('NE','Med','FZ-00033 · Albany NY','FZ-00071 · Syracuse NY','FZ-00055 · Rochester NY','FZ-00092 · Buffalo NY')"></div><div class="rms rms-high" style="width:17%" onclick="rfilt('NE','High','FZ-00099 · Burlington VT','FZ-00104 · Portland ME','FZ-00112 · Manchester NH')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('NE','Low','FZ-00011 · Boston MA','FZ-00045 · Providence RI','FZ-00082 · Hartford CT','FZ-00017 · Worcester MA','FZ-00061 · Springfield MA','FZ-00074 · Bridgeport CT','FZ-00088 · New Haven CT')">Low 13</span><span class="rmp rmp-med" onclick="rfilt('NE','Med','FZ-00033 · Albany NY','FZ-00071 · Syracuse NY','FZ-00055 · Rochester NY','FZ-00092 · Buffalo NY')">Med 7</span><span class="rmp rmp-high" onclick="rfilt('NE','High','FZ-00099 · Burlington VT','FZ-00104 · Portland ME','FZ-00112 · Manchester NH')">High 4</span></div></div></div>
-                <div class="rm-row" style="font-size:11px"><span>Southeast</span><span>34</span><span>30</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:63%" onclick="rfilt('SE','Low','FZ-00124 · Atlanta GA','FZ-00231 · Miami FL','FZ-00516 · Tampa FL','FZ-00189 · Orlando FL','FZ-00267 · Jacksonville FL','FZ-00312 · Charlotte NC','FZ-00341 · Raleigh NC','FZ-00378 · Richmond VA','FZ-00421 · Virginia Beach VA','FZ-00455 · Columbia SC','FZ-00487 · Greenville SC','FZ-00501 · Augusta GA')"></div><div class="rms rms-med" style="width:23%" onclick="rfilt('SE','Med','FZ-00178 · Savannah GA','FZ-00204 · Pensacola FL','FZ-00239 · Mobile AL','FZ-00273 · Montgomery AL','FZ-00298 · Knoxville TN','FZ-00333 · Chattanooga TN','FZ-00367 · Lexington KY')"></div><div class="rms rms-high" style="width:14%" onclick="rfilt('SE','High','FZ-00412 · Nashville TN','FZ-00446 · Memphis TN','FZ-00479 · Louisville KY','FZ-00512 · New Orleans LA')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('SE','Low','FZ-00124 · Atlanta GA','FZ-00231 · Miami FL','FZ-00516 · Tampa FL','FZ-00189 · Orlando FL','FZ-00267 · Jacksonville FL','FZ-00312 · Charlotte NC','FZ-00341 · Raleigh NC','FZ-00378 · Richmond VA','FZ-00421 · Virginia Beach VA','FZ-00455 · Columbia SC','FZ-00487 · Greenville SC','FZ-00501 · Augusta GA')">Low 19</span><span class="rmp rmp-med" onclick="rfilt('SE','Med','FZ-00178 · Savannah GA','FZ-00204 · Pensacola FL','FZ-00239 · Mobile AL','FZ-00273 · Montgomery AL','FZ-00298 · Knoxville TN','FZ-00333 · Chattanooga TN','FZ-00367 · Lexington KY')">Med 7</span><span class="rmp rmp-high" onclick="rfilt('SE','High','FZ-00412 · Nashville TN','FZ-00446 · Memphis TN','FZ-00479 · Louisville KY','FZ-00512 · New Orleans LA')">High 4</span></div></div></div>
-                <div class="rm-row" style="font-size:11px"><span>Central</span><span>22</span><span>18</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:44%" onclick="rfilt('CTR','Low','FZ-00301 · Chicago IL','FZ-00342 · St. Louis MO','FZ-00383 · Indianapolis IN','FZ-00414 · Columbus OH','FZ-00449 · Cleveland OH','FZ-00467 · Cincinnati OH','FZ-00488 · Detroit MI','FZ-00523 · Milwaukee WI')"></div><div class="rms rms-med" style="width:39%" onclick="rfilt('CTR','Med','FZ-00388 · Kansas City MO','FZ-00371 · Minneapolis MN','FZ-00399 · St. Paul MN','FZ-00419 · Des Moines IA','FZ-00437 · Omaha NE','FZ-00456 · Lincoln NE','FZ-00474 · Wichita KS')"></div><div class="rms rms-high" style="width:17%" onclick="rfilt('CTR','High','FZ-00411 · Grand Rapids MI','FZ-00429 · Lansing MI','FZ-00461 · Akron OH')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('CTR','Low','FZ-00301 · Chicago IL','FZ-00342 · St. Louis MO','FZ-00383 · Indianapolis IN','FZ-00414 · Columbus OH','FZ-00449 · Cleveland OH','FZ-00467 · Cincinnati OH','FZ-00488 · Detroit MI','FZ-00523 · Milwaukee WI')">Low 8</span><span class="rmp rmp-med" onclick="rfilt('CTR','Med','FZ-00388 · Kansas City MO','FZ-00371 · Minneapolis MN','FZ-00399 · St. Paul MN','FZ-00419 · Des Moines IA','FZ-00437 · Omaha NE','FZ-00456 · Lincoln NE','FZ-00474 · Wichita KS')">Med 7</span><span class="rmp rmp-high" onclick="rfilt('CTR','High','FZ-00411 · Grand Rapids MI','FZ-00429 · Lansing MI','FZ-00461 · Akron OH')">High 3</span></div></div></div>
-                <div class="rm-row" style="font-size:11px"><span>West</span><span>18</span><span>15</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:60%" onclick="rfilt('WEST','Low','FZ-00601 · Los Angeles CA','FZ-00634 · San Diego CA','FZ-00667 · Phoenix AZ','FZ-00698 · Tucson AZ','FZ-00712 · Las Vegas NV','FZ-00745 · Henderson NV','FZ-00778 · Reno NV','FZ-00801 · Portland OR','FZ-00823 · Seattle WA')"></div><div class="rms rms-med" style="width:27%" onclick="rfilt('WEST','Med','FZ-00614 · San Jose CA','FZ-00648 · Sacramento CA','FZ-00681 · Fresno CA','FZ-00714 · Bakersfield CA')"></div><div class="rms rms-high" style="width:13%" onclick="rfilt('WEST','High','FZ-00699 · Salt Lake City UT','FZ-00733 · Denver CO')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('WEST','Low','FZ-00601 · Los Angeles CA','FZ-00634 · San Diego CA','FZ-00667 · Phoenix AZ','FZ-00698 · Tucson AZ','FZ-00712 · Las Vegas NV','FZ-00745 · Henderson NV','FZ-00778 · Reno NV','FZ-00801 · Portland OR','FZ-00823 · Seattle WA')">Low 9</span><span class="rmp rmp-med" onclick="rfilt('WEST','Med','FZ-00614 · San Jose CA','FZ-00648 · Sacramento CA','FZ-00681 · Fresno CA','FZ-00714 · Bakersfield CA')">Med 4</span><span class="rmp rmp-high" onclick="rfilt('WEST','High','FZ-00699 · Salt Lake City UT','FZ-00733 · Denver CO')">High 2</span></div></div></div>
-                <div class="rm-row" style="font-size:11px"><span>Canada</span><span>10</span><span>8</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:50%" onclick="rfilt('CAN','Low','FZ-00901 · Toronto ON','FZ-00923 · Mississauga ON','FZ-00945 · Brampton ON','FZ-00967 · Hamilton ON')"></div><div class="rms rms-med" style="width:37%" onclick="rfilt('CAN','Med','FZ-00912 · Ottawa ON','FZ-00934 · Montreal QC','FZ-00956 · Quebec City QC')"></div><div class="rms rms-high" style="width:13%" onclick="rfilt('CAN','High','FZ-00978 · Calgary AB')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('CAN','Low','FZ-00901 · Toronto ON','FZ-00923 · Mississauga ON','FZ-00945 · Brampton ON','FZ-00967 · Hamilton ON')">Low 4</span><span class="rmp rmp-med" onclick="rfilt('CAN','Med','FZ-00912 · Ottawa ON','FZ-00934 · Montreal QC','FZ-00956 · Quebec City QC')">Med 3</span><span class="rmp rmp-high" onclick="rfilt('CAN','High','FZ-00978 · Calgary AB')">High 1</span></div></div></div>
-                <div class="rm-row" style="font-size:11px"><span>Non-Trad</span><span>6</span><span>5</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:60%" onclick="rfilt('NT','Low','FZ-00NT1 · JFK Airport NY','FZ-00NT2 · LAX Airport CA','FZ-00NT3 · O\u2019Hare Airport IL')"></div><div class="rms rms-med" style="width:40%" onclick="rfilt('NT','Med','FZ-00NT4 · Walmart Supercenter TX','FZ-00NT5 · University of Florida FL')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('NT','Low','FZ-00NT1 · JFK Airport NY','FZ-00NT2 · LAX Airport CA','FZ-00NT3 · O\u2019Hare Airport IL')">Low 3</span><span class="rmp rmp-med" onclick="rfilt('NT','Med','FZ-00NT4 · Walmart Supercenter TX','FZ-00NT5 · University of Florida FL')">Med 2</span></div></div></div>
+              <div style="flex:1;position:relative;min-height:0">
+                <iframe src="https://plk-dev-dash.vercel.app/development-execution" style="width:100%;height:100%;border:none;display:block" loading="lazy" title="Dev Execution — Risk Mix"></iframe>
               </div>
             </div>
-            <!-- Result panel OUTSIDE browser so it doesn't get clipped -->
-            <div style="display:flex;flex-direction:column;gap:10px;min-height:0">
-              <div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted);padding:4px 0">FILTER RESULT PANEL</div>
-              <div id="rm-result" style="flex:1;background:white;border-radius:12px;border:2px solid var(--plk-gold);padding:14px 16px;overflow-y:auto;min-height:0;box-shadow:0 4px 16px rgba(245,166,35,.15)">
-                <div style="font-family:var(--font-body);font-size:13px;color:var(--plk-muted);text-align:center;margin-top:30px">👈 Click any risk segment<br>or pill badge to see sites</div>
+            <!-- Right: callout explaining what to do -->
+            <div style="display:flex;flex-direction:column;gap:12px;justify-content:center;padding:8px 4px">
+              <div style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--plk-dark)">How it works</div>
+              <div style="background:white;border-radius:10px;padding:14px 16px;border-left:4px solid #059669;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+                <div style="font-family:var(--font-mono);font-size:9px;color:#059669;letter-spacing:.08em;margin-bottom:4px">LOW RISK</div>
+                <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-slate)">Click the <span style="display:inline-block;background:#D1FAE5;color:#065F46;border-radius:50px;padding:1px 7px;font-size:10px;font-weight:700">Low</span> segment or pill on any division — instantly see every low-risk site with FZ, city, status, and open date.</div>
               </div>
-            </div>
-          </div>
-          <div class="tour-cta-row" style="margin-top:8px"><span class="tour-hint-txt">👆 Click any <strong>color segment or pill</strong> on the left</span><button class="tour-next-btn" onclick="tourGo(2)">Next feature →</button></div>
-        </div>
-
-        <!-- PANEL 2: WATERFALL -->
-        <div class="tour-panel" id="tp-2">
-          <div class="tph"><span class="tph-tag" style="background:rgba(13,148,136,.1);color:#0D9488">FEATURE 03 · WATERFALL</span><h2 class="tph-title">Budget to LE — the full openings story</h2><p class="tph-desc">The waterfall chart shows every step from FY Budget to current LE — Upside adds, R&O risks, and the Gap to Budget. One chart tells the whole story at a glance.</p></div>
-          <div class="mock-browser">
-            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
-            <div class="mock-body wf-mock-body">
-              <div class="wf-label-row">2026 US&amp;C Openings — FY Budget → LE</div>
-              <div class="wf-stage" id="wf-stage">
-                <div class="wf-col-wrap" id="wfc-0"><div class="wf-spacer-top" style="height:10%"></div><div class="wf-seg wf-seg-base" style="height:0%" id="wfs-0"><div class="wf-seg-val">130</div></div><div class="wf-col-lbl">FY Budget</div></div>
-                <div class="wf-col-wrap" id="wfc-1"><div class="wf-spacer-top" style="height:10%"></div><div class="wf-seg wf-seg-up" style="height:0%" id="wfs-1"><div class="wf-seg-val">+18</div></div><div class="wf-col-lbl">+ Upside</div></div>
-                <div class="wf-col-wrap" id="wfc-2"><div class="wf-spacer-top" style="height:20.5%"></div><div class="wf-seg wf-seg-neg" style="height:0%" id="wfs-2"><div class="wf-seg-val">−29</div></div><div class="wf-col-lbl">R&amp;O Risk</div></div>
-                <div class="wf-col-wrap" id="wfc-3"><div class="wf-spacer-top" style="height:29%"></div><div class="wf-seg wf-seg-neg" style="height:0%" id="wfs-3"><div class="wf-seg-val">−20</div></div><div class="wf-col-lbl">Gap to Bud.</div></div>
-                <div class="wf-col-wrap" id="wfc-4"><div class="wf-spacer-top" style="height:37%"></div><div class="wf-seg wf-seg-le" style="height:0%" id="wfs-4"><div class="wf-seg-val">99</div></div><div class="wf-col-lbl">LE</div></div>
+              <div style="background:white;border-radius:10px;padding:14px 16px;border-left:4px solid #F59E0B;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+                <div style="font-family:var(--font-mono);font-size:9px;color:#D97706;letter-spacing:.08em;margin-bottom:4px">MEDIUM RISK</div>
+                <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-slate)">Click <span style="display:inline-block;background:#FEF3C7;color:#D97706;border-radius:50px;padding:1px 7px;font-size:10px;font-weight:700">Med</span> to filter to sites that need attention — identify which divisions carry the most medium-risk exposure.</div>
               </div>
-              <button class="wf-play-btn" onclick="playWaterfall(this)" id="wf-play-btn">▶ Play Animation</button>
+              <div style="background:white;border-radius:10px;padding:14px 16px;border-left:4px solid #EF4444;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+                <div style="font-family:var(--font-mono);font-size:9px;color:#DC2626;letter-spacing:.08em;margin-bottom:4px">HIGH RISK</div>
+                <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-slate)">Click <span style="display:inline-block;background:#FEE2E2;color:#DC2626;border-radius:50px;padding:1px 7px;font-size:10px;font-weight:700">High</span> to immediately surface your highest-risk pipeline sites — the ones that need action now.</div>
+              </div>
+              <div style="background:rgba(232,82,26,.06);border-radius:8px;padding:10px 12px;border-left:3px solid var(--plk-orange)">
+                <div style="font-family:var(--font-body);font-size:11.5px;color:var(--plk-slate)">🔑 <strong>No menus, no filters panel</strong> — one click on the color bar instantly filters the entire table. Click it again to clear.</div>
+              </div>
             </div>
           </div>
-          <div class="tour-cta-row"><span class="tour-hint-txt">👆 Press <strong>Play Animation</strong> to watch the waterfall build step by step</span><button class="tour-next-btn" onclick="tourGo(3)">Next feature →</button></div>
+          <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 Click any <strong>colored segment or pill</strong> in the live dashboard on the left</span><button class="tour-next-btn" onclick="tourGo(2)">Next feature →</button></div>
         </div>
 
-        <!-- PANEL 3: EXPORT -->
-        <div class="tour-panel" id="tp-3">
-          <div class="tph"><span class="tph-tag" style="background:rgba(22,163,74,.1);color:#16A34A">FEATURE 04 · EXPORT</span><h2 class="tph-title">One click → formatted Excel file downloads</h2><p class="tph-desc">Every chart has a download button. Whatever data is currently on screen — filtered, sorted, drilled-down — gets exported instantly as a formatted .xlsx. No copy-paste ever.</p></div>
-          <div class="mock-browser">
-            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/dashboard</div></div>
-            <div class="mock-body exp-mock-body" style="position:relative">
-              <div class="exp-chart-header">Avg EBITDA by Opening Year &amp; Division <button class="exp-btn" id="exp-btn" onclick="doExport()">⬇ Export to Excel</button></div>
-              <div class="exp-bars-area">
-                <div class="exp-grp"><div class="exp-b" style="height:55%;background:var(--plk-orange)"></div><div class="exp-b" style="height:70%;background:var(--plk-gold)"></div><div class="exp-b" style="height:48%;background:var(--plk-red)"></div><div class="exp-gl">2022</div></div>
-                <div class="exp-grp"><div class="exp-b" style="height:66%;background:var(--plk-orange)"></div><div class="exp-b" style="height:79%;background:var(--plk-gold)"></div><div class="exp-b" style="height:60%;background:var(--plk-red)"></div><div class="exp-gl">2023</div></div>
-                <div class="exp-grp"><div class="exp-b" style="height:78%;background:var(--plk-orange)"></div><div class="exp-b" style="height:87%;background:var(--plk-gold)"></div><div class="exp-b" style="height:73%;background:var(--plk-red)"></div><div class="exp-gl">2024</div></div>
-                <div class="exp-grp"><div class="exp-b" style="height:84%;background:var(--plk-orange)"></div><div class="exp-b" style="height:92%;background:var(--plk-gold)"></div><div class="exp-b" style="height:77%;background:var(--plk-red)"></div><div class="exp-gl">2025</div></div>
+        <!-- PANEL 2: WATERFALL — live iframe of dev-execution US&C chart -->
+        <div class="tour-panel" id="tp-2" style="padding:16px 24px 60px;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+            <span class="tph-tag" style="background:rgba(13,148,136,.1);color:#0D9488;white-space:nowrap">FEATURE 03 · WATERFALL</span>
+            <div>
+              <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">US&amp;C Consolidated Waterfall — live</div>
+              <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">FY Budget → Prospect → SA → PC → Permitting → UC → Open → Upside → Gap to Budget — all in one chart</div>
+            </div>
+            <a href="https://plk-dev-dash.vercel.app/development-execution" target="_blank" style="margin-left:auto;flex-shrink:0;background:var(--plk-dark);color:white;border-radius:7px;padding:6px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">↗ Open Full</a>
+          </div>
+          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0">
+            <!-- Left: live iframe -->
+            <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
+              <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
+              <div style="flex:1;position:relative;min-height:0">
+                <iframe src="https://plk-dev-dash.vercel.app/development-execution" style="width:100%;height:100%;border:none;display:block" loading="lazy" title="Dev Execution — Waterfall"></iframe>
               </div>
-              <div class="exp-overlay" id="exp-overlay" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,.97);border-radius:0 0 12px 12px;z-index:10;align-items:center;justify-content:center">
-                <div class="exp-anim">
-                  <div class="exp-icon" id="exp-icon">📊</div>
-                  <div class="exp-track"><div class="exp-fill" id="exp-fill"></div></div>
-                  <div class="exp-msg" id="exp-msg">Preparing data…</div>
+            </div>
+            <!-- Right: legend explaining each bar -->
+            <div style="display:flex;flex-direction:column;gap:10px;justify-content:center;padding:8px 4px">
+              <div style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--plk-dark)">Reading the waterfall</div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+                  <div style="width:14px;height:28px;border-radius:3px;background:var(--plk-orange);flex-shrink:0"></div>
+                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Pipeline Statuses</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Prospect → SA → PC → Permitting → UC → Open, stacking cumulatively to build the FY BU</div></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+                  <div style="width:14px;height:28px;border-radius:3px;background:#7B2D8B;flex-shrink:0"></div>
+                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">FY BU</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Bottom-up total — sum of all 2026 pipeline sites (low + medium + high risk)</div></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+                  <div style="width:14px;height:28px;border-radius:3px;background:var(--plk-orange);flex-shrink:0"></div>
+                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">+ Upside</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Upside-risk sites stacked on top of FY BU — potential adds above committed pipeline</div></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+                  <div style="width:14px;height:28px;border-radius:3px;background:#C1272D;flex-shrink:0"></div>
+                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Gap to Budget</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Shortfall between FY BU + Upside vs. the opening budget target</div></div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
+                  <div style="width:14px;height:28px;border-radius:3px;background:#00A99D;flex-shrink:0"></div>
+                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Budget</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">The 2026 opening budget target — standalone reference bar</div></div>
                 </div>
               </div>
+              <div style="background:rgba(13,148,136,.06);border-radius:8px;padding:10px 12px;border-left:3px solid #0D9488">
+                <div style="font-family:var(--font-body);font-size:11.5px;color:var(--plk-slate)">💡 <strong>Click any bar</strong> on the waterfall to drill down into the sites behind that number.</div>
+              </div>
             </div>
           </div>
-          <div class="tour-cta-row"><span class="tour-hint-txt">👆 Click <strong>⬇ Export to Excel</strong> above</span><button class="tour-next-btn" onclick="tourGo(4)">Next feature →</button></div>
+          <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 Scroll down in the live dashboard to find the <strong>US&amp;C Consolidated</strong> waterfall</span><button class="tour-next-btn" onclick="tourGo(3)">Next feature →</button></div>
+        </div>
+
+        <!-- PANEL 3: EXPORT — live iframe of dashboard.html Division tab -->
+        <div class="tour-panel" id="tp-3" style="padding:16px 24px 60px;gap:10px">
+          <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
+            <span class="tph-tag" style="background:rgba(22,163,74,.1);color:#16A34A;white-space:nowrap">FEATURE 04 · EXPORT</span>
+            <div>
+              <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">Every chart exports to Excel in one click</div>
+              <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">NRO Performance Dashboard — Division tab: 4 charts, each with its own Export button that downloads the data instantly</div>
+            </div>
+            <a href="https://plk-dev-dash.vercel.app/dashboard" target="_blank" style="margin-left:auto;flex-shrink:0;background:var(--plk-dark);color:white;border-radius:7px;padding:6px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">↗ Open Full</a>
+          </div>
+          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0">
+            <!-- Left: live iframe of NRO dashboard -->
+            <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
+              <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/dashboard — Division tab</div></div>
+              <div style="flex:1;position:relative;min-height:0">
+                <iframe src="https://plk-dev-dash.vercel.app/dashboard" style="width:100%;height:100%;border:none;display:block" loading="lazy" title="NRO Dashboard — Division Tab"></iframe>
+              </div>
+            </div>
+            <!-- Right: export feature callouts -->
+            <div style="display:flex;flex-direction:column;gap:10px;justify-content:center;padding:8px 4px">
+              <div style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--plk-dark)">What gets exported</div>
+              <div style="display:flex;flex-direction:column;gap:7px">
+                <div style="background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:10px">
+                  <span style="font-size:18px;flex-shrink:0">📊</span>
+                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Opening Count by Year &amp; Division</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Every year × division combination with counts — downloads as a formatted Excel table</div></div>
+                </div>
+                <div style="background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:10px">
+                  <span style="font-size:18px;flex-shrink:0">💵</span>
+                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Avg ARS by Year &amp; Division</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Average Annual Restaurant Sales per opening for every year and division combination</div></div>
+                </div>
+                <div style="background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:10px">
+                  <span style="font-size:18px;flex-shrink:0">📈</span>
+                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Avg EBITDA $ by Year &amp; Division</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Average EBITDA dollar per opening — breakout by year and division, ready for reporting</div></div>
+                </div>
+                <div style="background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:10px">
+                  <span style="font-size:18px;flex-shrink:0">🗺️</span>
+                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Division Mix (all years)</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Opening count per division — exports with whatever filters are currently active</div></div>
+                </div>
+              </div>
+              <div style="background:rgba(22,163,74,.06);border-radius:8px;padding:10px 12px;border-left:3px solid #16A34A">
+                <div style="font-family:var(--font-body);font-size:11.5px;color:var(--plk-slate)">💡 Click the <span style="background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:5px;padding:1px 8px;font-size:10px;font-weight:700">Export</span> button on any chart — the current filtered view downloads instantly as a clean .xlsx file.</div>
+              </div>
+            </div>
+          </div>
+          <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 In the live dashboard, click <strong>Division tab</strong> then hit <strong>Export</strong> on any chart</span><button class="tour-next-btn" onclick="tourGo(4)">Next feature →</button></div>
         </div>
 
         <!-- PANEL 4: LIVE -->
