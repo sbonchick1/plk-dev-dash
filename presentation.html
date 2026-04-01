@@ -568,23 +568,23 @@ iframe { border: none; flex: 1; }
 .live-note { background: rgba(232,82,26,.06); border-left: 3px solid var(--plk-orange); border-radius: 6px; padding: 10px 12px; font-family: var(--font-body); font-size: 12px; color: var(--plk-slate); line-height: 1.5; }
 
 /* ── Pipeline demo table ── */
-.pdt-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:11px;white-space:nowrap;}
-.pdt-table thead th{background:var(--plk-smoke);padding:5px 8px;text-align:center;font-size:9px;color:var(--plk-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #ddd;font-weight:600;}
+.pdt-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:10px;white-space:nowrap;}
+.pdt-table thead th{background:var(--plk-smoke);padding:4px 7px;text-align:center;font-size:8.5px;color:var(--plk-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #ddd;font-weight:600;}
 .pdt-table thead th.th-left{text-align:left;}
 .pdt-table tbody tr{border-bottom:1px solid var(--plk-smoke);transition:background .12s;}
 .pdt-table tbody tr:hover{background:rgba(232,82,26,.04);}
 .pdt-total{background:rgba(232,82,26,.06)!important;border-top:2px solid var(--plk-orange)!important;border-bottom:2px solid var(--plk-orange)!important;}
-.pdt-table td{padding:5px 8px;text-align:center;color:var(--plk-dark);}
+.pdt-table td{padding:4px 7px;text-align:center;color:var(--plk-dark);}
 .pdt-table td.td-left{text-align:left;}
 .pdt-bold{font-weight:700;}
 .pdt-ddl{font-size:9px;color:var(--plk-muted);}
 .pdt-gap{font-weight:700;}
-.pdt-badge{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;white-space:nowrap;}
-.pdt-pill{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:800;color:white;}
+.pdt-badge{font-size:8.5px;padding:1px 5px;border-radius:4px;font-weight:700;white-space:nowrap;}
+.pdt-pill{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;font-size:8px;font-weight:800;color:white;}
 .pdt-click{cursor:pointer;color:var(--plk-orange);text-decoration:underline;text-decoration-style:dotted;transition:all .15s;}
 .pdt-click:hover{color:var(--plk-red);background:rgba(232,82,26,.1);border-radius:3px;}
 /* drill-down row items */
-.ddr{display:grid;grid-template-columns:.65fr 1.1fr .95fr .3fr .7fr .9fr;gap:4px;padding:6px 10px;border-bottom:1px solid var(--plk-smoke);font-family:var(--font-mono);font-size:10px;color:var(--plk-dark);align-items:center;}
+.ddr{display:grid;grid-template-columns:.65fr 1.1fr .95fr .3fr .7fr .9fr;gap:4px;padding:6px 10px;border-bottom:1px solid var(--plk-smoke);font-family:var(--font-mono);font-size:9.5px;color:var(--plk-dark);align-items:center;}
 .ddr:hover{background:rgba(232,82,26,.04);}
 .ddr-rp{font-size:9px;padding:2px 6px;border-radius:50px;font-weight:700;white-space:nowrap;}
 
@@ -897,11 +897,11 @@ iframe { border: none; flex: 1; }
             </div>
           </div>
           <!-- Side-by-side: table left, site detail right — both fill remaining height -->
-          <div style="flex:1;display:grid;grid-template-columns:1fr 340px;gap:12px;min-height:0">
+          <div style="flex:1;display:grid;grid-template-columns:3fr 200px;gap:12px;min-height:0">
             <!-- Left: table -->
             <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
               <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
-              <div style="padding:8px;overflow:auto;flex:1;min-height:0">
+              <div style="padding:4px 6px;overflow:auto;flex:1;min-height:0">
                 <div id="pdt-status" style="font-family:var(--font-mono);font-size:10px;color:var(--plk-muted);padding:6px 4px;display:flex;align-items:center;gap:8px">
                   <span id="pdt-spinner" style="display:inline-block;width:12px;height:12px;border:2px solid var(--plk-orange);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></span>
                   Loading live data from Smartsheet…
@@ -923,7 +923,7 @@ iframe { border: none; flex: 1; }
             </div>
             <!-- Right: site detail — fills full height beside table -->
             <div style="display:flex;flex-direction:column;gap:6px;min-height:0">
-              <div style="font-family:var(--font-mono);font-size:10px;color:var(--plk-muted);flex-shrink:0">SITE DETAIL</div>
+              <div style="font-family:var(--font-mono);font-size:9px;color:var(--plk-muted);flex-shrink:0;letter-spacing:.08em">SITE DETAIL</div>
               <div id="drill-modal" style="flex:1;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(232,82,26,.15);border:2px solid var(--plk-orange);display:flex;flex-direction:column;min-height:0">
                 <div id="drill-placeholder" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--plk-muted);font-family:var(--font-body);font-size:12px;gap:6px;padding:20px;text-align:center">
                   <div style="font-size:28px">👈</div>
@@ -955,7 +955,7 @@ iframe { border: none; flex: 1; }
             </div>
             <a href="https://plk-dev-dash.vercel.app/development-execution" target="_blank" style="margin-left:auto;flex-shrink:0;background:var(--plk-dark);color:white;border-radius:7px;padding:6px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">↗ Open Full</a>
           </div>
-          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0">
+          <div style="flex:1;display:grid;grid-template-columns:3fr 2fr;gap:12px;min-height:0">
             <!-- Left: live iframe -->
             <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
               <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
@@ -968,22 +968,22 @@ iframe { border: none; flex: 1; }
               </div>
             </div>
             <!-- Right: callout explaining what to do -->
-            <div style="display:flex;flex-direction:column;gap:12px;justify-content:center;padding:8px 4px">
-              <div style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--plk-dark)">How it works</div>
-              <div style="background:white;border-radius:10px;padding:14px 16px;border-left:4px solid #059669;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+            <div style="display:flex;flex-direction:column;gap:6px;justify-content:flex-start;padding:6px 2px;overflow-y:auto">
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--plk-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">HOW IT WORKS</div>
+              <div style="background:white;border-radius:10px;padding:8px 10px;border-left:3px solid #059669;box-shadow:0 2px 8px rgba(0,0,0,.06)">
                 <div style="font-family:var(--font-mono);font-size:9px;color:#059669;letter-spacing:.08em;margin-bottom:4px">LOW RISK</div>
-                <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-slate)">Click the <span style="display:inline-block;background:#D1FAE5;color:#065F46;border-radius:50px;padding:1px 7px;font-size:10px;font-weight:700">Low</span> segment or pill on any division — instantly see every low-risk site with FZ, city, status, and open date.</div>
+                <div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-slate)">Click the <span style="display:inline-block;background:#D1FAE5;color:#065F46;border-radius:50px;padding:1px 7px;font-size:10px;font-weight:700">Low</span> segment or pill on any division — instantly see every low-risk site with FZ, city, status, and open date.</div>
               </div>
-              <div style="background:white;border-radius:10px;padding:14px 16px;border-left:4px solid #F59E0B;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+              <div style="background:white;border-radius:10px;padding:8px 10px;border-left:3px solid #F59E0B;box-shadow:0 2px 8px rgba(0,0,0,.06)">
                 <div style="font-family:var(--font-mono);font-size:9px;color:#D97706;letter-spacing:.08em;margin-bottom:4px">MEDIUM RISK</div>
-                <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-slate)">Click <span style="display:inline-block;background:#FEF3C7;color:#D97706;border-radius:50px;padding:1px 7px;font-size:10px;font-weight:700">Med</span> to filter to sites that need attention — identify which divisions carry the most medium-risk exposure.</div>
+                <div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-slate)">Click <span style="display:inline-block;background:#FEF3C7;color:#D97706;border-radius:50px;padding:1px 7px;font-size:10px;font-weight:700">Med</span> to filter to sites that need attention — identify which divisions carry the most medium-risk exposure.</div>
               </div>
-              <div style="background:white;border-radius:10px;padding:14px 16px;border-left:4px solid #EF4444;box-shadow:0 2px 8px rgba(0,0,0,.06)">
+              <div style="background:white;border-radius:10px;padding:8px 10px;border-left:3px solid #EF4444;box-shadow:0 2px 8px rgba(0,0,0,.06)">
                 <div style="font-family:var(--font-mono);font-size:9px;color:#DC2626;letter-spacing:.08em;margin-bottom:4px">HIGH RISK</div>
-                <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-slate)">Click <span style="display:inline-block;background:#FEE2E2;color:#DC2626;border-radius:50px;padding:1px 7px;font-size:10px;font-weight:700">High</span> to immediately surface your highest-risk pipeline sites — the ones that need action now.</div>
+                <div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-slate)">Click <span style="display:inline-block;background:#FEE2E2;color:#DC2626;border-radius:50px;padding:1px 7px;font-size:10px;font-weight:700">High</span> to immediately surface your highest-risk pipeline sites — the ones that need action now.</div>
               </div>
-              <div style="background:rgba(232,82,26,.06);border-radius:8px;padding:10px 12px;border-left:3px solid var(--plk-orange)">
-                <div style="font-family:var(--font-body);font-size:11.5px;color:var(--plk-slate)">🔑 <strong>No menus, no filters panel</strong> — one click on the color bar instantly filters the entire table. Click it again to clear.</div>
+              <div style="background:rgba(232,82,26,.06);border-radius:8px;padding:6px 10px;border-left:3px solid var(--plk-orange)">
+                <div style="font-family:var(--font-body);font-size:10px;color:var(--plk-slate)">🔑 <strong>No menus, no filters panel</strong> — one click on the color bar instantly filters the entire table. Click it again to clear.</div>
               </div>
             </div>
           </div>
@@ -1000,7 +1000,7 @@ iframe { border: none; flex: 1; }
             </div>
             <a href="https://plk-dev-dash.vercel.app/development-execution" target="_blank" style="margin-left:auto;flex-shrink:0;background:var(--plk-dark);color:white;border-radius:7px;padding:6px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">↗ Open Full</a>
           </div>
-          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0">
+          <div style="flex:1;display:grid;grid-template-columns:3fr 2fr;gap:12px;min-height:0">
             <!-- Left: live iframe -->
             <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
               <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
@@ -1014,31 +1014,31 @@ iframe { border: none; flex: 1; }
             </div>
             <!-- Right: legend explaining each bar -->
             <div style="display:flex;flex-direction:column;gap:10px;justify-content:center;padding:8px 4px">
-              <div style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--plk-dark)">Reading the waterfall</div>
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--plk-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">READING THE WATERFALL</div>
               <div style="display:flex;flex-direction:column;gap:7px">
                 <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
-                  <div style="width:14px;height:28px;border-radius:3px;background:var(--plk-orange);flex-shrink:0"></div>
-                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Pipeline Statuses</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Prospect → SA → PC → Permitting → UC → Open, stacking cumulatively to build the FY BU</div></div>
+                  <div style="width:12px;height:22px;border-radius:3px;background:var(--plk-orange);flex-shrink:0;margin-top:1px"></div>
+                  <div><div style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-dark)">Pipeline Statuses</div><div style="font-family:var(--font-body);font-size:9.5px;color:var(--plk-muted)">Prospect → SA → PC → Permitting → UC → Open, stacking cumulatively to build the FY BU</div></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
-                  <div style="width:14px;height:28px;border-radius:3px;background:#7B2D8B;flex-shrink:0"></div>
-                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">FY BU</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Bottom-up total — sum of all 2026 pipeline sites (low + medium + high risk)</div></div>
+                  <div style="width:12px;height:22px;border-radius:3px;background:#7B2D8B;flex-shrink:0;margin-top:1px"></div>
+                  <div><div style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-dark)">FY BU</div><div style="font-family:var(--font-body);font-size:9.5px;color:var(--plk-muted)">Bottom-up total — sum of all 2026 pipeline sites (low + medium + high risk)</div></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
-                  <div style="width:14px;height:28px;border-radius:3px;background:var(--plk-orange);flex-shrink:0"></div>
-                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">+ Upside</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Upside-risk sites stacked on top of FY BU — potential adds above committed pipeline</div></div>
+                  <div style="width:12px;height:22px;border-radius:3px;background:var(--plk-orange);flex-shrink:0;margin-top:1px"></div>
+                  <div><div style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-dark)">+ Upside</div><div style="font-family:var(--font-body);font-size:9.5px;color:var(--plk-muted)">Upside-risk sites stacked on top of FY BU — potential adds above committed pipeline</div></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
-                  <div style="width:14px;height:28px;border-radius:3px;background:#C1272D;flex-shrink:0"></div>
-                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Gap to Budget</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Shortfall between FY BU + Upside vs. the opening budget target</div></div>
+                  <div style="width:12px;height:22px;border-radius:3px;background:#C1272D;flex-shrink:0;margin-top:1px"></div>
+                  <div><div style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-dark)">Gap to Budget</div><div style="font-family:var(--font-body);font-size:9.5px;color:var(--plk-muted)">Shortfall between FY BU + Upside vs. the opening budget target</div></div>
                 </div>
                 <div style="display:flex;align-items:center;gap:10px;background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06)">
-                  <div style="width:14px;height:28px;border-radius:3px;background:#00A99D;flex-shrink:0"></div>
-                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Budget</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">The 2026 opening budget target — standalone reference bar</div></div>
+                  <div style="width:12px;height:22px;border-radius:3px;background:#00A99D;flex-shrink:0;margin-top:1px"></div>
+                  <div><div style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-dark)">Budget</div><div style="font-family:var(--font-body);font-size:9.5px;color:var(--plk-muted)">The 2026 opening budget target — standalone reference bar</div></div>
                 </div>
               </div>
-              <div style="background:rgba(13,148,136,.06);border-radius:8px;padding:10px 12px;border-left:3px solid #0D9488">
-                <div style="font-family:var(--font-body);font-size:11.5px;color:var(--plk-slate)">💡 <strong>Click any bar</strong> on the waterfall to drill down into the sites behind that number.</div>
+              <div style="background:rgba(13,148,136,.06);border-radius:7px;padding:6px 10px;border-left:3px solid #0D9488">
+                <div style="font-family:var(--font-body);font-size:10px;color:var(--plk-slate)">💡 <strong>Click any bar</strong> on the waterfall to drill down into the sites behind that number.</div>
               </div>
             </div>
           </div>
@@ -1055,7 +1055,7 @@ iframe { border: none; flex: 1; }
             </div>
             <a href="https://plk-dev-dash.vercel.app/dashboard" target="_blank" style="margin-left:auto;flex-shrink:0;background:var(--plk-dark);color:white;border-radius:7px;padding:6px 14px;font-family:var(--font-body);font-size:12px;font-weight:700;text-decoration:none;white-space:nowrap">↗ Open Full</a>
           </div>
-          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0">
+          <div style="flex:1;display:grid;grid-template-columns:3fr 2fr;gap:12px;min-height:0">
             <!-- Left: live iframe of NRO dashboard -->
             <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
               <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/dashboard — Division tab</div></div>
@@ -1069,27 +1069,27 @@ iframe { border: none; flex: 1; }
             </div>
             <!-- Right: export feature callouts -->
             <div style="display:flex;flex-direction:column;gap:10px;justify-content:center;padding:8px 4px">
-              <div style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--plk-dark)">What gets exported</div>
+              <div style="font-family:var(--font-mono);font-size:10px;font-weight:700;color:var(--plk-muted);letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">WHAT GETS EXPORTED</div>
               <div style="display:flex;flex-direction:column;gap:7px">
-                <div style="background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:10px">
+                <div style="background:white;border-radius:7px;padding:7px 10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:8px">
                   <span style="font-size:18px;flex-shrink:0">📊</span>
-                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Opening Count by Year &amp; Division</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Every year × division combination with counts — downloads as a formatted Excel table</div></div>
+                  <div><div style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-dark)">Opening Count by Year &amp; Division</div><div style="font-family:var(--font-body);font-size:9.5px;color:var(--plk-muted)">Every year × division combination with counts — downloads as a formatted Excel table</div></div>
                 </div>
-                <div style="background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:10px">
+                <div style="background:white;border-radius:7px;padding:7px 10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:8px">
                   <span style="font-size:18px;flex-shrink:0">💵</span>
-                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Avg ARS by Year &amp; Division</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Average Annual Restaurant Sales per opening for every year and division combination</div></div>
+                  <div><div style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-dark)">Avg ARS by Year &amp; Division</div><div style="font-family:var(--font-body);font-size:9.5px;color:var(--plk-muted)">Average Annual Restaurant Sales per opening for every year and division combination</div></div>
                 </div>
-                <div style="background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:10px">
+                <div style="background:white;border-radius:7px;padding:7px 10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:8px">
                   <span style="font-size:18px;flex-shrink:0">📈</span>
-                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Avg EBITDA $ by Year &amp; Division</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Average EBITDA dollar per opening — breakout by year and division, ready for reporting</div></div>
+                  <div><div style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-dark)">Avg EBITDA $ by Year &amp; Division</div><div style="font-family:var(--font-body);font-size:9.5px;color:var(--plk-muted)">Average EBITDA dollar per opening — breakout by year and division, ready for reporting</div></div>
                 </div>
-                <div style="background:white;border-radius:8px;padding:10px 12px;box-shadow:0 1px 6px rgba(0,0,0,.06);display:flex;align-items:flex-start;gap:10px">
+                <div style="background:white;border-radius:7px;padding:7px 10px;box-shadow:0 1px 4px rgba(0,0,0,.05);display:flex;align-items:flex-start;gap:8px">
                   <span style="font-size:18px;flex-shrink:0">🗺️</span>
-                  <div><div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-dark)">Division Mix (all years)</div><div style="font-family:var(--font-body);font-size:10.5px;color:var(--plk-muted)">Opening count per division — exports with whatever filters are currently active</div></div>
+                  <div><div style="font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-dark)">Division Mix (all years)</div><div style="font-family:var(--font-body);font-size:9.5px;color:var(--plk-muted)">Opening count per division — exports with whatever filters are currently active</div></div>
                 </div>
               </div>
-              <div style="background:rgba(22,163,74,.06);border-radius:8px;padding:10px 12px;border-left:3px solid #16A34A">
-                <div style="font-family:var(--font-body);font-size:11.5px;color:var(--plk-slate)">💡 Click the <span style="background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:5px;padding:1px 8px;font-size:10px;font-weight:700">Export</span> button on any chart — the current filtered view downloads instantly as a clean .xlsx file.</div>
+              <div style="background:rgba(22,163,74,.06);border-radius:7px;padding:6px 10px;border-left:3px solid #16A34A">
+                <div style="font-family:var(--font-body);font-size:10px;color:var(--plk-slate)">💡 Click the <span style="background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:5px;padding:1px 8px;font-size:10px;font-weight:700">Export</span> button on any chart — the current filtered view downloads instantly as a clean .xlsx file.</div>
               </div>
             </div>
           </div>
