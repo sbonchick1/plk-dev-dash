@@ -959,8 +959,12 @@ iframe { border: none; flex: 1; }
             <!-- Left: live iframe -->
             <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
               <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
-              <div style="flex:1;position:relative;min-height:0">
-                <iframe src="https://plk-dev-dash.vercel.app/development-execution" style="width:100%;height:100%;border:none;display:block" loading="lazy" title="Dev Execution — Risk Mix"></iframe>
+              <div style="flex:1;position:relative;min-height:0;overflow:hidden" id="wrapRisk">
+                <iframe src="https://plk-dev-dash.vercel.app/development-execution"
+                  id="iframeRisk"
+                  style="border:none;display:block;transform-origin:top left;"
+                  loading="lazy" title="Dev Execution — Risk Mix"
+                  onload="scaleIframe(this,'wrapRisk')"></iframe>
               </div>
             </div>
             <!-- Right: callout explaining what to do -->
@@ -1000,8 +1004,12 @@ iframe { border: none; flex: 1; }
             <!-- Left: live iframe -->
             <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
               <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
-              <div style="flex:1;position:relative;min-height:0">
-                <iframe src="https://plk-dev-dash.vercel.app/development-execution" style="width:100%;height:100%;border:none;display:block" loading="lazy" title="Dev Execution — Waterfall"></iframe>
+              <div style="flex:1;position:relative;min-height:0;overflow:hidden" id="wrapWF">
+                <iframe src="https://plk-dev-dash.vercel.app/development-execution"
+                  id="iframeWF"
+                  style="border:none;display:block;transform-origin:top left;"
+                  loading="lazy" title="Dev Execution — Waterfall"
+                  onload="scaleIframe(this,'wrapWF')"></iframe>
               </div>
             </div>
             <!-- Right: legend explaining each bar -->
@@ -1051,8 +1059,12 @@ iframe { border: none; flex: 1; }
             <!-- Left: live iframe of NRO dashboard -->
             <div class="mock-browser" style="display:flex;flex-direction:column;min-height:0">
               <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/dashboard — Division tab</div></div>
-              <div style="flex:1;position:relative;min-height:0">
-                <iframe src="https://plk-dev-dash.vercel.app/dashboard" style="width:100%;height:100%;border:none;display:block" loading="lazy" title="NRO Dashboard — Division Tab"></iframe>
+              <div style="flex:1;position:relative;min-height:0;overflow:hidden" id="wrapExp">
+                <iframe src="https://plk-dev-dash.vercel.app/dashboard"
+                  id="iframeExp"
+                  style="border:none;display:block;transform-origin:top left;"
+                  loading="lazy" title="NRO Dashboard — Division Tab"
+                  onload="scaleIframe(this,'wrapExp')"></iframe>
               </div>
             </div>
             <!-- Right: export feature callouts -->
@@ -1263,6 +1275,39 @@ function updatePoll() {
 }
 
 
+
+// ── IFRAME SCALING ──────────────────────────────────────────────────────────
+// Scales a full dashboard down to fit inside its container preview window
+function scaleIframe(iframe, wrapperId) {
+  const DASH_WIDTH  = 1700; // max-width of dashboard containers
+  const DASH_HEIGHT = 900;  // approximate full-page height
+
+  function doScale() {
+    const wrap = document.getElementById(wrapperId);
+    if (!wrap) return;
+    const ww = wrap.offsetWidth;
+    const wh = wrap.offsetHeight;
+    if (!ww || !wh) { requestAnimationFrame(doScale); return; }
+    const scale = Math.min(ww / DASH_WIDTH, wh / DASH_HEIGHT);
+    iframe.style.width  = DASH_WIDTH  + 'px';
+    iframe.style.height = (DASH_HEIGHT / scale) + 'px'; // keep ratio correct
+    iframe.style.transform = `scale(${scale})`;
+    // After scaling, the iframe's scaled height is DASH_HEIGHT px in container space
+    // but the wrapper might be taller — recalc actual display height
+    const displayH = DASH_HEIGHT * scale;
+    iframe.style.height = DASH_HEIGHT + 'px';
+    iframe.style.width  = DASH_WIDTH  + 'px';
+    iframe.style.transform = `scale(${scale})`;
+    iframe.style.transformOrigin = 'top left';
+  }
+  doScale();
+  // Rescale if window resizes
+  window.addEventListener('resize', doScale);
+  // Also rescale when tour panel activates (panel gets measured after it becomes visible)
+  setTimeout(doScale, 400);
+  setTimeout(doScale, 1000);
+}
+
 // ── FEATURE TOUR ─────────────────────────────────
 let tourCurrent = 0;
 const TOUR_TOTAL = 5;
@@ -1275,6 +1320,13 @@ function tourGo(idx) {
   document.getElementById('tnav-' + idx).classList.add('active');
   // Reset waterfall if leaving that panel
   if (idx !== 2) resetWaterfall();
+  // Rescale iframes after the panel becomes visible
+  const iframeMap = { 1:['iframeRisk','wrapRisk'], 2:['iframeWF','wrapWF'], 3:['iframeExp','wrapExp'] };
+  if (iframeMap[idx]) {
+    const [ifId, wrapId] = iframeMap[idx];
+    const iframe = document.getElementById(ifId);
+    if (iframe) setTimeout(() => scaleIframe(iframe, wrapId), 50);
+  }
 }
 
 // ── PIPELINE TABLE — live fetch from /api/pipeline ───────────────────────
