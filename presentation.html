@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<!--
+  PLK Development Dashboard — Interactive Presentation
+  =====================================================
+  TO ENABLE LIVE DATA on Slide 7 (Feature Tour / Drill-Down):
+
+  1. Copy this file into the root of your plk-dev-dash GitHub repo
+     and name it:  presentation.html
+
+  2. Add this route to vercel.json:
+     { "source": "/presentation", "destination": "/presentation.html" }
+
+  3. Push to GitHub → Vercel auto-deploys.
+
+  4. Open: https://plk-dev-dash.vercel.app/presentation
+     → The pipeline table loads live from Smartsheet automatically.
+
+  When opened as a local file (file://) the live data fetch will fail
+  due to browser security — that is expected and normal.
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PLK Dev Dashboard — Built with Claude</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ─── RESET & TOKENS ─────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --plk-orange: #E8521A;
+  --plk-red:    #C0392B;
+  --plk-gold:   #F5A623;
+  --plk-cream:  #FFF8F0;
+  --plk-white:  #FFFFFF;
+  --plk-dark:   #1A0800;
+  --plk-smoke:  #F2EDE8;
+  --plk-slate:  #4A3728;
+  --plk-muted:  #9B7D6E;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body:    'DM Sans', sans-serif;
+  --font-mono:    'DM Mono', monospace;
+}
+
+html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-cream); }
+
+/* ─── SLIDE ENGINE ────────────────────────────── */
+#deck { width: 100vw; height: 100vh; position: relative; }
+
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.5s cubic-bezier(.4,0,.2,1), transform 0.5s cubic-bezier(.4,0,.2,1);
+  transform: translateX(60px);
+  overflow: hidden;
+}
+.slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
+.slide.exit   { opacity: 0; transform: translateX(-60px); }
+
+/* ─── NAV ─────────────────────────────────────── */
+#nav {
+  position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 12px; z-index: 9999;
+  background: rgba(255,255,255,.92); backdrop-filter: blur(12px);
+  border: 1px solid rgba(232,82,26,.2); border-radius: 50px;
+  padding: 10px 20px; box-shadow: 0 4px 30px rgba(232,82,26,.12);
+}
+.nav-btn {
+  width: 40px; height: 40px; border-radius: 50%; border: none; cursor: pointer;
+  font-size: 18px; display: flex; align-items: center; justify-content: center;
+  transition: all .2s; background: var(--plk-orange); color: white;
+}
+.nav-btn:hover { background: var(--plk-red); transform: scale(1.08); }
+.nav-btn:disabled { background: #ddd; color: #aaa; cursor: not-allowed; transform: none; }
+#slide-counter { font-family: var(--font-mono); font-size: 13px; color: var(--plk-slate); min-width: 52px; text-align: center; }
+.dot-nav { display: flex; gap: 6px; align-items: center; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: #ddd; cursor: pointer; transition: all .2s; }
+.dot.active { background: var(--plk-orange); width: 22px; border-radius: 4px; }
+
+/* ─── PROGRESS ────────────────────────────────── */
+#progress-bar {
+  position: fixed; top: 0; left: 0; height: 4px;
+  background: linear-gradient(90deg, var(--plk-orange), var(--plk-gold));
+  z-index: 9999; transition: width .5s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 0 8px rgba(232,82,26,.4);
+}
+
+/* ─── CLAUDE BADGE ────────────────────────────── */
+#claude-badge {
+  position: fixed; top: 16px; right: 20px; z-index: 9999;
+  background: white; border: 1.5px solid var(--plk-orange);
+  border-radius: 50px; padding: 6px 14px 6px 10px;
+  display: flex; align-items: center; gap: 7px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--plk-slate);
+  box-shadow: 0 2px 12px rgba(232,82,26,.15);
+  animation: badgePulse 3s ease-in-out infinite;
+}
+#claude-badge .ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--plk-orange); animation: blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
+@keyframes badgePulse { 0%,100%{box-shadow:0 2px 12px rgba(232,82,26,.15);} 50%{box-shadow:0 2px 20px rgba(232,82,26,.35);} }
+
+/* ─── SLIDE 1: TITLE ─────────────────────────── */
+#s1 { background: var(--plk-white); display: flex; flex-direction: column; }
+.s1-bg {
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 80% 20%, rgba(232,82,26,.08) 0%, transparent 55%),
+    radial-gradient(ellipse at 10% 80%, rgba(245,166,35,.06) 0%, transparent 50%);
+}
+.s1-stripe {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 8px;
+  background: linear-gradient(90deg, var(--plk-orange), var(--plk-gold), var(--plk-red));
+}
+.s1-content {
+  position: relative; z-index: 2;
+  display: flex; flex: 1; align-items: center; justify-content: space-between;
+  padding: 0 8% 80px 10%;
+}
+.s1-left { flex: 1; }
+.s1-eyebrow {
+  font-family: var(--font-mono); font-size: 13px; color: var(--plk-orange);
+  letter-spacing: .15em; text-transform: uppercase; margin-bottom: 18px;
+  opacity: 0; animation: fadeUp .6s .2s forwards;
+}
+.s1-title {
+  font-family: var(--font-display); font-size: clamp(52px, 7vw, 90px);
+  line-height: .95; color: var(--plk-dark); margin-bottom: 24px;
+  opacity: 0; animation: fadeUp .6s .4s forwards;
+}
+.s1-title span { color: var(--plk-orange); }
+.s1-sub {
+  font-family: var(--font-body); font-size: 18px; color: var(--plk-muted);
+  line-height: 1.6; max-width: 480px; margin-bottom: 36px;
+  opacity: 0; animation: fadeUp .6s .6s forwards;
+}
+.s1-pills { display: flex; gap: 10px; flex-wrap: wrap; opacity: 0; animation: fadeUp .6s .8s forwards; }
+.pill {
+  font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+  padding: 6px 14px; border-radius: 50px; border: 1.5px solid;
+}
+.pill-orange { background: rgba(232,82,26,.08); color: var(--plk-orange); border-color: var(--plk-orange); }
+.pill-dark { background: var(--plk-dark); color: var(--plk-white); border-color: var(--plk-dark); }
+
+.s1-right {
+  width: 340px; flex-shrink: 0;
+  opacity: 0; animation: fadeLeft .7s .5s forwards;
+}
+.s1-card {
+  background: var(--plk-dark); border-radius: 20px; padding: 28px;
+  box-shadow: 0 20px 60px rgba(26,8,0,.18); position: relative; overflow: hidden;
+}
+.s1-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--plk-orange), var(--plk-gold));
+}
+.card-label { font-family: var(--font-mono); font-size: 11px; color: var(--plk-orange); letter-spacing: .1em; margin-bottom: 16px; }
+.card-stat { font-family: var(--font-display); font-size: 56px; color: white; line-height: 1; }
+.card-stat span { font-family: var(--font-body); font-size: 14px; color: var(--plk-muted); display: block; margin-top: 4px; }
+.card-divider { height: 1px; background: rgba(255,255,255,.08); margin: 18px 0; }
+.mini-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.mini-stat { }
+.mini-val { font-family: var(--font-display); font-size: 28px; color: var(--plk-gold); }
+.mini-label { font-family: var(--font-mono); font-size: 10px; color: var(--plk-muted); }
+
+/* ─── SLIDE 2: PROBLEM / SOLUTION ─────────────── */
+#s2 { background: var(--plk-smoke); }
+.s2-header {
+  padding: 52px 9% 0;
+  opacity: 0; animation: fadeUp .5s .1s forwards;
+}
+.slide-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--plk-orange); letter-spacing: .15em; text-transform: uppercase; margin-bottom: 8px; }
+.slide-title { font-family: var(--font-display); font-size: clamp(36px, 5vw, 62px); color: var(--plk-dark); line-height: 1; }
+.s2-body { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 24px; padding: 24px 9% 80px; }
+.s2-col {
+  background: white; border-radius: 16px; padding: 28px;
+  box-shadow: 0 4px 20px rgba(26,8,0,.06);
+  opacity: 0; animation: fadeUp .5s forwards;
+}
+#s2 .s2-col:nth-child(1) { animation-delay: .2s; }
+#s2 .s2-col:nth-child(2) { animation-delay: .35s; }
+.col-badge {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: var(--font-mono); font-size: 11px; font-weight: 500;
+  padding: 4px 12px; border-radius: 50px; margin-bottom: 20px;
+}
+.badge-red { background: rgba(192,57,43,.1); color: var(--plk-red); border: 1px solid rgba(192,57,43,.2); }
+.badge-green { background: rgba(22,163,74,.1); color: #16A34A; border: 1px solid rgba(22,163,74,.2); }
+.list-item {
+  display: flex; align-items: flex-start; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid var(--plk-smoke);
+  font-family: var(--font-body); font-size: 14px; color: var(--plk-slate); line-height: 1.4;
+}
+.list-item:last-child { border-bottom: none; }
+.list-icon { font-size: 16px; flex-shrink: 0; margin-top: 1px; }
+
+/* ─── SLIDE 3: DASHBOARD SUITE ──────────────────  */
+#s3 { background: var(--plk-white); }
+.s3-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
+.s3-grid { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; padding: 22px 9% 80px; }
+.module-card {
+  border-radius: 14px; padding: 22px 18px; display: flex; flex-direction: column;
+  border: 1.5px solid; cursor: default;
+  opacity: 0; animation: fadeUp .4s forwards;
+  transition: transform .2s, box-shadow .2s;
+}
+.module-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(26,8,0,.1); }
+.module-icon { font-size: 28px; margin-bottom: 12px; }
+.module-name { font-family: var(--font-body); font-size: 13px; font-weight: 700; color: var(--plk-dark); margin-bottom: 6px; }
+.module-desc { font-family: var(--font-body); font-size: 11.5px; color: var(--plk-muted); line-height: 1.5; }
+.mc-orange { background: rgba(232,82,26,.05); border-color: rgba(232,82,26,.25); }
+.mc-gold   { background: rgba(245,166,35,.05); border-color: rgba(245,166,35,.3); }
+.mc-red    { background: rgba(192,57,43,.05);  border-color: rgba(192,57,43,.2); }
+.mc-teal   { background: rgba(13,148,136,.05); border-color: rgba(13,148,136,.2); }
+.mc-green  { background: rgba(22,163,74,.05);  border-color: rgba(22,163,74,.2); }
+
+/* ─── SLIDE 4: HOW I BUILT IT ───────────────────  */
+#s4 { background: var(--plk-smoke); }
+.s4-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
+.s4-steps { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 16px 9% 80px; gap: 14px; }
+.step-row {
+  display: flex; align-items: flex-start; gap: 18px;
+  opacity: 0; animation: fadeLeft .5s forwards;
+}
+.step-num {
+  width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-display); font-size: 24px; color: white;
+}
+.step-body { flex: 1; background: white; border-radius: 12px; padding: 16px 20px; box-shadow: 0 2px 10px rgba(26,8,0,.05); }
+.step-title { font-family: var(--font-body); font-size: 15px; font-weight: 700; color: var(--plk-dark); margin-bottom: 4px; }
+.step-desc { font-family: var(--font-body); font-size: 13px; color: var(--plk-muted); line-height: 1.5; }
+.step-tag { font-family: var(--font-mono); font-size: 10px; color: var(--plk-orange); letter-spacing: .1em; }
+
+/* ─── SLIDE 5: EXAMPLES GRID ─────────────────── */
+#s5 { background: var(--plk-smoke); }
+.s5-header { padding: 36px 7% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
+.s5-grid {
+  flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr);
+  gap: 12px; padding: 14px 7% 72px;
+}
+.ex-card {
+  background: white; border-radius: 12px; padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 8px;
+  box-shadow: 0 2px 10px rgba(26,8,0,.05);
+  opacity: 0; animation: fadeUp .4s forwards;
+}
+.ex-cat {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  padding: 3px 10px; border-radius: 50px; letter-spacing: .06em;
+  align-self: flex-start;
+}
+.ex-prompt {
+  font-family: var(--font-body); font-size: 12.5px; color: var(--plk-dark);
+  font-style: italic; line-height: 1.45; flex: 1;
+}
+.ex-prompt::before { content: '\201C'; }
+.ex-prompt::after  { content: '\201D'; }
+.ex-divider { height: 1px; background: var(--plk-smoke); }
+.ex-result {
+  font-family: var(--font-body); font-size: 11.5px; color: var(--plk-slate);
+  line-height: 1.55;
+}
+.ex-result code {
+  font-family: var(--font-mono); font-size: 10.5px;
+  background: var(--plk-smoke); padding: 1px 4px; border-radius: 3px; color: var(--plk-orange);
+}
+
+/* ─── SLIDE 6: INTERACTIVE POLL ─────────────────  */
+#s6 { background: var(--plk-cream); }
+.s6-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
+.s6-body { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 28px; padding: 22px 9% 80px; }
+.poll-section { display: flex; flex-direction: column; gap: 14px; }
+.poll-q { font-family: var(--font-body); font-size: 17px; font-weight: 700; color: var(--plk-dark); margin-bottom: 6px; opacity: 0; animation: fadeUp .5s .2s forwards; }
+.poll-option {
+  background: white; border: 2px solid #E8DED8; border-radius: 12px; padding: 14px 18px;
+  cursor: pointer; transition: all .2s; font-family: var(--font-body); font-size: 14px; color: var(--plk-slate);
+  display: flex; align-items: center; gap: 10px; position: relative; overflow: hidden;
+  opacity: 0; animation: fadeUp .4s forwards;
+}
+.poll-option:hover { border-color: var(--plk-orange); background: rgba(232,82,26,.03); }
+.poll-option.voted { border-color: var(--plk-orange); background: rgba(232,82,26,.05); }
+.poll-option.winner { border-color: var(--plk-gold); background: rgba(245,166,35,.08); }
+.poll-emoji { font-size: 20px; }
+.poll-bar {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  background: rgba(232,82,26,.08); transition: width .8s cubic-bezier(.4,0,.2,1);
+  pointer-events: none;
+}
+.poll-count {
+  margin-left: auto; font-family: var(--font-mono); font-size: 12px;
+  color: var(--plk-muted); transition: all .3s;
+}
+.poll-pct { font-size: 11px; color: var(--plk-orange); font-weight: 500; }
+
+.ai-section { opacity: 0; animation: fadeUp .5s .25s forwards; }
+.ai-bubble {
+  background: var(--plk-dark); border-radius: 16px; padding: 24px;
+  box-shadow: 0 8px 30px rgba(26,8,0,.15); position: relative;
+}
+.ai-bubble::before { content: 'CLAUDE IS PRESENTING THIS'; font-family: var(--font-mono); font-size: 10px; color: var(--plk-gold); letter-spacing: .12em; display: block; margin-bottom: 14px; }
+.ai-msg { font-family: var(--font-body); font-size: 14px; color: white; line-height: 1.7; }
+.ai-msg strong { color: var(--plk-gold); }
+.typing-dots { display: inline-flex; gap: 3px; margin-left: 4px; }
+.typing-dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--plk-orange); animation: dot 1.4s ease-in-out infinite; }
+.typing-dots span:nth-child(2) { animation-delay: .2s; }
+.typing-dots span:nth-child(3) { animation-delay: .4s; }
+@keyframes dot { 0%,80%,100%{opacity:.3;transform:scale(.8)} 40%{opacity:1;transform:scale(1)} }
+
+.fun-fact-box {
+  margin-top: 14px; background: rgba(232,82,26,.08); border-radius: 10px; padding: 14px 16px;
+  border-left: 3px solid var(--plk-orange);
+}
+.fun-fact-box p { font-family: var(--font-body); font-size: 12.5px; color: var(--plk-slate); line-height: 1.6; }
+.fun-fact-box strong { color: var(--plk-orange); }
+
+/* ─── SLIDE 7: DASHBOARD PREVIEW ──────────────── */
+#s7 { background: var(--plk-dark); }
+.s7-header { padding: 28px 6% 16px; flex-shrink: 0; }
+.s7-eyebrow { font-family: var(--font-mono); font-size: 11px; color: var(--plk-orange); letter-spacing: .15em; margin-bottom: 6px; opacity: 0; animation: fadeUp .5s .1s forwards; }
+.s7-title { font-family: var(--font-display); font-size: clamp(28px, 4vw, 50px); color: white; line-height: 1; opacity: 0; animation: fadeUp .5s .2s forwards; }
+.s7-title span { color: var(--plk-gold); }
+.s7-body { flex: 1; display: grid; grid-template-columns: 1fr 340px; gap: 16px; padding: 0 6% 80px; min-height: 0; }
+.iframe-wrap {
+  border-radius: 12px; overflow: hidden; background: white;
+  border: 2px solid rgba(232,82,26,.3);
+  box-shadow: 0 0 40px rgba(232,82,26,.2);
+  opacity: 0; animation: fadeUp .6s .3s forwards;
+  display: flex; flex-direction: column;
+}
+.iframe-bar {
+  background: var(--plk-orange); padding: 8px 14px;
+  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+}
+.iframe-dots { display: flex; gap: 5px; }
+.iframe-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.iframe-url {
+  flex: 1; background: rgba(255,255,255,.2); border-radius: 4px;
+  padding: 3px 10px; font-family: var(--font-mono); font-size: 11px; color: white; cursor: default;
+}
+.iframe-open {
+  font-family: var(--font-mono); font-size: 10px; color: white;
+  text-decoration: none; padding: 3px 10px; border: 1px solid rgba(255,255,255,.4);
+  border-radius: 4px; transition: all .2s;
+}
+.iframe-open:hover { background: rgba(255,255,255,.2); }
+iframe { border: none; flex: 1; }
+
+.s7-sidebar { display: flex; flex-direction: column; gap: 14px; opacity: 0; animation: fadeLeft .6s .4s forwards; }
+.s7-card { background: rgba(255,255,255,.06); border-radius: 12px; padding: 18px; border: 1px solid rgba(255,255,255,.1); }
+.s7-card-title { font-family: var(--font-mono); font-size: 10px; color: var(--plk-gold); letter-spacing: .1em; margin-bottom: 10px; }
+.feature-item { display: flex; align-items: center; gap: 8px; font-family: var(--font-body); font-size: 13px; color: rgba(255,255,255,.8); padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+.feature-item:last-child { border-bottom: none; }
+.feature-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--plk-orange); flex-shrink: 0; }
+.try-it { background: var(--plk-orange); border-radius: 10px; padding: 16px; text-align: center; }
+.try-it p { font-family: var(--font-body); font-size: 12px; color: white; margin-bottom: 10px; line-height: 1.4; }
+.try-btn {
+  display: block; width: 100%; padding: 10px;
+  background: white; color: var(--plk-orange); border-radius: 7px;
+  font-family: var(--font-body); font-size: 13px; font-weight: 700;
+  text-decoration: none; transition: all .2s;
+}
+.try-btn:hover { background: var(--plk-cream); transform: scale(1.02); }
+
+/* ─── SLIDE 8: TAKEAWAYS ───────────────────────── */
+#s8 { background: var(--plk-white); }
+.s8-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
+.s8-grid { flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 18px; padding: 22px 9% 80px; }
+.takeaway-card {
+  border-radius: 16px; padding: 24px 26px; display: flex; flex-direction: column;
+  opacity: 0; animation: fadeUp .4s forwards;
+}
+.ta-icon { font-size: 32px; margin-bottom: 12px; }
+.ta-title { font-family: var(--font-body); font-size: 17px; font-weight: 700; color: var(--plk-dark); margin-bottom: 8px; }
+.ta-body { font-family: var(--font-body); font-size: 13px; color: var(--plk-slate); line-height: 1.6; }
+.ta-orange { background: rgba(232,82,26,.06); border: 1.5px solid rgba(232,82,26,.15); }
+.ta-gold   { background: rgba(245,166,35,.07); border: 1.5px solid rgba(245,166,35,.2); }
+.ta-dark   { background: var(--plk-dark); }
+.ta-dark .ta-title, .ta-dark .ta-body { color: white; }
+.ta-dark .ta-body { color: rgba(255,255,255,.65); }
+.ta-smoke  { background: var(--plk-smoke); border: 1.5px solid #E0D5CC; }
+
+/* ─── SLIDE 9: CLOSING ──────────────────────────── */
+#s9 {
+  background: var(--plk-dark);
+  justify-content: center; align-items: center;
+}
+.s9-bg {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 40%, rgba(232,82,26,.15) 0%, transparent 60%);
+}
+.s9-content { position: relative; z-index: 2; text-align: center; padding: 0 10% 80px; }
+.s9-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--plk-gold); letter-spacing: .2em; text-transform: uppercase; margin-bottom: 20px; opacity: 0; animation: fadeUp .5s .2s forwards; }
+.s9-title { font-family: var(--font-display); font-size: clamp(60px, 9vw, 120px); color: white; line-height: .92; margin-bottom: 24px; opacity: 0; animation: fadeUp .5s .4s forwards; }
+.s9-title span { color: var(--plk-orange); display: block; }
+.s9-sub { font-family: var(--font-body); font-size: 17px; color: rgba(255,255,255,.55); max-width: 560px; margin: 0 auto 36px; line-height: 1.6; opacity: 0; animation: fadeUp .5s .6s forwards; }
+.s9-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; opacity: 0; animation: fadeUp .5s .8s forwards; }
+.s9-btn {
+  padding: 14px 30px; border-radius: 10px; font-family: var(--font-body); font-size: 15px; font-weight: 700;
+  text-decoration: none; transition: all .2s; cursor: pointer; border: none;
+}
+.s9-btn-primary { background: var(--plk-orange); color: white; }
+.s9-btn-primary:hover { background: #d14515; transform: scale(1.03); }
+.s9-btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,.3); }
+.s9-btn-outline:hover { background: rgba(255,255,255,.08); }
+.s9-claude-note {
+  margin-top: 40px; font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.3);
+  opacity: 0; animation: fadeUp .5s 1s forwards;
+}
+
+/* ─── SHARED ANIMATIONS ─────────────────────────── */
+@keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeLeft { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
+
+/* ─── TOUR SHELL ────────────────────────────────── */
+.tour-shell { display: flex; height: 100%; overflow: hidden; }
+
+.tour-nav {
+  width: 210px; flex-shrink: 0; background: var(--plk-dark); display: flex;
+  flex-direction: column; padding: 24px 0 20px; gap: 2px;
+}
+.tour-nav-label { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.3); letter-spacing: .15em; padding: 0 18px 10px; }
+.tour-step-btn {
+  display: flex; align-items: center; gap: 10px; padding: 11px 18px; cursor: pointer;
+  transition: background .18s; border-left: 3px solid transparent;
+}
+.tour-step-btn:hover { background: rgba(255,255,255,.06); }
+.tour-step-btn.active { background: rgba(232,82,26,.15); border-left-color: var(--plk-orange); }
+.tnav-num { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.3); min-width: 22px; }
+.tour-step-btn.active .tnav-num { color: var(--plk-orange); }
+.tnav-title { font-family: var(--font-body); font-size: 13px; font-weight: 600; color: rgba(255,255,255,.7); line-height: 1.2; }
+.tour-step-btn.active .tnav-title { color: white; }
+.tnav-sub { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.3); }
+.tnav-arrow { margin-left: auto; color: rgba(255,255,255,.2); font-size: 16px; }
+.tour-step-btn.active .tnav-arrow { color: var(--plk-orange); }
+.tour-open-link {
+  margin-top: auto; margin-left: 18px; margin-right: 18px;
+  background: var(--plk-orange); color: white; border-radius: 8px;
+  padding: 10px 14px; text-align: center; text-decoration: none;
+  font-family: var(--font-body); font-size: 12px; font-weight: 700;
+  transition: background .2s;
+}
+.tour-open-link:hover { background: var(--plk-red); }
+
+.tour-stage { flex: 1; overflow: hidden; position: relative; background: var(--plk-smoke); }
+
+.tour-panel {
+  position: absolute; inset: 0; display: flex; flex-direction: column;
+  padding: 24px 32px 70px; gap: 16px; overflow: hidden;
+  opacity: 0; transform: translateX(24px); pointer-events: none;
+  transition: opacity .35s ease, transform .35s ease;
+}
+.tour-panel.active { opacity: 1; transform: translateX(0); pointer-events: all; }
+
+.tph { display: flex; flex-direction: column; gap: 4px; }
+.tph-tag { display: inline-block; font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 50px; letter-spacing: .08em; margin-bottom: 4px; }
+.tph-title { font-family: var(--font-display); font-size: clamp(22px, 2.8vw, 34px); color: var(--plk-dark); line-height: 1; }
+.tph-desc { font-family: var(--font-body); font-size: 13px; color: var(--plk-muted); line-height: 1.55; max-width: 680px; }
+
+/* ── Mock Browser ── */
+.mock-browser { flex: 1; display: flex; flex-direction: column; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 28px rgba(26,8,0,.1); min-height: 0; }
+.mock-topbar { background: #f0f0f0; padding: 8px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; border-bottom: 1px solid #e0e0e0; }
+.mock-dots { display: flex; gap: 5px; }
+.mock-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.mock-url-pill { flex: 1; background: white; border-radius: 5px; padding: 3px 10px; font-family: var(--font-mono); font-size: 11px; color: #666; border: 1px solid #ddd; }
+.mock-body { flex: 1; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-height: 0; overflow: hidden; position: relative; }
+
+/* ── Drill Down ── */
+.dmc-title { font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--plk-slate); margin-bottom: 8px; }
+.dmc-bars { display: flex; gap: 8px; align-items: flex-end; height: 120px; }
+.dmc-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.dmc-barwrap { flex: 1; width: 100%; display: flex; align-items: flex-end; }
+.dmc-bar { width: 100%; border-radius: 4px 4px 0 0; background: var(--plk-orange); transition: all .2s; cursor: default; }
+.clickable-demo { cursor: pointer; box-shadow: 0 0 0 2px var(--plk-orange); animation: barPulse 2s ease-in-out infinite; }
+@keyframes barPulse { 0%,100%{box-shadow:0 0 0 2px var(--plk-orange);} 50%{box-shadow:0 0 0 4px rgba(232,82,26,.4);} }
+.clickable-demo:hover { filter: brightness(1.1); transform: scaleY(1.03); transform-origin: bottom; }
+.dmc-lbl { font-family: var(--font-mono); font-size: 10px; color: var(--plk-muted); text-align: center; line-height: 1.3; }
+
+.dm-modal { background: white; border: 2px solid var(--plk-orange); border-radius: 10px; padding: 12px 14px; box-shadow: 0 8px 30px rgba(232,82,26,.2); animation: modalPop .3s cubic-bezier(.34,1.56,.64,1); }
+@keyframes modalPop { from{opacity:0;transform:scale(.92)} to{opacity:1;transform:scale(1)} }
+.dmm-header { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-family: var(--font-body); font-size: 13px; color: var(--plk-dark); }
+.dmm-badge { background: var(--plk-orange); color: white; font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 50px; }
+.dmm-close { margin-left: auto; cursor: pointer; color: var(--plk-muted); font-size: 14px; }
+.dmm-table { font-family: var(--font-mono); font-size: 11px; }
+.dmm-thead { display: grid; grid-template-columns: 1.4fr 1.2fr .5fr .9fr 1fr; gap: 6px; padding: 4px 0; border-bottom: 1px solid var(--plk-smoke); color: var(--plk-muted); }
+.dmm-row { display: grid; grid-template-columns: 1.4fr 1.2fr .5fr .9fr 1fr; gap: 6px; padding: 5px 0; border-bottom: 1px solid var(--plk-smoke); color: var(--plk-dark); align-items: center; }
+.dmm-row.faded { color: var(--plk-muted); font-style: italic; grid-template-columns: 1fr; }
+.rp { font-size: 10px; padding: 2px 7px; border-radius: 50px; font-weight: 600; white-space: nowrap; }
+.rp-low  { background: #DCFCE7; color: #16A34A; }
+.rp-med  { background: #FEF3C7; color: #D97706; }
+.rp-high { background: #FEE2E2; color: #DC2626; }
+
+/* ── Risk Mix ── */
+.rm-table { display: flex; flex-direction: column; gap: 0; flex: 1; }
+.rm-thead { display: flex; gap: 8px; padding: 6px 10px; background: var(--plk-smoke); border-radius: 6px; font-family: var(--font-mono); font-size: 10px; color: var(--plk-muted); margin-bottom: 4px; }
+.rm-thead span:nth-child(1) { flex: 1.2; }
+.rm-thead span:nth-child(2), .rm-thead span:nth-child(3) { flex: .4; }
+.rm-thead span:nth-child(4) { flex: 2.5; }
+.rm-row { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-bottom: 1px solid var(--plk-smoke); font-family: var(--font-body); font-size: 12px; color: var(--plk-dark); }
+.rm-row span:nth-child(1) { flex: 1.2; font-weight: 600; }
+.rm-row span:nth-child(2), .rm-row span:nth-child(3) { flex: .4; color: var(--plk-muted); font-family: var(--font-mono); font-size: 11px; }
+.rmix { flex: 2.5; display: flex; flex-direction: column; gap: 4px; }
+.rmix-bar { display: flex; height: 10px; border-radius: 5px; overflow: hidden; cursor: pointer; }
+.rms { transition: all .15s; }
+.rms:hover { filter: brightness(1.1); }
+.rms-low  { background: #16A34A; }
+.rms-med  { background: #F59E0B; }
+.rms-high { background: #EF4444; }
+.rmix-pills { display: flex; gap: 5px; flex-wrap: wrap; }
+.rmp { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 50px; cursor: pointer; border: 1px solid; transition: all .15s; }
+.rmp:hover { filter: brightness(.95); transform: scale(1.04); }
+.rmp-low  { background: #DCFCE7; color: #16A34A; border-color: #16A34A; }
+.rmp-med  { background: #FEF3C7; color: #D97706; border-color: #F59E0B; }
+.rmp-high { background: #FEE2E2; color: #DC2626; border-color: #EF4444; }
+.rm-result { background: #FFFBEB; border: 1.5px solid var(--plk-gold); border-radius: 8px; padding: 10px 14px; animation: modalPop .25s ease; position: relative; }
+.rmr-head { font-family: var(--font-body); font-size: 12px; font-weight: 700; color: var(--plk-dark); margin-bottom: 6px; }
+.rmr-body { font-family: var(--font-mono); font-size: 11px; color: var(--plk-slate); line-height: 1.7; }
+.rmr-close { position: absolute; top: 8px; right: 10px; font-family: var(--font-mono); font-size: 10px; color: var(--plk-muted); cursor: pointer; }
+
+/* ── Waterfall ── */
+.wf-mock-body { justify-content: flex-start; }
+.wf-label-row { font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--plk-slate); flex-shrink: 0; }
+.wf-stage { display: flex; gap: 6px; align-items: flex-end; height: 150px; flex-shrink: 0; }
+.wf-col-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; height: 100%; }
+.wf-spacer-top { width: 100%; flex-shrink: 0; }
+.wf-seg { width: 80%; border-radius: 4px 4px 0 0; display: flex; align-items: flex-start; justify-content: center; transition: height .7s cubic-bezier(.4,0,.2,1); overflow: visible; position: relative; }
+.wf-seg-val { font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: white; position: absolute; top: 4px; }
+.wf-seg-base { background: var(--plk-orange); }
+.wf-seg-up   { background: #16A34A; }
+.wf-seg-neg  { background: var(--plk-red); }
+.wf-seg-le   { background: var(--plk-gold); }
+.wf-col-lbl  { font-family: var(--font-mono); font-size: 10px; color: var(--plk-muted); text-align: center; padding-top: 4px; white-space: nowrap; }
+.wf-play-btn { align-self: flex-start; margin-top: 10px; background: var(--plk-dark); color: white; border: none; border-radius: 7px; padding: 8px 18px; font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; }
+.wf-play-btn:hover { background: var(--plk-orange); }
+
+/* ── Export ── */
+.exp-mock-body { justify-content: flex-start; }
+.exp-chart-header { font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--plk-slate); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
+.exp-btn { background: var(--plk-orange); color: white; border: none; border-radius: 6px; padding: 5px 12px; font-family: var(--font-body); font-size: 11px; font-weight: 700; cursor: pointer; transition: all .2s; }
+.exp-btn:hover { background: var(--plk-red); transform: scale(1.03); }
+.exp-btn:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+.exp-bars-area { display: flex; gap: 10px; align-items: flex-end; height: 120px; flex-shrink: 0; }
+.exp-grp { flex: 1; display: flex; align-items: flex-end; gap: 3px; position: relative; }
+.exp-b { flex: 1; border-radius: 3px 3px 0 0; }
+.exp-gl { position: absolute; bottom: -18px; left: 0; right: 0; text-align: center; font-family: var(--font-mono); font-size: 10px; color: var(--plk-muted); }
+.exp-overlay { position: absolute; inset: 0; background: rgba(255,255,255,.95); border-radius: 12px; display: flex; align-items: center; justify-content: center; animation: fadeIn .2s ease; }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+.exp-anim { text-align: center; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.exp-icon { font-size: 40px; animation: iconBounce .6s ease-in-out infinite alternate; }
+@keyframes iconBounce { from{transform:translateY(0)} to{transform:translateY(-6px)} }
+.exp-track { width: 200px; height: 6px; background: var(--plk-smoke); border-radius: 3px; overflow: hidden; }
+.exp-fill { height: 100%; background: linear-gradient(90deg, var(--plk-orange), var(--plk-gold)); border-radius: 3px; width: 0%; transition: width .1s linear; }
+.exp-msg { font-family: var(--font-mono); font-size: 12px; color: var(--plk-slate); }
+
+/* ── Live Area ── */
+.live-area { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 0; }
+.live-links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; }
+.live-link { background: white; border: 1.5px solid #E8DED8; border-radius: 10px; padding: 14px 16px; text-decoration: none; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--plk-dark); transition: all .2s; display: flex; align-items: center; gap: 8px; }
+.live-link:hover { border-color: var(--plk-orange); background: rgba(232,82,26,.04); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(232,82,26,.1); }
+.live-link-main { grid-column: 1 / -1; background: var(--plk-dark); color: white; border-color: var(--plk-dark); font-size: 15px; justify-content: center; }
+.live-link-main:hover { background: var(--plk-orange); border-color: var(--plk-orange); }
+.live-stats-col { display: flex; flex-direction: column; gap: 10px; }
+.live-stat-card { background: white; border-radius: 10px; padding: 14px 18px; border: 1px solid #E8DED8; }
+.lsc-val { font-family: var(--font-display); font-size: 28px; color: var(--plk-dark); }
+.lsc-lbl { font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted); }
+.live-note { background: rgba(232,82,26,.06); border-left: 3px solid var(--plk-orange); border-radius: 6px; padding: 10px 12px; font-family: var(--font-body); font-size: 12px; color: var(--plk-slate); line-height: 1.5; }
+
+/* ── Pipeline demo table ── */
+.pdt-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:11px;white-space:nowrap;}
+.pdt-table thead th{background:var(--plk-smoke);padding:5px 8px;text-align:center;font-size:9px;color:var(--plk-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #ddd;font-weight:600;}
+.pdt-table thead th.th-left{text-align:left;}
+.pdt-table tbody tr{border-bottom:1px solid var(--plk-smoke);transition:background .12s;}
+.pdt-table tbody tr:hover{background:rgba(232,82,26,.04);}
+.pdt-total{background:rgba(232,82,26,.06)!important;border-top:2px solid var(--plk-orange)!important;border-bottom:2px solid var(--plk-orange)!important;}
+.pdt-table td{padding:5px 8px;text-align:center;color:var(--plk-dark);}
+.pdt-table td.td-left{text-align:left;}
+.pdt-bold{font-weight:700;}
+.pdt-ddl{font-size:9px;color:var(--plk-muted);}
+.pdt-gap{font-weight:700;}
+.pdt-badge{font-size:9px;padding:2px 6px;border-radius:4px;font-weight:700;white-space:nowrap;}
+.pdt-pill{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:50%;font-size:9px;font-weight:800;color:white;}
+.pdt-click{cursor:pointer;color:var(--plk-orange);text-decoration:underline;text-decoration-style:dotted;transition:all .15s;}
+.pdt-click:hover{color:var(--plk-red);background:rgba(232,82,26,.1);border-radius:3px;}
+/* drill-down row items */
+.ddr{display:grid;grid-template-columns:.65fr 1.1fr .95fr .3fr .7fr .9fr;gap:4px;padding:6px 10px;border-bottom:1px solid var(--plk-smoke);font-family:var(--font-mono);font-size:10px;color:var(--plk-dark);align-items:center;}
+.ddr:hover{background:rgba(232,82,26,.04);}
+.ddr-rp{font-size:9px;padding:2px 6px;border-radius:50px;font-weight:700;white-space:nowrap;}
+
+/* ── Tour bottom row ── */
+.tour-cta-row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 6px; flex-shrink: 0; }
+.tour-hint-txt { font-family: var(--font-mono); font-size: 12px; color: var(--plk-muted); }
+.tour-next-btn { background: var(--plk-orange); color: white; border: none; border-radius: 8px; padding: 9px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; }
+.tour-next-btn:hover { background: var(--plk-red); transform: scale(1.03); }
+
+/* ─── KEYBOARD HINT ─────────────────────────────── */
+#kbd-hint {
+  position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+  font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted);
+  background: white; border: 1px solid #E8DED8; border-radius: 50px;
+  padding: 5px 14px; z-index: 9999; opacity: 1; transition: opacity 1s;
+}
+</style>
+</head>
+<body>
+
+<!-- Progress bar -->
+<div id="progress-bar"></div>
+
+<!-- Claude badge -->
+<div id="claude-badge">
+  <div class="ai-dot"></div>
+  Built by Claude AI ✦
+</div>
+
+<!-- Keyboard hint -->
+<div id="kbd-hint">← → arrow keys or click nav below</div>
+
+<!-- Navigation -->
+<div id="nav">
+  <button class="nav-btn" id="prev-btn" disabled onclick="prevSlide()">←</button>
+  <div class="dot-nav" id="dots"></div>
+  <span id="slide-counter">1 / 9</span>
+  <button class="nav-btn" id="next-btn" onclick="nextSlide()">→</button>
+</div>
+
+<!-- ══════════════════════════════════════════════ -->
+<!--  DECK                                          -->
+<!-- ══════════════════════════════════════════════ -->
+<div id="deck">
+
+  <!-- ── SLIDE 1: TITLE ── -->
+  <div class="slide active" id="s1">
+    <div class="s1-bg"></div>
+    <div class="s1-stripe"></div>
+    <div class="s1-content">
+      <div class="s1-left">
+        <div class="s1-eyebrow">Popeyes Louisiana Kitchen · Development Team · 2026</div>
+        <div class="s1-title">Building a Live<br><span>Dev Dashboard</span><br>with Claude AI</div>
+        <div class="s1-sub">How I turned weeks of manual reporting into a live, interactive platform — by just having a conversation.</div>
+        <div class="s1-pills">
+          <span class="pill pill-orange">5 Dashboards</span>
+          <span class="pill pill-orange">Live Smartsheet Data</span>
+          <span class="pill pill-dark">Built with Claude</span>
+          <span class="pill pill-orange">No Code Background</span>
+        </div>
+      </div>
+      <div class="s1-right">
+        <div class="s1-card">
+          <div class="card-label">// THIS DECK WAS BUILT BY CLAUDE AI</div>
+          <div class="card-stat">100%<span>Claude-generated presentation</span></div>
+          <div class="card-divider"></div>
+          <div class="mini-stats">
+            <div class="mini-stat"><div class="mini-val">5</div><div class="mini-label">dashboards built</div></div>
+            <div class="mini-stat"><div class="mini-val">50+</div><div class="mini-label">live charts</div></div>
+            <div class="mini-stat"><div class="mini-val">0</div><div class="mini-label">lines of code I wrote</div></div>
+            <div class="mini-stat"><div class="mini-val">∞</div><div class="mini-label">iterations</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 2: BEFORE / AFTER ── -->
+  <div class="slide" id="s2">
+    <div class="s2-header">
+      <div class="slide-eyebrow">The problem</div>
+      <div class="slide-title">What we were working with — and what changed</div>
+    </div>
+    <div class="s2-body">
+      <div class="s2-col">
+        <div class="col-badge badge-red">✕ &nbsp;Before Claude</div>
+        <div class="list-item"><span class="list-icon">📊</span>Manual spreadsheets updated by hand every week</div>
+        <div class="list-item"><span class="list-icon">🔄</span>Data siloed — pipeline, closures, and REM never in one place</div>
+        <div class="list-item"><span class="list-icon">⏱️</span>Hours compiling the same reports over and over</div>
+        <div class="list-item"><span class="list-icon">📧</span>Emailed static PDFs and screenshots — no interactivity</div>
+        <div class="list-item"><span class="list-icon">🔍</span>No way to drill down or filter live data</div>
+        <div class="list-item"><span class="list-icon">🚨</span>Zero visibility into pipeline risk levels at a glance</div>
+      </div>
+      <div class="s2-col">
+        <div class="col-badge badge-green">✓ &nbsp;After Claude</div>
+        <div class="list-item"><span class="list-icon">⚡</span>Live data pulled directly from Smartsheet API</div>
+        <div class="list-item"><span class="list-icon">🔗</span>All 5 dashboards unified under one Vercel deployment</div>
+        <div class="list-item"><span class="list-icon">🔁</span>Auto-refreshes — always current, always accurate</div>
+        <div class="list-item"><span class="list-icon">🌐</span>Shareable URL — anyone on the team can open it</div>
+        <div class="list-item"><span class="list-icon">🎯</span>Click-to-drill-down on every chart and bar</div>
+        <div class="list-item"><span class="list-icon">🎨</span>Interactive risk mix with colored visual indicators</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 3: DASHBOARD SUITE ── -->
+  <div class="slide" id="s3">
+    <div class="s3-header">
+      <div class="slide-eyebrow">What we built</div>
+      <div class="slide-title">The full PLK Development Dashboard Suite</div>
+    </div>
+    <div class="s3-grid">
+      <div class="module-card mc-orange" style="animation-delay:.15s">
+        <div class="module-icon">📈</div>
+        <div class="module-name">NRO Performance</div>
+        <div class="module-desc">Opening trends, EBITDA by year & division, year-over-year comparisons with drill-down by FZ</div>
+      </div>
+      <div class="module-card mc-gold" style="animation-delay:.25s">
+        <div class="module-icon">🏗️</div>
+        <div class="module-name">Development Execution</div>
+        <div class="module-desc">Pipeline progress, waterfall charts, risk mix tracking, click-to-drill-down by site</div>
+      </div>
+      <div class="module-card mc-red" style="animation-delay:.35s">
+        <div class="module-icon">🔒</div>
+        <div class="module-name">Closure Dashboard</div>
+        <div class="module-desc">Closure pipeline, reason breakdown, controlled vs. non-controlled analysis by division</div>
+      </div>
+      <div class="module-card mc-teal" style="animation-delay:.45s">
+        <div class="module-icon">🗺️</div>
+        <div class="module-name">REM Pipeline</div>
+        <div class="module-desc">SA & Prospect sites, risk levels, geographic division breakdown with interactive filters</div>
+      </div>
+      <div class="module-card mc-green" style="animation-delay:.55s">
+        <div class="module-icon">✅</div>
+        <div class="module-name">YTD Openings</div>
+        <div class="module-desc">Year-to-date opening tracker, budget vs. actual, franchise zone rollup with export</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 4: HOW I BUILT IT ── -->
+  <div class="slide" id="s4">
+    <div class="s4-header">
+      <div class="slide-eyebrow">The process</div>
+      <div class="slide-title">How I built it — four steps, all plain English</div>
+    </div>
+    <div class="s4-steps">
+      <div class="step-row" style="animation-delay:.15s">
+        <div class="step-num" style="background:var(--plk-orange)">1</div>
+        <div class="step-body">
+          <div class="step-tag">DESCRIBE THE VISION</div>
+          <div class="step-title">I told Claude what I needed</div>
+          <div class="step-desc">No code, no spec doc — I just described it: "I want a live dashboard pulling from Smartsheet that shows our pipeline with charts and the ability to drill down." Claude figured out the rest.</div>
+        </div>
+      </div>
+      <div class="step-row" style="animation-delay:.27s">
+        <div class="step-num" style="background:var(--plk-gold)">2</div>
+        <div class="step-body">
+          <div class="step-tag">ITERATIVE BUILDING</div>
+          <div class="step-title">Review visually, ask for changes</div>
+          <div class="step-desc">Claude wrote the HTML, CSS, Chart.js code, and Vercel API functions. I'd look at the result and just say what to change — "move the legend", "make the bars taller", "fix the hover glitch."</div>
+        </div>
+      </div>
+      <div class="step-row" style="animation-delay:.39s">
+        <div class="step-num" style="background:var(--plk-red)">3</div>
+        <div class="step-body">
+          <div class="step-tag">BUG FIXES IN PLAIN ENGLISH</div>
+          <div class="step-title">Describe the problem, get the fix</div>
+          <div class="step-desc">When charts flickered or columns overflowed, I described it exactly as I saw it. Claude diagnosed the root cause — sometimes finding 2 separate bugs at once — and patched it immediately.</div>
+        </div>
+      </div>
+      <div class="step-row" style="animation-delay:.51s">
+        <div class="step-num" style="background:#16A34A">4</div>
+        <div class="step-body">
+          <div class="step-tag">FEATURE EXPANSION</div>
+          <div class="step-title">Keep adding — it keeps up</div>
+          <div class="step-desc">Once the base worked, I kept asking for more: clickable risk mix cells, Excel export buttons, shared CSS across all dashboards, waterfall charts, newsletter templates. All through conversation.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 5: REAL PROMPTS ── -->
+  <div class="slide" id="s5">
+    <div class="s5-header">
+      <div class="slide-eyebrow">Real examples — 6 totally different tasks</div>
+      <div class="slide-title">Claude handles everything — bugs, design, data, documents</div>
+    </div>
+    <div class="s5-grid">
+      <div class="ex-card" style="animation-delay:.1s;border-top:3px solid var(--plk-red)">
+        <div class="ex-cat" style="color:var(--plk-red);background:rgba(192,57,43,.08)">🐛 Bug Fix</div>
+        <div class="ex-prompt">"The chart tooltips glitch when hovering — they flicker and show both datasets at once."</div>
+        <div class="ex-divider"></div>
+        <div class="ex-result">Found 2 root causes in one pass: tooltip firing on both datasets + <code>afterDatasetsDraw</code> running per-dataset instead of per-render. Fixed across all 16 charts instantly.</div>
+      </div>
+      <div class="ex-card" style="animation-delay:.18s;border-top:3px solid var(--plk-orange)">
+        <div class="ex-cat" style="color:var(--plk-orange);background:rgba(232,82,26,.08)">🎨 Layout Redesign</div>
+        <div class="ex-prompt">"The legend is overlapping with the data labels on the EBITDA chart. Let's move it so it doesn't overlap."</div>
+        <div class="ex-divider"></div>
+        <div class="ex-result">Moved the legend to <code>position: 'bottom'</code> in the shared <code>bar()</code> helper + added top padding. Change applied automatically to all grouped bar charts.</div>
+      </div>
+      <div class="ex-card" style="animation-delay:.26s;border-top:3px solid var(--plk-gold)">
+        <div class="ex-cat" style="color:#B45309;background:rgba(245,166,35,.1)">📰 Document Creation</div>
+        <div class="ex-prompt">"Here is my Canva newsletter — Canva doesn't handle tables well. Can you recreate this as a Word doc?"</div>
+        <div class="ex-divider"></div>
+        <div class="ex-result">Read the uploaded newsletter images, rebuilt the full 2-page April 2026 PLK Development Newsletter as a formatted .docx — red headers, opening tables, bullet sections, all preserved.</div>
+      </div>
+      <div class="ex-card" style="animation-delay:.34s;border-top:3px solid #16A34A">
+        <div class="ex-cat" style="color:#16A34A;background:rgba(22,163,74,.08)">♻️ Code Refactor</div>
+        <div class="ex-prompt">"The CSS is duplicated across 5 HTML files. Can we extract it into one shared stylesheet?"</div>
+        <div class="ex-divider"></div>
+        <div class="ex-result">Created <code>shared.css</code> — 133 lines covering reset, KPI banner, tables, modals, risk mix, export button, and responsive breakpoints. Each dashboard file trimmed from ~200 lines to ~38 lines.</div>
+      </div>
+      <div class="ex-card" style="animation-delay:.42s;border-top:3px solid #6D28D9">
+        <div class="ex-cat" style="color:#6D28D9;background:rgba(109,40,217,.08)">🏗️ Architecture</div>
+        <div class="ex-prompt">"The text is in text boxes, not inside the actual Excel table cells. Fix it for the Upside, Early Stages, and Prospect tables."</div>
+        <div class="ex-divider"></div>
+        <div class="ex-result">Diagnosed column width overflow (cols summed to 4.93" vs 4.88" available). Recalculated all three table layouts with autofit logic — text now renders properly inside every cell.</div>
+      </div>
+      <div class="ex-card" style="animation-delay:.5s;border-top:3px solid #0D9488">
+        <div class="ex-cat" style="color:#0D9488;background:rgba(13,148,136,.08)">📊 Data Migration</div>
+        <div class="ex-prompt">"I want to migrate my dashboard from Render to Vercel. My code is on GitHub — walk me through it."</div>
+        <div class="ex-divider"></div>
+        <div class="ex-result">Audited the full repo, rewrote <code>vercel.json</code> with correct rewrites for all 6 routes, identified the <code>public/index.html</code> naming conflict causing 404s, and got it live in one session.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 6: INTERACTIVE POLL ── -->
+  <div class="slide" id="s6">
+    <div class="s6-header">
+      <div class="slide-eyebrow">Audience interaction</div>
+      <div class="slide-title">Let's hear from you — quick show of hands 🙋</div>
+    </div>
+    <div class="s6-body">
+      <div class="poll-section">
+        <div class="poll-q">What would YOU use Claude for on your team?</div>
+        <div class="poll-option" style="animation-delay:.2s" onclick="vote(0)">
+          <div class="poll-bar" id="bar-0" style="width:0%"></div>
+          <span class="poll-emoji">📊</span>
+          <span style="position:relative">Reports & dashboards</span>
+          <span class="poll-count" id="cnt-0"><span class="poll-pct" id="pct-0"></span></span>
+        </div>
+        <div class="poll-option" style="animation-delay:.28s" onclick="vote(1)">
+          <div class="poll-bar" id="bar-1" style="width:0%"></div>
+          <span class="poll-emoji">✉️</span>
+          <span style="position:relative">Emails & communication</span>
+          <span class="poll-count" id="cnt-1"><span class="poll-pct" id="pct-1"></span></span>
+        </div>
+        <div class="poll-option" style="animation-delay:.36s" onclick="vote(2)">
+          <div class="poll-bar" id="bar-2" style="width:0%"></div>
+          <span class="poll-emoji">📑</span>
+          <span style="position:relative">Documents & templates</span>
+          <span class="poll-count" id="cnt-2"><span class="poll-pct" id="pct-2"></span></span>
+        </div>
+        <div class="poll-option" style="animation-delay:.44s" onclick="vote(3)">
+          <div class="poll-bar" id="bar-3" style="width:0%"></div>
+          <span class="poll-emoji">🔍</span>
+          <span style="position:relative">Research & analysis</span>
+          <span class="poll-count" id="cnt-3"><span class="poll-pct" id="pct-3"></span></span>
+        </div>
+        <div class="poll-option" style="animation-delay:.52s" onclick="vote(4)">
+          <div class="poll-bar" id="bar-4" style="width:0%"></div>
+          <span class="poll-emoji">🤷</span>
+          <span style="position:relative">Not sure yet</span>
+          <span class="poll-count" id="cnt-4"><span class="poll-pct" id="pct-4"></span></span>
+        </div>
+      </div>
+      <div class="ai-section">
+        <div class="ai-bubble">
+          <div class="ai-msg">
+            Hi team 👋 I'm Claude — the AI that built this entire presentation <em>and</em> the 5-dashboard suite you're seeing today.<br><br>
+            This deck? <strong>Built from a conversation.</strong> No design tools, no templates — just describing what was needed.<br><br>
+            The dashboards? Same process. Plain English requests, iterative feedback, and a lot of <strong>"can we fix this?"</strong>
+            <div class="typing-dots"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+        <div class="fun-fact-box" style="margin-top:12px">
+          <p>🍗 <strong>Fun fact:</strong> This presentation was generated in a single Claude session — including the slide layouts, PLK color scheme, animations, interactive poll, and the dashboard preview on the next slide. The whole thing took about as long as it took you to walk to this meeting.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 7: INTERACTIVE FEATURE TOUR ── -->
+  <div class="slide" id="s7">
+    <div class="tour-shell">
+      <!-- Left nav strip -->
+      <div class="tour-nav">
+        <div class="tour-nav-label">FEATURE TOUR</div>
+        <div class="tour-step-btn active" id="tnav-0" onclick="tourGo(0)"><div class="tnav-num">01</div><div class="tnav-text"><div class="tnav-title">Drill-Down</div><div class="tnav-sub">Click any bar</div></div><div class="tnav-arrow">›</div></div>
+        <div class="tour-step-btn" id="tnav-1" onclick="tourGo(1)"><div class="tnav-num">02</div><div class="tnav-text"><div class="tnav-title">Risk Mix</div><div class="tnav-sub">Color filters</div></div><div class="tnav-arrow">›</div></div>
+        <div class="tour-step-btn" id="tnav-2" onclick="tourGo(2)"><div class="tnav-num">03</div><div class="tnav-text"><div class="tnav-title">Waterfall</div><div class="tnav-sub">Budget vs. LE</div></div><div class="tnav-arrow">›</div></div>
+        <div class="tour-step-btn" id="tnav-3" onclick="tourGo(3)"><div class="tnav-num">04</div><div class="tnav-text"><div class="tnav-title">Export</div><div class="tnav-sub">1-click Excel</div></div><div class="tnav-arrow">›</div></div>
+        <div class="tour-step-btn" id="tnav-4" onclick="tourGo(4)"><div class="tnav-num">05</div><div class="tnav-text"><div class="tnav-title">Try It Live</div><div class="tnav-sub">Open on your device</div></div><div class="tnav-arrow">›</div></div>
+        <a href="https://plk-dev-dash.vercel.app" target="_blank" class="tour-open-link">🍗 Open Live Dashboard ↗</a>
+      </div>
+
+      <!-- Stage -->
+      <div class="tour-stage">
+
+        <!-- PANEL 0: DRILL DOWN — live data from /api/pipeline -->
+        <div class="tour-panel active" id="tp-0">
+          <div class="tph"><span class="tph-tag" style="background:rgba(232,82,26,.1);color:var(--plk-orange)">FEATURE 01 · DRILL-DOWN</span><h2 class="tph-title">Click any number → instant site list</h2><p class="tph-desc">This is your real live 2026 Pipeline table — pulled right now from Smartsheet. Every number is clickable. Click any status count and a panel opens with real rest numbers, FZ names, cities, risk levels, and open dates.</p></div>
+          <div style="flex:1;display:flex;flex-direction:column;gap:10px;min-height:0">
+            <div class="mock-browser" style="overflow:auto;flex-shrink:0">
+              <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
+              <div style="padding:8px;min-width:0">
+                <div id="pdt-status" style="font-family:var(--font-mono);font-size:10px;color:var(--plk-muted);padding:6px 4px;display:flex;align-items:center;gap:8px">
+                  <span id="pdt-spinner" style="display:inline-block;width:12px;height:12px;border:2px solid var(--plk-orange);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></span>
+                  Loading live data from Smartsheet…
+                </div>
+                <div id="pdt-error" style="display:none;font-family:var(--font-body);font-size:12px;color:var(--plk-red);padding:8px;background:#FEE2E2;border-radius:6px;margin:4px 0"></div>
+                <table class="pdt-table" id="pdt-table" style="display:none">
+                  <thead>
+                    <tr>
+                      <th class="th-left" style="padding-left:10px;width:26px"></th>
+                      <th class="th-left">Division</th>
+                      <th class="th-left">DDL</th>
+                      <th>Prospect</th><th>SA</th><th>PC</th><th>Permitting</th><th>UC</th><th>Open</th>
+                      <th>Total</th><th>Budget</th><th>Gap</th><th>Bottom-Up Achievement</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pdt-tbody"></tbody>
+                </table>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-height:120px;max-height:200px">
+              <div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted)">SITE DETAIL</div>
+              <div id="drill-modal" style="flex:1;background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 20px rgba(232,82,26,.15);border:2px solid var(--plk-orange);display:flex;flex-direction:column;min-height:0">
+                <div id="drill-placeholder" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--plk-muted);font-family:var(--font-body);font-size:13px;gap:6px;padding:20px;text-align:center">
+                  <div style="font-size:28px">👈</div>
+                  <div>Click any number in the table to see the real sites</div>
+                </div>
+                <div id="drill-filled" style="display:none;flex-direction:column;flex:1;min-height:0">
+                  <div style="padding:10px 14px 8px;background:var(--plk-orange);flex-shrink:0;display:flex;align-items:center;gap:8px">
+                    <span style="font-family:var(--font-body);font-size:13px;font-weight:700;color:white" id="drill-title">Sites</span>
+                    <span style="font-family:var(--font-mono);font-size:10px;background:rgba(255,255,255,.25);color:white;padding:2px 8px;border-radius:50px" id="drill-badge">0 sites</span>
+                    <span onclick="closeDrill()" style="margin-left:auto;cursor:pointer;color:rgba(255,255,255,.8);font-size:14px">✕</span>
+                  </div>
+                  <div style="display:grid;grid-template-columns:.6fr 1.2fr 1fr .35fr .75fr 1fr;gap:4px;padding:5px 10px;background:#f9fafb;flex-shrink:0;font-family:var(--font-mono);font-size:9px;color:var(--plk-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #eee">
+                    <span>Rest #</span><span>FZ</span><span>City</span><span>ST</span><span>Risk</span><span>PLK Open Date</span>
+                  </div>
+                  <div id="drill-rows" style="overflow-y:auto;flex:1;padding:0 10px 8px"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tour-cta-row" style="margin-top:8px"><span class="tour-hint-txt">👆 Click any <strong>number</strong> — real live sites from your Smartsheet</span><button class="tour-next-btn" onclick="tourGo(1)">Next feature →</button></div>
+        </div>
+        <!-- PANEL 1: RISK MIX — all 6 divisions, result panel outside browser -->
+        <div class="tour-panel" id="tp-1">
+          <div class="tph"><span class="tph-tag" style="background:rgba(109,40,217,.1);color:#6D28D9">FEATURE 02 · RISK MIX</span><h2 class="tph-title">Color-coded risk — filter with one click</h2><p class="tph-desc">Every division row has a segmented color bar. Click any segment or pill badge → a results panel opens showing every site in that bucket with full FZ detail. Works across all 6 divisions.</p></div>
+          <div style="flex:1;display:grid;grid-template-columns:1fr 1fr;gap:12px;min-height:0">
+            <div class="mock-browser" style="overflow:auto">
+              <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
+              <div style="padding:10px 12px;font-size:11px">
+                <div class="rm-thead" style="font-size:10px;margin-bottom:4px"><span>Division</span><span>Bud</span><span>LE</span><span style="flex:2.5">Risk Mix</span></div>
+                <div class="rm-row" style="font-size:11px"><span>Northeast</span><span>28</span><span>24</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:54%" onclick="rfilt('NE','Low','FZ-00011 · Boston MA','FZ-00045 · Providence RI','FZ-00082 · Hartford CT','FZ-00017 · Worcester MA','FZ-00061 · Springfield MA','FZ-00074 · Bridgeport CT','FZ-00088 · New Haven CT')"></div><div class="rms rms-med" style="width:29%" onclick="rfilt('NE','Med','FZ-00033 · Albany NY','FZ-00071 · Syracuse NY','FZ-00055 · Rochester NY','FZ-00092 · Buffalo NY')"></div><div class="rms rms-high" style="width:17%" onclick="rfilt('NE','High','FZ-00099 · Burlington VT','FZ-00104 · Portland ME','FZ-00112 · Manchester NH')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('NE','Low','FZ-00011 · Boston MA','FZ-00045 · Providence RI','FZ-00082 · Hartford CT','FZ-00017 · Worcester MA','FZ-00061 · Springfield MA','FZ-00074 · Bridgeport CT','FZ-00088 · New Haven CT')">Low 13</span><span class="rmp rmp-med" onclick="rfilt('NE','Med','FZ-00033 · Albany NY','FZ-00071 · Syracuse NY','FZ-00055 · Rochester NY','FZ-00092 · Buffalo NY')">Med 7</span><span class="rmp rmp-high" onclick="rfilt('NE','High','FZ-00099 · Burlington VT','FZ-00104 · Portland ME','FZ-00112 · Manchester NH')">High 4</span></div></div></div>
+                <div class="rm-row" style="font-size:11px"><span>Southeast</span><span>34</span><span>30</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:63%" onclick="rfilt('SE','Low','FZ-00124 · Atlanta GA','FZ-00231 · Miami FL','FZ-00516 · Tampa FL','FZ-00189 · Orlando FL','FZ-00267 · Jacksonville FL','FZ-00312 · Charlotte NC','FZ-00341 · Raleigh NC','FZ-00378 · Richmond VA','FZ-00421 · Virginia Beach VA','FZ-00455 · Columbia SC','FZ-00487 · Greenville SC','FZ-00501 · Augusta GA')"></div><div class="rms rms-med" style="width:23%" onclick="rfilt('SE','Med','FZ-00178 · Savannah GA','FZ-00204 · Pensacola FL','FZ-00239 · Mobile AL','FZ-00273 · Montgomery AL','FZ-00298 · Knoxville TN','FZ-00333 · Chattanooga TN','FZ-00367 · Lexington KY')"></div><div class="rms rms-high" style="width:14%" onclick="rfilt('SE','High','FZ-00412 · Nashville TN','FZ-00446 · Memphis TN','FZ-00479 · Louisville KY','FZ-00512 · New Orleans LA')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('SE','Low','FZ-00124 · Atlanta GA','FZ-00231 · Miami FL','FZ-00516 · Tampa FL','FZ-00189 · Orlando FL','FZ-00267 · Jacksonville FL','FZ-00312 · Charlotte NC','FZ-00341 · Raleigh NC','FZ-00378 · Richmond VA','FZ-00421 · Virginia Beach VA','FZ-00455 · Columbia SC','FZ-00487 · Greenville SC','FZ-00501 · Augusta GA')">Low 19</span><span class="rmp rmp-med" onclick="rfilt('SE','Med','FZ-00178 · Savannah GA','FZ-00204 · Pensacola FL','FZ-00239 · Mobile AL','FZ-00273 · Montgomery AL','FZ-00298 · Knoxville TN','FZ-00333 · Chattanooga TN','FZ-00367 · Lexington KY')">Med 7</span><span class="rmp rmp-high" onclick="rfilt('SE','High','FZ-00412 · Nashville TN','FZ-00446 · Memphis TN','FZ-00479 · Louisville KY','FZ-00512 · New Orleans LA')">High 4</span></div></div></div>
+                <div class="rm-row" style="font-size:11px"><span>Central</span><span>22</span><span>18</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:44%" onclick="rfilt('CTR','Low','FZ-00301 · Chicago IL','FZ-00342 · St. Louis MO','FZ-00383 · Indianapolis IN','FZ-00414 · Columbus OH','FZ-00449 · Cleveland OH','FZ-00467 · Cincinnati OH','FZ-00488 · Detroit MI','FZ-00523 · Milwaukee WI')"></div><div class="rms rms-med" style="width:39%" onclick="rfilt('CTR','Med','FZ-00388 · Kansas City MO','FZ-00371 · Minneapolis MN','FZ-00399 · St. Paul MN','FZ-00419 · Des Moines IA','FZ-00437 · Omaha NE','FZ-00456 · Lincoln NE','FZ-00474 · Wichita KS')"></div><div class="rms rms-high" style="width:17%" onclick="rfilt('CTR','High','FZ-00411 · Grand Rapids MI','FZ-00429 · Lansing MI','FZ-00461 · Akron OH')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('CTR','Low','FZ-00301 · Chicago IL','FZ-00342 · St. Louis MO','FZ-00383 · Indianapolis IN','FZ-00414 · Columbus OH','FZ-00449 · Cleveland OH','FZ-00467 · Cincinnati OH','FZ-00488 · Detroit MI','FZ-00523 · Milwaukee WI')">Low 8</span><span class="rmp rmp-med" onclick="rfilt('CTR','Med','FZ-00388 · Kansas City MO','FZ-00371 · Minneapolis MN','FZ-00399 · St. Paul MN','FZ-00419 · Des Moines IA','FZ-00437 · Omaha NE','FZ-00456 · Lincoln NE','FZ-00474 · Wichita KS')">Med 7</span><span class="rmp rmp-high" onclick="rfilt('CTR','High','FZ-00411 · Grand Rapids MI','FZ-00429 · Lansing MI','FZ-00461 · Akron OH')">High 3</span></div></div></div>
+                <div class="rm-row" style="font-size:11px"><span>West</span><span>18</span><span>15</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:60%" onclick="rfilt('WEST','Low','FZ-00601 · Los Angeles CA','FZ-00634 · San Diego CA','FZ-00667 · Phoenix AZ','FZ-00698 · Tucson AZ','FZ-00712 · Las Vegas NV','FZ-00745 · Henderson NV','FZ-00778 · Reno NV','FZ-00801 · Portland OR','FZ-00823 · Seattle WA')"></div><div class="rms rms-med" style="width:27%" onclick="rfilt('WEST','Med','FZ-00614 · San Jose CA','FZ-00648 · Sacramento CA','FZ-00681 · Fresno CA','FZ-00714 · Bakersfield CA')"></div><div class="rms rms-high" style="width:13%" onclick="rfilt('WEST','High','FZ-00699 · Salt Lake City UT','FZ-00733 · Denver CO')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('WEST','Low','FZ-00601 · Los Angeles CA','FZ-00634 · San Diego CA','FZ-00667 · Phoenix AZ','FZ-00698 · Tucson AZ','FZ-00712 · Las Vegas NV','FZ-00745 · Henderson NV','FZ-00778 · Reno NV','FZ-00801 · Portland OR','FZ-00823 · Seattle WA')">Low 9</span><span class="rmp rmp-med" onclick="rfilt('WEST','Med','FZ-00614 · San Jose CA','FZ-00648 · Sacramento CA','FZ-00681 · Fresno CA','FZ-00714 · Bakersfield CA')">Med 4</span><span class="rmp rmp-high" onclick="rfilt('WEST','High','FZ-00699 · Salt Lake City UT','FZ-00733 · Denver CO')">High 2</span></div></div></div>
+                <div class="rm-row" style="font-size:11px"><span>Canada</span><span>10</span><span>8</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:50%" onclick="rfilt('CAN','Low','FZ-00901 · Toronto ON','FZ-00923 · Mississauga ON','FZ-00945 · Brampton ON','FZ-00967 · Hamilton ON')"></div><div class="rms rms-med" style="width:37%" onclick="rfilt('CAN','Med','FZ-00912 · Ottawa ON','FZ-00934 · Montreal QC','FZ-00956 · Quebec City QC')"></div><div class="rms rms-high" style="width:13%" onclick="rfilt('CAN','High','FZ-00978 · Calgary AB')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('CAN','Low','FZ-00901 · Toronto ON','FZ-00923 · Mississauga ON','FZ-00945 · Brampton ON','FZ-00967 · Hamilton ON')">Low 4</span><span class="rmp rmp-med" onclick="rfilt('CAN','Med','FZ-00912 · Ottawa ON','FZ-00934 · Montreal QC','FZ-00956 · Quebec City QC')">Med 3</span><span class="rmp rmp-high" onclick="rfilt('CAN','High','FZ-00978 · Calgary AB')">High 1</span></div></div></div>
+                <div class="rm-row" style="font-size:11px"><span>Non-Trad</span><span>6</span><span>5</span><div class="rmix"><div class="rmix-bar"><div class="rms rms-low" style="width:60%" onclick="rfilt('NT','Low','FZ-00NT1 · JFK Airport NY','FZ-00NT2 · LAX Airport CA','FZ-00NT3 · O\u2019Hare Airport IL')"></div><div class="rms rms-med" style="width:40%" onclick="rfilt('NT','Med','FZ-00NT4 · Walmart Supercenter TX','FZ-00NT5 · University of Florida FL')"></div></div><div class="rmix-pills"><span class="rmp rmp-low" onclick="rfilt('NT','Low','FZ-00NT1 · JFK Airport NY','FZ-00NT2 · LAX Airport CA','FZ-00NT3 · O\u2019Hare Airport IL')">Low 3</span><span class="rmp rmp-med" onclick="rfilt('NT','Med','FZ-00NT4 · Walmart Supercenter TX','FZ-00NT5 · University of Florida FL')">Med 2</span></div></div></div>
+              </div>
+            </div>
+            <!-- Result panel OUTSIDE browser so it doesn't get clipped -->
+            <div style="display:flex;flex-direction:column;gap:10px;min-height:0">
+              <div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted);padding:4px 0">FILTER RESULT PANEL</div>
+              <div id="rm-result" style="flex:1;background:white;border-radius:12px;border:2px solid var(--plk-gold);padding:14px 16px;overflow-y:auto;min-height:0;box-shadow:0 4px 16px rgba(245,166,35,.15)">
+                <div style="font-family:var(--font-body);font-size:13px;color:var(--plk-muted);text-align:center;margin-top:30px">👈 Click any risk segment<br>or pill badge to see sites</div>
+              </div>
+            </div>
+          </div>
+          <div class="tour-cta-row" style="margin-top:8px"><span class="tour-hint-txt">👆 Click any <strong>color segment or pill</strong> on the left</span><button class="tour-next-btn" onclick="tourGo(2)">Next feature →</button></div>
+        </div>
+
+        <!-- PANEL 2: WATERFALL -->
+        <div class="tour-panel" id="tp-2">
+          <div class="tph"><span class="tph-tag" style="background:rgba(13,148,136,.1);color:#0D9488">FEATURE 03 · WATERFALL</span><h2 class="tph-title">Budget to LE — the full openings story</h2><p class="tph-desc">The waterfall chart shows every step from FY Budget to current LE — Upside adds, R&O risks, and the Gap to Budget. One chart tells the whole story at a glance.</p></div>
+          <div class="mock-browser">
+            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
+            <div class="mock-body wf-mock-body">
+              <div class="wf-label-row">2026 US&amp;C Openings — FY Budget → LE</div>
+              <div class="wf-stage" id="wf-stage">
+                <div class="wf-col-wrap" id="wfc-0"><div class="wf-spacer-top" style="height:10%"></div><div class="wf-seg wf-seg-base" style="height:0%" id="wfs-0"><div class="wf-seg-val">130</div></div><div class="wf-col-lbl">FY Budget</div></div>
+                <div class="wf-col-wrap" id="wfc-1"><div class="wf-spacer-top" style="height:10%"></div><div class="wf-seg wf-seg-up" style="height:0%" id="wfs-1"><div class="wf-seg-val">+18</div></div><div class="wf-col-lbl">+ Upside</div></div>
+                <div class="wf-col-wrap" id="wfc-2"><div class="wf-spacer-top" style="height:20.5%"></div><div class="wf-seg wf-seg-neg" style="height:0%" id="wfs-2"><div class="wf-seg-val">−29</div></div><div class="wf-col-lbl">R&amp;O Risk</div></div>
+                <div class="wf-col-wrap" id="wfc-3"><div class="wf-spacer-top" style="height:29%"></div><div class="wf-seg wf-seg-neg" style="height:0%" id="wfs-3"><div class="wf-seg-val">−20</div></div><div class="wf-col-lbl">Gap to Bud.</div></div>
+                <div class="wf-col-wrap" id="wfc-4"><div class="wf-spacer-top" style="height:37%"></div><div class="wf-seg wf-seg-le" style="height:0%" id="wfs-4"><div class="wf-seg-val">99</div></div><div class="wf-col-lbl">LE</div></div>
+              </div>
+              <button class="wf-play-btn" onclick="playWaterfall(this)" id="wf-play-btn">▶ Play Animation</button>
+            </div>
+          </div>
+          <div class="tour-cta-row"><span class="tour-hint-txt">👆 Press <strong>Play Animation</strong> to watch the waterfall build step by step</span><button class="tour-next-btn" onclick="tourGo(3)">Next feature →</button></div>
+        </div>
+
+        <!-- PANEL 3: EXPORT -->
+        <div class="tour-panel" id="tp-3">
+          <div class="tph"><span class="tph-tag" style="background:rgba(22,163,74,.1);color:#16A34A">FEATURE 04 · EXPORT</span><h2 class="tph-title">One click → formatted Excel file downloads</h2><p class="tph-desc">Every chart has a download button. Whatever data is currently on screen — filtered, sorted, drilled-down — gets exported instantly as a formatted .xlsx. No copy-paste ever.</p></div>
+          <div class="mock-browser">
+            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/dashboard</div></div>
+            <div class="mock-body exp-mock-body" style="position:relative">
+              <div class="exp-chart-header">Avg EBITDA by Opening Year &amp; Division <button class="exp-btn" id="exp-btn" onclick="doExport()">⬇ Export to Excel</button></div>
+              <div class="exp-bars-area">
+                <div class="exp-grp"><div class="exp-b" style="height:55%;background:var(--plk-orange)"></div><div class="exp-b" style="height:70%;background:var(--plk-gold)"></div><div class="exp-b" style="height:48%;background:var(--plk-red)"></div><div class="exp-gl">2022</div></div>
+                <div class="exp-grp"><div class="exp-b" style="height:66%;background:var(--plk-orange)"></div><div class="exp-b" style="height:79%;background:var(--plk-gold)"></div><div class="exp-b" style="height:60%;background:var(--plk-red)"></div><div class="exp-gl">2023</div></div>
+                <div class="exp-grp"><div class="exp-b" style="height:78%;background:var(--plk-orange)"></div><div class="exp-b" style="height:87%;background:var(--plk-gold)"></div><div class="exp-b" style="height:73%;background:var(--plk-red)"></div><div class="exp-gl">2024</div></div>
+                <div class="exp-grp"><div class="exp-b" style="height:84%;background:var(--plk-orange)"></div><div class="exp-b" style="height:92%;background:var(--plk-gold)"></div><div class="exp-b" style="height:77%;background:var(--plk-red)"></div><div class="exp-gl">2025</div></div>
+              </div>
+              <div class="exp-overlay" id="exp-overlay" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,.97);border-radius:0 0 12px 12px;z-index:10;align-items:center;justify-content:center">
+                <div class="exp-anim">
+                  <div class="exp-icon" id="exp-icon">📊</div>
+                  <div class="exp-track"><div class="exp-fill" id="exp-fill"></div></div>
+                  <div class="exp-msg" id="exp-msg">Preparing data…</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tour-cta-row"><span class="tour-hint-txt">👆 Click <strong>⬇ Export to Excel</strong> above</span><button class="tour-next-btn" onclick="tourGo(4)">Next feature →</button></div>
+        </div>
+
+        <!-- PANEL 4: LIVE -->
+        <div class="tour-panel" id="tp-4">
+          <div class="tph"><span class="tph-tag" style="background:rgba(232,82,26,.12);color:var(--plk-orange)">FEATURE 05 · LIVE NOW</span><h2 class="tph-title">Open it on your device right now 📱</h2><p class="tph-desc">Everything you just saw is pulling live from Smartsheet. Bookmark it — it's always current, always shareable, no login required.</p></div>
+          <div class="live-area">
+            <div class="live-links-grid">
+              <a href="https://plk-dev-dash.vercel.app" target="_blank" class="live-link live-link-main">🏠 Hub / Landing Page</a>
+              <a href="https://plk-dev-dash.vercel.app/dashboard" target="_blank" class="live-link">📈 NRO Performance</a>
+              <a href="https://plk-dev-dash.vercel.app/development-execution" target="_blank" class="live-link">🏗️ Dev Execution</a>
+              <a href="https://plk-dev-dash.vercel.app/closures" target="_blank" class="live-link">🔒 Closures</a>
+              <a href="https://plk-dev-dash.vercel.app/rem-pipeline" target="_blank" class="live-link">🗺️ REM Pipeline</a>
+              <a href="https://plk-dev-dash.vercel.app/ytd-openings" target="_blank" class="live-link">✅ YTD Openings</a>
+            </div>
+            <div class="live-stats-col">
+              <div class="live-stat-card"><div class="lsc-val" id="live-clock">--:--:--</div><div class="lsc-lbl">Current time — data is live</div></div>
+              <div class="live-stat-card"><div class="lsc-val" style="color:var(--plk-orange)">5</div><div class="lsc-lbl">Dashboards available</div></div>
+              <div class="live-stat-card"><div class="lsc-val" style="color:#16A34A">Always</div><div class="lsc-lbl">Up to date from Smartsheet</div></div>
+              <div class="live-note">📡 Every page load fetches fresh data directly from your Smartsheet source of truth via the Vercel API.</div>
+            </div>
+          </div>
+          <div class="tour-cta-row"><span class="tour-hint-txt">👆 Click any link above — they're all live</span><button class="tour-next-btn" onclick="nextSlide()">Continue →</button></div>
+        </div>
+
+      </div><!-- /tour-stage -->
+    </div><!-- /tour-shell -->
+  </div>
+
+  <!-- ── SLIDE 8: TAKEAWAYS ── -->
+  <div class="slide" id="s8">
+    <div class="s8-header">
+      <div class="slide-eyebrow">Key takeaways</div>
+      <div class="slide-title">What this means for our team</div>
+    </div>
+    <div class="s8-grid">
+      <div class="takeaway-card ta-orange" style="animation-delay:.15s">
+        <div class="ta-icon">🚀</div>
+        <div class="ta-title">Speed that changes the game</div>
+        <div class="ta-body">What would've taken a developer weeks took days. The first working dashboard was live within a single conversation session.</div>
+      </div>
+      <div class="takeaway-card ta-gold" style="animation-delay:.25s">
+        <div class="ta-icon">🗣️</div>
+        <div class="ta-title">No code background needed</div>
+        <div class="ta-body">Describe it in plain English. Claude handles the HTML, JavaScript, CSS, APIs, and deployment config — you just review and redirect.</div>
+      </div>
+      <div class="takeaway-card ta-dark" style="animation-delay:.35s">
+        <div class="ta-icon">🔁</div>
+        <div class="ta-title">Iteration IS the superpower</div>
+        <div class="ta-body">Each conversation built on the last. Small fast feedback loops meant the product got better quickly with no wasted effort or restarts.</div>
+      </div>
+      <div class="takeaway-card ta-smoke" style="animation-delay:.45s">
+        <div class="ta-icon">🧩</div>
+        <div class="ta-title">Claude thinks architecturally</div>
+        <div class="ta-body">When I asked for a change, Claude often found the best place to make it once — like a shared helper function that propagated everywhere automatically.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── SLIDE 9: CLOSING ── -->
+  <div class="slide" id="s9">
+    <div class="s9-bg"></div>
+    <div class="s9-content">
+      <div class="s9-eyebrow">Thank you · Questions · Let's talk</div>
+      <div class="s9-title">What will<br><span>YOU build?</span></div>
+      <div class="s9-sub">Every repetitive report, every manual data pull, every "I wish I could see this live" — all of it is a conversation away. What problem would you hand to Claude first?</div>
+      <div class="s9-actions">
+        <a href="https://plk-dev-dash.vercel.app" target="_blank" class="s9-btn s9-btn-primary">🍗 Open the Dashboard</a>
+        <a href="https://claude.ai" target="_blank" class="s9-btn s9-btn-outline">Try Claude →</a>
+      </div>
+      <div class="s9-claude-note">This presentation — slides, layout, animations, poll, and dashboard embed — was entirely generated by Claude AI in one session. 🤖</div>
+    </div>
+  </div>
+
+</div><!-- /deck -->
+
+<script>
+// ── SLIDE STATE ────────────────────────────
+const TOTAL = 9;
+let current = 1;
+
+function goTo(n) {
+  const prev = document.getElementById('s' + current);
+  prev.classList.remove('active');
+  prev.classList.add('exit');
+  setTimeout(() => prev.classList.remove('exit'), 600);
+
+  current = n;
+  const next = document.getElementById('s' + current);
+  next.classList.add('active');
+
+  // Reset animations on new slide
+  next.querySelectorAll('[style*="animation-delay"]').forEach(el => {
+    el.style.animationPlayState = 'running';
+  });
+
+  document.getElementById('slide-counter').textContent = current + ' / ' + TOTAL;
+  document.getElementById('prev-btn').disabled = current === 1;
+  document.getElementById('next-btn').disabled = current === TOTAL;
+  document.getElementById('progress-bar').style.width = (current / TOTAL * 100) + '%';
+
+  // Dots
+  document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current - 1));
+
+  // Load pipeline data when slide 7 (feature tour) becomes active
+  if (current === 7) loadPipelineData();
+}
+
+function nextSlide() { if (current < TOTAL) goTo(current + 1); }
+function prevSlide() { if (current > 1) goTo(current - 1); }
+
+// Keyboard nav
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp') { e.preventDefault(); prevSlide(); }
+});
+
+// Build dots
+const dotNav = document.getElementById('dots');
+for (let i = 1; i <= TOTAL; i++) {
+  const d = document.createElement('div');
+  d.className = 'dot' + (i === 1 ? ' active' : '');
+  d.onclick = () => goTo(i);
+  dotNav.appendChild(d);
+}
+
+// Init progress
+document.getElementById('progress-bar').style.width = (1 / TOTAL * 100) + '%';
+
+// Hide kbd hint after 4 seconds
+setTimeout(() => { const h = document.getElementById('kbd-hint'); h.style.opacity = '0'; setTimeout(() => h.remove(), 1000); }, 4000);
+
+// ── POLL LOGIC ───────────────────────────────
+const votes = [0, 0, 0, 0, 0];
+let hasVoted = false;
+
+function vote(idx) {
+  if (!hasVoted) {
+    votes[idx]++;
+    hasVoted = true;
+  } else {
+    // Allow changing vote — remove previous
+    const prev = document.querySelector('.poll-option.voted');
+    if (prev) {
+      const prevIdx = parseInt(prev.getAttribute('data-idx'));
+      if (prevIdx === idx) return;
+      votes[prevIdx] = Math.max(0, votes[prevIdx] - 1);
+      prev.classList.remove('voted');
+    }
+    votes[idx]++;
+  }
+
+  const options = document.querySelectorAll('.poll-option');
+  options.forEach((el, i) => {
+    el.setAttribute('data-idx', i);
+    if (i === idx) el.classList.add('voted');
+  });
+
+  updatePoll();
+}
+
+// Pre-seed with some demo votes so it looks alive
+function seedVotes() {
+  const seeds = [8, 4, 6, 5, 2];
+  seeds.forEach((v, i) => votes[i] = v);
+  updatePoll();
+}
+
+function updatePoll() {
+  const total = votes.reduce((a, b) => a + b, 0);
+  const max = Math.max(...votes);
+  votes.forEach((v, i) => {
+    const pct = total > 0 ? Math.round(v / total * 100) : 0;
+    document.getElementById('bar-' + i).style.width = pct + '%';
+    document.getElementById('pct-' + i).textContent = total > 0 ? pct + '%' : '';
+    const opt = document.querySelectorAll('.poll-option')[i];
+    opt.classList.toggle('winner', v === max && v > 0);
+    opt.setAttribute('data-idx', i);
+  });
+}
+
+
+// ── FEATURE TOUR ─────────────────────────────────
+let tourCurrent = 0;
+const TOUR_TOTAL = 5;
+
+function tourGo(idx) {
+  document.getElementById('tp-' + tourCurrent).classList.remove('active');
+  document.getElementById('tnav-' + tourCurrent).classList.remove('active');
+  tourCurrent = idx;
+  document.getElementById('tp-' + idx).classList.add('active');
+  document.getElementById('tnav-' + idx).classList.add('active');
+  // Reset waterfall if leaving that panel
+  if (idx !== 2) resetWaterfall();
+}
+
+// ── PIPELINE TABLE — live fetch from /api/pipeline ───────────────────────
+const PIPELINE_API    = 'https://plk-dev-dash.vercel.app/api/pipeline';
+const STATUSES_2026   = ['Prospect','SA','PC','Permitting','UC','Open'];
+const RISK_2026_KEYS  = ['low','medium','high'];
+const DDL_MAP = {
+  Northeast: "Shanda O'Kelly", Southeast: "Shanda O'Kelly",
+  Central: 'Rita Sterling', West: 'Rita Sterling',
+  Canada: 'Kevin Fitzgerald', 'Non-Trad': 'Sean Davis',
+};
+const DIVISIONS_ORDER = ['Northeast','Southeast','Central','West','Canada','Non-Trad'];
+const RANK_COLORS_P = ['#059669','#34d399','#fbbf24','#fb923c','#f87171','#DC2626'];
+const RANK_BG_P     = ['rgba(209,250,229,.25)','rgba(187,247,208,.18)','rgba(254,249,195,.25)','rgba(254,215,170,.18)','rgba(254,202,202,.18)','rgba(254,226,226,.25)'];
+
+const RISK_COLORS_DEMO = {
+  low:    {bg:'#D1FAE5',color:'#065F46'},
+  medium: {bg:'#FEF3C7',color:'#92400E'},
+  high:   {bg:'#FEE2E2',color:'#991B1B'},
+  upside: {bg:'#EDE9FE',color:'#5B21B6'},
+};
+
+let LIVE_ROWS = [], LIVE_BUDGETS = {};
+
+function is2026Live(r) {
+  const rl = (r.riskLevel || '').trim().toLowerCase();
+  return RISK_2026_KEYS.includes(rl);
+}
+
+function countByStatusLive(rows) {
+  const c = {}; STATUSES_2026.forEach(s => c[s] = 0);
+  rows.forEach(r => { if (r.status && c.hasOwnProperty(r.status)) c[r.status]++; });
+  return c;
+}
+
+function achieveBadge(pct) {
+  if (pct >= 90) return `<span class="pdt-badge" style="background:#D1FAE5;color:#065F46">${Math.round(pct)}%</span>`;
+  if (pct >= 70) return `<span class="pdt-badge" style="background:#FEF3C7;color:#92400E">${Math.round(pct)}%</span>`;
+  return `<span class="pdt-badge" style="background:#FEE2E2;color:#991B1B">${Math.round(pct)}%</span>`;
+}
+
+function buildPipelineTable() {
+  const divStats = DIVISIONS_ORDER.map(div => {
+    const rows   = LIVE_ROWS.filter(r => r.division === div && is2026Live(r));
+    const counts = countByStatusLive(rows);
+    const total  = STATUSES_2026.reduce((a,s) => a + counts[s], 0);
+    const opened = counts['Open'];
+    const budget = LIVE_BUDGETS[div] || 0;
+    const projPct = budget > 0 ? (total / budget * 100) : 0;
+    const currPct = budget > 0 ? (opened / budget * 100) : 0;
+    return { div, counts, total, opened, budget, gap: total - budget, projPct, currPct };
+  });
+
+  // Rank by projected achievement descending
+  const ranked = [...divStats].sort((a,b) => b.projPct - a.projPct);
+  const rankMap = {}; ranked.forEach((d,i) => rankMap[d.div] = i);
+
+  const totals = { s:{}, total:0, budget:0, opened:0 };
+  STATUSES_2026.forEach(s => totals.s[s] = 0);
+
+  let html = '';
+  divStats.forEach(({ div, counts, total, opened, budget, gap, projPct }) => {
+    const rank   = rankMap[div];
+    const rColor = RANK_COLORS_P[Math.min(rank,5)];
+    const rBg    = RANK_BG_P[Math.min(rank,5)];
+    const divE   = div.replace(/'/g, "\'");
+    const ddl    = DDL_MAP[div] || '—';
+
+    const statusCells = STATUSES_2026.map(s => {
+      const n = counts[s];
+      return n > 0
+        ? `<td class="pdt-click" onclick="drillLive('${divE}','${s}')">${n}</td>`
+        : `<td style="color:#ccc">0</td>`;
+    }).join('');
+
+    const totalCell = total > 0
+      ? `<td class="pdt-bold pdt-click" onclick="drillLive('${divE}','Total')">${total}</td>`
+      : `<td class="pdt-bold">0</td>`;
+
+    const gapColor = gap >= 0 ? '#059669' : '#DC2626';
+    const gapStr   = (gap >= 0 ? '+' : '') + gap;
+
+    html += `<tr style="border-left:3px solid ${rColor};background:${rBg}">
+      <td class="td-left" style="padding-left:8px"><span class="pdt-pill" style="background:${rColor}">${rank+1}</span></td>
+      <td class="td-left pdt-bold">${div}</td>
+      <td class="td-left pdt-ddl">${ddl}</td>
+      ${statusCells}
+      ${totalCell}
+      <td>${budget || '—'}</td>
+      <td class="pdt-gap" style="color:${gapColor}">${budget ? gapStr : '—'}</td>
+      <td>${budget ? achieveBadge(projPct) : '—'}</td>
+    </tr>`;
+
+    STATUSES_2026.forEach(s => totals.s[s] += counts[s]);
+    totals.total  += total;
+    totals.budget += budget;
+    totals.opened += opened;
+  });
+
+  // US&C Total row
+  const tGap  = totals.total - totals.budget;
+  const tProj = totals.budget > 0 ? (totals.total / totals.budget * 100) : 0;
+  const tGapColor = tGap >= 0 ? '#059669' : '#DC2626';
+  const tStatusCells = STATUSES_2026.map(s => {
+    const n = totals.s[s];
+    return n > 0
+      ? `<td class="pdt-click" onclick="drillLive('USC','${s}')">${n}</td>`
+      : `<td style="color:#ccc">0</td>`;
+  }).join('');
+
+  html += `<tr class="pdt-total">
+    <td></td>
+    <td class="td-left pdt-bold">US&amp;C Total</td>
+    <td class="td-left pdt-ddl">—</td>
+    ${tStatusCells}
+    <td class="pdt-bold pdt-click" onclick="drillLive('USC','Total')">${totals.total}</td>
+    <td>${totals.budget}</td>
+    <td class="pdt-gap" style="color:${tGapColor}">${(tGap>=0?'+':'')+tGap}</td>
+    <td>${achieveBadge(tProj)}</td>
+  </tr>`;
+
+  document.getElementById('pdt-tbody').innerHTML = html;
+  document.getElementById('pdt-status').style.display = 'none';
+  document.getElementById('pdt-table').style.display  = '';
+}
+
+function drillLive(div, status) {
+  let sites;
+  if (div === 'USC') {
+    sites = status === 'Total'
+      ? LIVE_ROWS.filter(r => is2026Live(r))
+      : LIVE_ROWS.filter(r => is2026Live(r) && r.status === status);
+  } else {
+    sites = status === 'Total'
+      ? LIVE_ROWS.filter(r => r.division === div && is2026Live(r))
+      : LIVE_ROWS.filter(r => r.division === div && r.status === status && is2026Live(r));
+  }
+
+  const label = (div === 'USC' ? 'US&C' : div) + ' · ' + status;
+  document.getElementById('drill-placeholder').style.display = 'none';
+  document.getElementById('drill-filled').style.display = 'flex';
+  document.getElementById('drill-title').textContent = label;
+  document.getElementById('drill-badge').textContent  = sites.length + ' site' + (sites.length !== 1 ? 's' : '');
+
+  const rc = RISK_COLORS_DEMO;
+  document.getElementById('drill-rows').innerHTML = sites.length
+    ? sites.map(s => {
+        const rk = (s.riskLevel || '').trim().toLowerCase();
+        const rl = rc[rk] || {bg:'#F3F4F6',color:'#374151'};
+        const rLabel = rk.charAt(0).toUpperCase() + rk.slice(1);
+        const pod = s.plkOpenDate || s.fzOpenDate || '—';
+        return `<div class="ddr">
+          <span style="font-weight:600">${s.restNum || '—'}</span>
+          <span>${s.fz || '—'}</span>
+          <span>${s.city || '—'}</span>
+          <span>${s.state || '—'}</span>
+          <span class="ddr-rp" style="background:${rl.bg};color:${rl.color}">${rLabel}</span>
+          <span style="color:var(--plk-muted)">${pod}</span>
+        </div>`;
+      }).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--plk-muted);font-family:var(--font-body);font-size:12px">No sites in this bucket</div>';
+}
+
+// Fetch pipeline data when slide 7 becomes active
+let pipelineLoaded = false;
+function loadPipelineData() {
+  if (pipelineLoaded) return;
+  pipelineLoaded = true;
+
+  // Show spinner
+  const statusEl  = document.getElementById('pdt-status');
+  const spinnerEl = document.getElementById('pdt-spinner');
+  const errEl     = document.getElementById('pdt-error');
+  statusEl.style.display  = 'flex';
+  errEl.style.display     = 'none';
+  spinnerEl.style.display = 'inline-block';
+
+  fetch(PIPELINE_API, { mode: 'cors' })
+    .then(r => { if (!r.ok) throw new Error('API returned ' + r.status); return r.json(); })
+    .then(data => {
+      if (!data.rows || !data.budgets) throw new Error('Unexpected API response');
+      LIVE_ROWS    = data.rows;
+      LIVE_BUDGETS = data.budgets;
+      buildPipelineTable();
+    })
+    .catch(err => {
+      pipelineLoaded = false;
+      statusEl.style.display = 'none';
+      errEl.style.display    = '';
+      // Detect file:// origin — most common cause
+      const isLocal = window.location.protocol === 'file:';
+      if (isLocal) {
+        errEl.innerHTML = `
+          <div style="font-family:var(--font-body);font-size:12px;padding:4px 0">
+            <strong>📁 This file is open locally.</strong> To see live Smartsheet data, save
+            <code style="background:#f5e0dd;padding:1px 5px;border-radius:3px;font-size:11px">plk_presentation_v3.html</code>
+            to your Vercel repo root and open it at
+            <a href="https://plk-dev-dash.vercel.app/presentation" target="_blank"
+               style="color:var(--plk-orange);font-weight:700">plk-dev-dash.vercel.app/presentation</a>
+            — the table will load automatically.
+            <br><br>
+            <button onclick="pipelineLoaded=false;loadPipelineData()" style="background:var(--plk-orange);color:white;border:none;border-radius:6px;padding:5px 14px;font-size:11px;cursor:pointer;font-family:var(--font-body);font-weight:600">↺ Retry anyway</button>
+            &nbsp;
+            <a href="https://plk-dev-dash.vercel.app/development-execution" target="_blank"
+               style="display:inline-block;background:var(--plk-dark);color:white;border-radius:6px;padding:5px 14px;font-size:11px;text-decoration:none;font-family:var(--font-body);font-weight:600">🍗 Open Live Dashboard →</a>
+          </div>`;
+      } else {
+        errEl.innerHTML = `<span>⚠️ Could not load live data: ${err.message}</span>
+          &nbsp;<button onclick="pipelineLoaded=false;loadPipelineData()" style="background:var(--plk-orange);color:white;border:none;border-radius:6px;padding:3px 10px;font-size:11px;cursor:pointer">↺ Retry</button>`;
+      }
+    });
+}
+
+// Trigger fetch when slide 7 activates (observed in goTo)
+
+function closeDrill() {
+  document.getElementById('drill-placeholder').style.display = 'flex';
+  document.getElementById('drill-filled').style.display = 'none';
+}
+function noop() {}
+
+
+// ── RISK MIX FILTER ─────────────────────
+const riskColors = { Low: '#16A34A', Med: '#D97706', High: '#DC2626' };
+const riskBg    = { Low: '#DCFCE7', Med: '#FEF3C7', High: '#FEE2E2' };
+const divLabels = { NE:'Northeast', SE:'Southeast', CTR:'Central', WEST:'West', CAN:'Canada', NT:'Non-Trad' };
+
+function rfilt(div, level, ...sites) {
+  const res = document.getElementById('rm-result');
+  const label = divLabels[div] || div;
+  const colorBadge = `<span style="color:${riskColors[level]};background:${riskBg[level]};padding:2px 8px;border-radius:50px;font-family:var(--font-mono);font-size:10px;font-weight:600">${level} Risk</span>`;
+  const siteList = sites.map(s => `<div style="padding:4px 0;border-bottom:1px solid #f5f0ec;font-size:12px;font-family:var(--font-mono);color:var(--plk-dark)">• ${s}</div>`).join('');
+  res.innerHTML = `
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      ${colorBadge}
+      <span style="font-family:var(--font-body);font-size:13px;font-weight:700;color:var(--plk-dark)">${label} — ${sites.length} sites</span>
+      <span onclick="clearRfilt()" style="margin-left:auto;cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--plk-muted);border:1px solid #ddd;padding:2px 8px;border-radius:50px">✕ Clear</span>
+    </div>
+    <div style="overflow-y:auto;max-height:180px">${siteList}</div>
+  `;
+}
+function clearRfilt() {
+  document.getElementById('rm-result').innerHTML = '<div style="font-family:var(--font-body);font-size:13px;color:var(--plk-muted);text-align:center;margin-top:30px">👈 Click any risk segment<br>or pill badge to see sites</div>';
+}
+
+// ── WATERFALL ───────────────────────────
+let wfPlaying = false;
+// heights as % of the stage height, floats
+const wfHeights = [67, 14, 22, 15, 52]; // base, up, neg, neg, LE
+const wfSpacers = [10, 10, 20.5, 29, 37]; // top spacers keep bars floating
+
+function resetWaterfall() {
+  for (let i = 0; i < 5; i++) {
+    const seg = document.getElementById('wfs-' + i);
+    if (seg) seg.style.height = '0%';
+  }
+  const btn = document.getElementById('wf-play-btn');
+  if (btn) { btn.textContent = '▶ Play Animation'; btn.disabled = false; }
+  wfPlaying = false;
+}
+
+function playWaterfall(btn) {
+  if (wfPlaying) return;
+  wfPlaying = true;
+  btn.textContent = 'Playing…';
+  btn.disabled = true;
+  const segs = ['wfs-0','wfs-1','wfs-2','wfs-3','wfs-4'];
+  segs.forEach((id, i) => {
+    setTimeout(() => {
+      const el = document.getElementById(id);
+      if (el) el.style.height = wfHeights[i] + '%';
+    }, i * 420);
+  });
+  setTimeout(() => {
+    btn.textContent = '↺ Replay';
+    btn.disabled = false;
+    btn.onclick = () => { resetWaterfall(); setTimeout(() => playWaterfall(btn), 100); };
+  }, segs.length * 420 + 300);
+}
+
+// ── EXPORT ANIMATION ────────────────────
+let exporting = false;
+function doExport() {
+  if (exporting) return;
+  exporting = true;
+  const overlay = document.getElementById('exp-overlay');
+  const fill    = document.getElementById('exp-fill');
+  const msg     = document.getElementById('exp-msg');
+  const icon    = document.getElementById('exp-icon');
+  const btn     = document.getElementById('exp-btn');
+  btn.disabled = true;
+  overlay.style.display = 'flex';
+  const steps = [
+    [0,   'Preparing data…'],
+    [25,  'Formatting columns…'],
+    [55,  'Applying styles…'],
+    [80,  'Generating Excel file…'],
+    [100, '✅ Download complete!'],
+  ];
+  steps.forEach(([pct, text], i) => {
+    setTimeout(() => {
+      fill.style.width = pct + '%';
+      msg.textContent = text;
+      if (pct === 100) {
+        icon.textContent = '📥';
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          btn.disabled = false;
+          btn.textContent = '✅ Exported!';
+          exporting = false;
+          setTimeout(() => { btn.textContent = '⬇ Export to Excel'; }, 2500);
+        }, 1200);
+      }
+    }, i * 480);
+  });
+}
+
+// ── LIVE CLOCK ──────────────────────────
+function updateClock() {
+  const el = document.getElementById('live-clock');
+  if (el) el.textContent = new Date().toLocaleTimeString();
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+
+let pollSeeded = false;
+const deckEl = document.getElementById('deck');
+const observer = new MutationObserver(() => {
+  const s6 = document.getElementById('s6');
+  if (s6.classList.contains('active') && !pollSeeded) {
+    pollSeeded = true;
+    setTimeout(seedVotes, 600);
+  }
+});
+observer.observe(deckEl, { subtree: true, attributes: true, attributeFilter: ['class'] });
+</script>
+</body>
+</html>
