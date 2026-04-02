@@ -349,8 +349,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .s4t-icon { font-size:15px; line-height:1; }
 .s4-browser-wrap { flex:1; min-height:0; display:flex; flex-direction:column; }
 .s4-browser { display:flex; flex-direction:column; flex:1; min-height:0; box-shadow:0 8px 40px rgba(0,0,0,.15); }
-.s4-iframe-wrap { flex:1; min-height:0; position:relative; overflow:hidden; background:#f9fafb; border-radius:0 0 10px 10px; }
-.s4-iframe { width:100%; height:100%; border:none; display:block; pointer-events:all; overflow:auto; }
+.s4-iframe-wrap { flex:1; min-height:0; position:relative; overflow:auto; background:#f9fafb; border-radius:0 0 10px 10px; -webkit-overflow-scrolling:touch; }
+.s4-iframe { width:100%; height:100%; min-height:600px; border:none; display:block; pointer-events:all; }
 .s4-iframe-blocked {
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
   background: linear-gradient(135deg,#fafafa 0%,#f0f0f0 100%);
@@ -363,6 +363,26 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   white-space:nowrap; transition: background .2s; flex-shrink:0;
 }
 .s4-open-link:hover { background: var(--plk-orange); color:#fff; }
+
+
+/* ── SLIDE 4: nav floats to corner so tabs are never blocked ─── */
+#nav.nav-s4-mode {
+  bottom: auto;
+  top: 14px;
+  right: 20px;
+  left: auto;
+  transform: none;
+  padding: 6px 14px;
+  gap: 8px;
+}
+#nav.nav-s4-mode #slide-counter { font-size:11px; min-width:40px; }
+#nav.nav-s4-mode .nav-btn { width:32px; height:32px; font-size:15px; }
+#nav.nav-s4-mode #dots { display:none; }
+
+/* ── SLIDE 4: iframe must scroll freely ─────────────────────── */
+#s4 .s4-iframe-wrap { overflow: auto !important; -webkit-overflow-scrolling: touch; }
+#s4 .s4-browser { overflow: visible !important; }
+#s4 .mock-browser { overflow: visible !important; }
 
 </style>
 </head>
@@ -471,7 +491,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
           <a class="s4-open-link" id="s4-open-link" href="https://plk-dev-dash.vercel.app/" target="_blank">↗ Open</a>
         </div>
         <div class="s4-iframe-wrap">
-          <iframe id="s4-iframe" src="https://plk-dev-dash.vercel.app/" class="s4-iframe" title="PLK Dashboard" loading="lazy"></iframe>
+          <iframe id="s4-iframe" src="https://plk-dev-dash.vercel.app/" class="s4-iframe" title="PLK Dashboard" loading="lazy" scrolling="yes" allow="fullscreen"></iframe>
           <div class="s4-iframe-blocked" id="s4-blocked" style="display:none">
             <div class="s4-blocked-inner">
               <div style="font-size:40px;margin-bottom:12px">🔗</div>
@@ -830,6 +850,8 @@ function goTo(n) {
   document.getElementById('next-btn').disabled = current === TOTAL;
   document.getElementById('progress-bar').style.width = (current / TOTAL * 100) + '%';
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current - 1));
+  // On slide 4 (dashboard showcase): move nav to top-right so tabs are never blocked
+  document.getElementById('nav').classList.toggle('nav-s4-mode', current === 4);
   if (current === 5) { loadPipelineData(); buildWf3Chart(); buildDivisionWaterfallCharts(); }
 }
 function nextSlide() { if (current < TOTAL) goTo(current + 1); }
