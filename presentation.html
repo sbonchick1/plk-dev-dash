@@ -340,13 +340,13 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 #s4 .s4-header { opacity:1 !important; animation:none !important; padding:14px 40px 6px !important; }
 
 /* Tabs sit ABOVE everything — z-index ensures clicks always land */
-.s4-tab-nav { display:flex; gap:6px; flex-shrink:0; flex-wrap:nowrap; overflow-x:auto; overflow-y:visible; -webkit-overflow-scrolling:touch; scrollbar-width:none; padding-bottom:2px; }
-.s4-tab-nav::-webkit-scrollbar { display:none; }
+.s4-tab-nav { display:flex; gap:6px; flex-shrink:0; flex-wrap:nowrap; overflow:visible; }
 .s4-tab {
-  display:flex; align-items:center; gap:5px; padding:6px 12px;
+  display:flex; align-items:center; justify-content:center; gap:5px; padding:6px 10px;
   border-radius:8px; border:1.5px solid #e5e7eb;
   background:#fff; cursor:pointer; font-family:var(--font-display); font-size:12px;
-  color:var(--plk-muted); transition:all .2s; white-space:nowrap; flex-shrink:0;
+  color:var(--plk-muted); transition:all .2s; white-space:nowrap;
+  flex:1; min-width:0;
 }
 .s4-tab:hover { border-color:var(--plk-orange); color:var(--plk-orange); }
 .s4-tab.active { background:var(--plk-orange); border-color:var(--plk-orange); color:#fff; }
@@ -502,11 +502,11 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   <div class="s4-dash-layout">
     <div class="s4-tab-nav" id="s4-tabs">
       <button class="s4-tab active" onclick="s4Switch(0)" id="s4t-0"><span class="s4t-icon">🏠</span><span class="s4t-label">Home</span></button>
-      <button class="s4-tab" onclick="s4Switch(1)" id="s4t-1"><span class="s4t-icon">📈</span><span class="s4t-label">NRO Performance</span></button>
-      <button class="s4-tab" onclick="s4Switch(2)" id="s4t-2"><span class="s4t-icon">🏗️</span><span class="s4t-label">Dev Execution</span></button>
+      <button class="s4-tab" onclick="s4Switch(1)" id="s4t-1"><span class="s4t-icon">📈</span><span class="s4t-label">NRO</span></button>
+      <button class="s4-tab" onclick="s4Switch(2)" id="s4t-2"><span class="s4t-icon">🏗️</span><span class="s4t-label">Dev Exec</span></button>
       <button class="s4-tab" onclick="s4Switch(3)" id="s4t-3"><span class="s4t-icon">🔒</span><span class="s4t-label">Closures</span></button>
-      <button class="s4-tab" onclick="s4Switch(4)" id="s4t-4"><span class="s4t-icon">🗺️</span><span class="s4t-label">REM Pipeline</span></button>
-      <button class="s4-tab" onclick="s4Switch(5)" id="s4t-5"><span class="s4t-icon">✅</span><span class="s4t-label">YTD Openings</span></button>
+      <button class="s4-tab" onclick="s4Switch(4)" id="s4t-4"><span class="s4t-icon">🗺️</span><span class="s4t-label">REM</span></button>
+      <button class="s4-tab" onclick="s4Switch(5)" id="s4t-5"><span class="s4t-icon">✅</span><span class="s4t-label">YTD</span></button>
     </div>
     <div class="s4-browser-wrap">
       <div class="s4-browser mock-browser">
