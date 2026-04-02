@@ -15,10 +15,23 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacing:-2px;line-height:1.1;}
 .subtitle{font-size:20px;color:#6b6b6b;font-weight:400;max-width:600px;margin:0 auto;}
 
-/* Grid: simple flex wrap */
-.cards-grid{display:flex;flex-wrap:wrap;gap:28px;}
+/* ── SECTION ── */
+.cards-section{margin-bottom:52px;}
+.section-label{font-size:11px;font-weight:700;color:#9b9b9b;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;padding-left:4px;}
 
-/* Card: 400×400px square — padding carefully sized so all content fits */
+/* ── GRID: always fixed columns, never wraps ── */
+.cards-grid-2{
+  display:grid;
+  grid-template-columns:repeat(2,400px);
+  gap:28px;
+}
+.cards-grid-3{
+  display:grid;
+  grid-template-columns:repeat(3,400px);
+  gap:28px;
+}
+
+/* ── Card: fixed 400×400 ── */
 .card{
   background:#ffffff;
   border:1px solid #e8e8e8;
@@ -39,48 +52,32 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
 .card:hover::before{transform:scaleX(1);}
 .card:hover{border-color:#E8521A;box-shadow:0 20px 60px rgba(232,82,26,0.08);transform:translateY(-4px);}
 
-/* Badge */
 .badge{display:inline-flex;align-items:center;gap:6px;background:#FFF5F0;color:#E8521A;padding:4px 11px;border-radius:7px;font-size:12px;font-weight:600;margin-bottom:8px;flex-shrink:0;width:fit-content;}
 .badge-dot{width:6px;height:6px;background:#E8521A;border-radius:50%;animation:pulse 2s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
 
-/* Icon */
 .card-icon{width:52px;height:52px;background:#FFF5F0;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-bottom:8px;font-size:30px;transition:all 0.3s ease;flex-shrink:0;}
 .card:hover .card-icon{background:#E8521A;transform:scale(1.05);}
 
-/* Title */
 .card-title{font-size:24px;font-weight:700;color:#1a1a1a;margin-bottom:8px;letter-spacing:-0.4px;line-height:1.25;flex-shrink:0;}
-
-/* Description: flex:1 fills remaining space, overflow hidden clips gracefully */
 .card-description{font-size:16px;color:#6b6b6b;line-height:1.5;flex:1;overflow:hidden;}
 
-/* Meta: pinned to bottom, flex-shrink:0 so it never collapses */
 .card-meta{display:flex;flex-direction:column;gap:8px;padding-top:12px;border-top:1px solid #f0f0f0;margin-top:auto;flex-shrink:0;}
 .meta-items{display:flex;gap:14px;flex-wrap:wrap;align-items:center;}
 .meta-item{display:flex;align-items:center;gap:6px;font-size:12px;color:#9b9b9b;font-weight:500;}
 .meta-dot{width:6px;height:6px;background:#E8521A;border-radius:50%;flex-shrink:0;}
 .meta-footer{display:flex;align-items:center;justify-content:space-between;gap:8px;}
 
-/* Source pills — all single line, consistent height across all cards */
 .card-url{display:inline-flex;align-items:center;gap:5px;font-size:10px;color:#b0b0b0;background:#f8f8f8;padding:4px 9px;border-radius:5px;border:1px solid #eeeeee;transition:color 0.3s,background 0.3s,border-color 0.3s;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
 .card:hover .card-url{color:#E8521A;background:#FFF5F0;border-color:#fdd5c5;}
 
-.card-url-multi{display:inline-flex;flex-direction:column;gap:4px;font-size:11px;color:#b0b0b0;background:#f8f8f8;padding:5px 9px;border-radius:5px;border:1px solid #eeeeee;transition:color 0.3s,background 0.3s,border-color 0.3s;}
-.card-url-multi .card-url-row{display:flex;align-items:center;gap:5px;white-space:nowrap;}
-.card:hover .card-url-multi{color:#E8521A;background:#FFF5F0;border-color:#fdd5c5;}
-
-/* Arrow */
 .card-arrow{width:34px;height:34px;background:#f3f4f6;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:all 0.3s ease;opacity:0;transform:translateX(-8px);flex-shrink:0;}
 .card-arrow svg{width:15px;height:15px;stroke:#9ca3af;transition:stroke 0.3s ease;}
 .card:hover .card-arrow{opacity:1;transform:translateX(0);background:#E8521A;}
 .card:hover .card-arrow svg{stroke:white;}
 
-.section-label{font-size:11px;font-weight:700;color:#9b9b9b;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:16px;padding-left:4px;}
-.cards-section{margin-bottom:52px;}
 .footer{text-align:center;margin-top:80px;padding-top:40px;border-top:1px solid #f0f0f0;}
 .footer-text{font-size:14px;color:#9b9b9b;}
-
-@media(max-width:900px){.container{padding:40px 24px;}h1{font-size:36px;}.card{width:100%;height:auto;}}
 </style>
 </head>
 <body>
@@ -104,10 +101,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
     <p class="subtitle">Data-driven analytics for restaurant development and performance optimization</p>
   </div>
 
-  <!-- NRO Section -->
+  <!-- NRO Section — 2 cards, always side by side -->
   <div class="cards-section">
     <div class="section-label">New Restaurant Openings</div>
-    <div class="cards-grid">
+    <div class="cards-grid-2">
 
       <a href="/nro-hub" class="card">
         <div class="badge"><div class="badge-dot"></div>Historical</div>
@@ -146,10 +143,10 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
     </div>
   </div>
 
-  <!-- Pipeline & Closures Section -->
+  <!-- Pipeline & Closures Section — 3 cards, always side by side -->
   <div class="cards-section">
     <div class="section-label">Pipeline &amp; Closures</div>
-    <div class="cards-grid">
+    <div class="cards-grid-3">
 
       <a href="/rem-pipeline" class="card">
         <div class="badge"><div class="badge-dot"></div>Live Pipeline</div>
