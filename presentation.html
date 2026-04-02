@@ -462,9 +462,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
       </div>
       <iframe id="s4-iframe"
         src=""
-        scrolling="yes"
+        scrolling="no"
         allowfullscreen
         allow="fullscreen; autoplay; payment; scripts"
+        style="position:absolute;top:0;left:0;width:1440px;height:900px;border:none;transform-origin:top left;pointer-events:none;opacity:0;transition:opacity .4s;"
       ></iframe>
       <div id="s4-blocked">
         <div style="text-align:center;padding:32px">
@@ -829,7 +830,8 @@ function s4Switch(idx) {
     clearTimeout(t);
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'none';
-    iframe.classList.add('loaded');
+    scaleIframe();
+    iframe.style.opacity = '1';
   };
   iframe.onerror = () => {
     if (done) return; done = true;
@@ -841,6 +843,17 @@ function s4Switch(idx) {
   setTimeout(() => { iframe.src = url; }, 30);
 }
 
+function scaleIframe() {
+  const iframe = document.getElementById('s4-iframe');
+  const wrap   = document.getElementById('s4-frame-wrap');
+  if (!iframe || !wrap) return;
+  const scaleX = wrap.offsetWidth  / 1440;
+  const scaleY = wrap.offsetHeight / 900;
+  const scale  = Math.min(scaleX, scaleY);
+  iframe.style.transform = `scale(${scale})`;
+}
+
+window.addEventListener('resize', scaleIframe);
 window.addEventListener('load', () => { s4Switch(1); });
 
 // ── SLIDE STATE ──────────────────────────────────────────────────────────────
@@ -872,6 +885,7 @@ function goTo(n) {
         const h = ov.getBoundingClientRect().height;
         shell.style.top = (h + 6) + 'px';
       }
+      scaleIframe();
     });
   }
 
