@@ -135,7 +135,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .mc-green  { background: rgba(22,163,74,.05);  border-color: rgba(22,163,74,.2); }
 
 /* ── SLIDE 4: IFRAME SHOWCASE ── */
-#s4 { background: #1a1a1a; }
+#s4 { background: var(--plk-smoke); }
 
 /* Fixed overlay: title + tabs, lives outside #deck so nothing blocks clicks */
 #s4-overlay {
@@ -143,8 +143,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   position: fixed; top: 0; left: 0; right: 0;
   z-index: 99999;
   background: var(--plk-smoke);
-  padding: 10px 28px 8px;
-  flex-direction: column; gap: 6px;
+  padding: 8px 28px 8px;
+  flex-direction: column; gap: 5px;
   box-shadow: 0 2px 8px rgba(26,8,0,.08);
 }
 #s4-overlay.visible { display: flex; }
@@ -152,7 +152,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 #s4-overlay-tabs { display: flex; gap: 5px; flex-shrink: 0; }
 
 .s4-tab {
-  flex: 1; padding: 7px 8px; border-radius: 7px;
+  flex: 1; padding: 6px 8px; border-radius: 7px;
   border: 1.5px solid #e5e7eb; background: #fff;
   cursor: pointer; font-family: var(--font-display); font-size: 12px;
   color: var(--plk-muted); transition: all .15s; white-space: nowrap;
@@ -161,13 +161,13 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .s4-tab:hover { border-color: var(--plk-orange); color: var(--plk-orange); }
 .s4-tab.active { background: var(--plk-orange); border-color: var(--plk-orange); color: #fff; }
 
-/* Browser shell: pushed down by overlay height (~95px) */
+/* Browser shell: top is set dynamically by JS after overlay renders */
 #s4-browser-shell {
   position: absolute;
-  top: 95px; left: 24px; right: 24px; bottom: 12px;
+  top: 0; left: 24px; right: 24px; bottom: 12px; /* top overridden by JS */
   display: flex; flex-direction: column;
   border-radius: 10px; overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0,0,0,.4);
+  box-shadow: 0 8px 40px rgba(0,0,0,.3);
 }
 
 /* Chrome bar */
@@ -190,7 +190,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 }
 #s4-open-link:hover { background: var(--plk-orange); color: #fff; }
 
-/* Frame wrap: scrollable container — THIS is what the trackpad scrolls */
+/* Frame wrap — the iframe is taller than this box so this div scrolls */
 #s4-frame-wrap {
   flex: 1;
   position: relative;
@@ -200,13 +200,11 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   -webkit-overflow-scrolling: touch;
 }
 
-/* iframe: tall fixed height so the outer div can scroll it.
-   pointer-events:none until loaded so it doesn't eat clicks on loading spinner.
-   Once loaded, pointer-events:all so clicks, hovers, charts all work. */
+/* iframe: fixed tall height, interactive once loaded */
 #s4-frame-wrap iframe {
   position: absolute; top: 0; left: 0;
   width: 100%;
-  height: 5500px;   /* tall enough for any dashboard page */
+  height: 5500px;
   border: none;
   opacity: 0;
   transition: opacity .4s;
@@ -880,6 +878,18 @@ function goTo(n) {
 
   const overlay = document.getElementById('s4-overlay');
   if (overlay) overlay.classList.toggle('visible', current === 4);
+
+  // Position browser shell exactly below the overlay by measuring it
+  if (current === 4) {
+    requestAnimationFrame(() => {
+      const ov = document.getElementById('s4-overlay');
+      const shell = document.getElementById('s4-browser-shell');
+      if (ov && shell) {
+        const h = ov.getBoundingClientRect().height;
+        shell.style.top = (h + 6) + 'px';
+      }
+    });
+  }
 
   const badge = document.getElementById('claude-badge');
   if (badge) badge.style.display = current === 4 ? 'none' : '';
