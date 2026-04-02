@@ -22,13 +22,13 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
 /* ── GRID: always fixed columns, never wraps ── */
 .cards-grid-2{
   display:grid;
-  grid-template-columns:repeat(2,400px);
-  gap:28px;
+  grid-template-columns:repeat(2,360px);
+  gap:24px;
 }
 .cards-grid-3{
   display:grid;
-  grid-template-columns:repeat(3,400px);
-  gap:28px;
+  grid-template-columns:repeat(3,360px);
+  gap:24px;
 }
 
 /* ── Card: fixed 400×400 ── */
@@ -44,8 +44,8 @@ h1{font-size:56px;font-weight:700;color:#1a1a1a;margin-bottom:16px;letter-spacin
   flex-direction:column;
   position:relative;
   overflow:hidden;
-  width:400px;
-  height:400px;
+  width:360px;
+  height:360px;
   flex-shrink:0;
 }
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#E8521A 0%,#C1272D 100%);transform:scaleX(0);transform-origin:left;transition:transform 0.3s ease;}
