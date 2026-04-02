@@ -335,7 +335,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 #kbd-hint { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted); background: white; border: 1px solid #E8DED8; border-radius: 50px; padding: 5px 14px; z-index: 9999; opacity: 1; transition: opacity 1s; }
 
 /* ── SLIDE 4: DASHBOARD SHOWCASE ──────────────────────────────── */
-.s4-header { padding: 20px 40px 8px; flex-shrink:0; }
+.s4-header { padding: 14px 40px 6px; flex-shrink:0; }
 .s4-dash-layout { display:flex; flex-direction:column; flex:1; padding:0 32px 16px; gap:10px; min-height:0; overflow:hidden; }
 
 /* Tabs sit ABOVE everything — z-index ensures clicks always land */
@@ -367,15 +367,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 /* Iframe: absolute, tall enough for full page. pointer-events:none until loaded */
 .s4-iframe {
   position:absolute; top:0; left:0;
-  width:100%; height:3000px;
+  width:100%; height:4500px;
   border:none;
-  pointer-events:none;        /* tabs clickable until iframe fully loaded */
+  pointer-events:none;  /* always none — presentation display only; use ↗ Open to interact */
   opacity:0;
   transition:opacity .3s;
 }
 .s4-iframe.loaded {
-  pointer-events:all;         /* restored after onload fires */
-  opacity:1;
+  opacity:1;            /* only opacity changes on load — pointer-events stay none */
 }
 
 /* Overlays inside wrap */
@@ -513,7 +512,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
         <div class="mock-topbar">
           <div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
           <div class="mock-url-pill" id="s4-url-pill">plk-dev-dash.vercel.app</div>
-          <a class="s4-open-link" id="s4-open-link" href="https://plk-dev-dash.vercel.app/" target="_blank">↗ Open</a>
+          <span style="font-family:var(--font-mono);font-size:10px;color:var(--plk-muted);margin-right:6px">scroll ↕ to explore</span><a class="s4-open-link" id="s4-open-link" href="https://plk-dev-dash.vercel.app/" target="_blank">↗ Open live</a>
         </div>
         <div class="s4-iframe-wrap" id="s4-iframe-wrap">
           <!-- Loading spinner -->
@@ -522,7 +521,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
             <div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted)">Loading dashboard…</div>
           </div>
           <!-- The live iframe -->
-          <iframe id="s4-iframe" src="" class="s4-iframe" title="PLK Dashboard" allow="fullscreen; autoplay; payment" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"></iframe>
+          <iframe id="s4-iframe" src="" class="s4-iframe" title="PLK Dashboard" allow="fullscreen; autoplay; payment" ></iframe>
           <!-- Fallback when iframe is blocked -->
           <div class="s4-iframe-blocked" id="s4-blocked" style="display:none">
             <div class="s4-blocked-inner">
