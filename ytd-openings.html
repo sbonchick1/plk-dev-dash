@@ -19,15 +19,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .export-btn{display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all 0.2s;white-space:nowrap;}
 .export-btn:hover{background:#dcfce7;border-color:#4ade80;}
 .export-btn svg{width:15px;height:15px;}
-.kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px;margin-bottom:32px;}
-.kpi-card{background:white;border-radius:12px;padding:18px 20px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
+/* ── KPI BANNER: always one row, never wraps ── */
+.kpi-banner{display:flex;flex-wrap:nowrap;gap:12px;margin-bottom:32px;}
+.kpi-banner>.kpi-card{flex:1 1 0;min-width:0;}
+.kpi-banner .kpi-value{font-size:clamp(15px,1.8vw,24px);}
+.kpi-banner .kpi-label{font-size:clamp(7px,.65vw,10px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kpi-banner .kpi-sub{font-size:clamp(7px,.62vw,11px);}
+.kpi-card{background:white;border-radius:12px;padding:16px 12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#E8521A);}
 .kpi-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-weight:600;}
 .kpi-value{font-size:24px;font-weight:800;color:#1a1a1a;line-height:1;margin-bottom:4px;}
 .kpi-sub{font-size:11px;color:#9ca3af;}
 .kpi-good .kpi-value{color:#059669;}.kpi-bad .kpi-value{color:#C1272D;}
-
-/* Filter bar */
 .filter-bar{display:flex;gap:10px;align-items:center;margin-bottom:20px;flex-wrap:wrap;}
 .filter-select{padding:6px 12px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white;cursor:pointer;outline:none;}
 .filter-select:focus{border-color:#E8521A;}
@@ -35,8 +38,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .filter-reset{background:none;border:1px solid #e5e7eb;border-radius:6px;padding:6px 12px;font-size:12px;color:#6b7280;cursor:pointer;}
 .filter-reset:hover{border-color:#E8521A;color:#E8521A;}
 .result-count{margin-left:auto;font-size:12px;color:#9ca3af;}
-
-/* Accordion table */
 .acc-wrap{overflow-x:auto;}
 .acc-table{width:100%;border-collapse:collapse;font-size:13px;}
 .acc-table thead th{background:#f9fafb;padding:10px 12px;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:0.5px;border-bottom:2px solid #e5e7eb;white-space:nowrap;cursor:pointer;user-select:none;text-align:left;}
@@ -63,21 +64,18 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .dl{color:#6b7280;flex-shrink:0;}
 .dv{font-weight:600;color:#1a1a1a;text-align:right;}
 .dv.good{color:#059669;}.dv.bad{color:#C1272D;}
-
-/* Badges */
 .fss{display:inline-block;padding:2px 7px;border-radius:4px;font-size:11px;font-weight:700;}
 .fss-A{background:#D1FAE5;color:#065F46;}.fss-B{background:#FEF3C7;color:#92400E;}
 .fss-C,.fss-D,.fss-F{background:#FEE2E2;color:#991B1B;}
 .vp{color:#059669;font-weight:700;}.vn{color:#C1272D;font-weight:700;}.vz{color:#6b7280;}
 .days-chip{display:inline-block;background:#f0f9ff;color:#0369a1;border-radius:99px;padding:2px 8px;font-size:11px;font-weight:600;}
-
 .overlay{position:fixed;inset:0;background:#f9fafb;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
 .spinner{width:48px;height:48px;border:4px solid #E8521A;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .ov-title{font-size:18px;font-weight:600;color:#374151;}
 .ov-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
 .empty{text-align:center;padding:48px;color:#9ca3af;font-size:14px;}
-@media(max-width:768px){.container{padding:24px;}.detail-inner{grid-template-columns:1fr;}}
+@media(max-width:768px){.container{padding:24px;}.detail-inner{grid-template-columns:1fr;}.kpi-banner{flex-wrap:wrap!important;}}
 </style>
 </head>
 <body>
@@ -97,10 +95,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
   <h1 class="page-title">YTD New Opening Performance</h1>
   <p class="page-subtitle">2026 restaurant openings · sales calculated from TTM ARS ÷ actual days open · oldest openings first</p>
 
-  <!-- KPIs -->
   <div class="kpi-banner" id="kpis"></div>
 
-  <!-- Table -->
   <div class="section">
     <div class="section-header">
       <div class="section-title"><span>📊</span>Opening Performance — Sales &amp; Forecast Tracking</div>
@@ -154,7 +150,6 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 <script>
 const API="/api/ytd-openings";
 let ALL=[],sCol="openDate",sDir=1,expanded=new Set();
-
 const f$=n=>n==null?"—":Math.abs(n)>=1e6?`$${(n/1e6).toFixed(2)}M`:Math.abs(n)>=1000?`$${(n/1e3).toFixed(0)}K`:`$${Math.round(n).toLocaleString()}`;
 const fPct=n=>n==null?"—":(n>=0?"+":"")+(n*100).toFixed(1)+"%";
 const fDate=d=>{if(!d)return"—";const dt=new Date(d);return dt.toLocaleDateString("en-US",{month:"short",day:"numeric",year:"numeric"});};
@@ -172,14 +167,12 @@ function renderKPIs(rows){
   const avgE=we.length?we.reduce((a,r)=>a+r.annEBITDAPct,0)/we.length:null;
   const ap=wf.length?ahead/wf.length:null;
   const cards=[
-    {l:"YTD Openings",      v:rows.length,                        s:"Status = Open",              c:"#E8521A",cls:""},
-    {l:"Avg Days Open",     v:avgD?Math.round(avgD)+" days":"—",  s:"Since FZ POD",               c:"#6b7280",cls:""},
-    {l:"Avg Weekly Sales",  v:f$(avgW),                           s:"Stores with TTM data",       c:"#00A99D",cls:""},
-    {l:"Annual Run Rate",   v:f$(avgA),                           s:"TTM ÷ days × 365",           c:"#7B2D8B",cls:""},
-    {l:"Ahead of Forecast", v:ap!=null?Math.round(ap*100)+"%":"—",s:wf.length?`${ahead} of ${wf.length} stores`:"No forecast data",
-     c:ap!=null&&ap>=0.5?"#059669":"#C1272D",cls:ap!=null&&ap>=0.5?"kpi-good":"kpi-bad"},
-    {l:"Avg EBITDA %",      v:avgE!=null?(avgE>=0?"+":"")+avgE.toFixed(1)+"%":"—",s:"Annualized",
-     c:avgE!=null&&avgE>=0?"#059669":"#C1272D",cls:avgE!=null&&avgE>=0?"kpi-good":"kpi-bad"},
+    {l:"YTD Openings",v:rows.length,s:"Status = Open",c:"#E8521A",cls:""},
+    {l:"Avg Days Open",v:avgD?Math.round(avgD)+" days":"—",s:"Since FZ POD",c:"#6b7280",cls:""},
+    {l:"Avg Weekly Sales",v:f$(avgW),s:"Stores with TTM data",c:"#00A99D",cls:""},
+    {l:"Annual Run Rate",v:f$(avgA),s:"TTM ÷ days × 365",c:"#7B2D8B",cls:""},
+    {l:"Ahead of Forecast",v:ap!=null?Math.round(ap*100)+"%":"—",s:wf.length?`${ahead} of ${wf.length} stores`:"No forecast data",c:ap!=null&&ap>=0.5?"#059669":"#C1272D",cls:ap!=null&&ap>=0.5?"kpi-good":"kpi-bad"},
+    {l:"Avg EBITDA %",v:avgE!=null?(avgE>=0?"+":"")+avgE.toFixed(1)+"%":"—",s:"Annualized",c:avgE!=null&&avgE>=0?"#059669":"#C1272D",cls:avgE!=null&&avgE>=0?"kpi-good":"kpi-bad"},
   ];
   document.getElementById("kpis").innerHTML=cards.map(c=>`
     <div class="kpi-card ${c.cls}" style="--kpi-color:${c.c}">
@@ -198,13 +191,13 @@ function populateDivisions(){
 function getFiltered(){
   const div=document.getElementById("f-div").value;
   const fss=document.getElementById("f-fss").value;
-  const fc =document.getElementById("f-fc").value;
+  const fc=document.getElementById("f-fc").value;
   return ALL.filter(r=>{
     if(div&&r.division!==div)return false;
     if(fss&&r.fssGrade!==fss)return false;
-    if(fc==="ahead"  &&!(r.forecastVarPct!=null&&r.forecastVarPct>0))return false;
-    if(fc==="behind" &&!(r.forecastVarPct!=null&&r.forecastVarPct<=0))return false;
-    if(fc==="nodata" &&r.forecastVarPct!=null)return false;
+    if(fc==="ahead"&&!(r.forecastVarPct!=null&&r.forecastVarPct>0))return false;
+    if(fc==="behind"&&!(r.forecastVarPct!=null&&r.forecastVarPct<=0))return false;
+    if(fc==="nodata"&&r.forecastVarPct!=null)return false;
     return true;
   });
 }
@@ -241,18 +234,13 @@ function renderTable(rows){
   document.getElementById("rc").textContent=`${s.length} restaurant${s.length!==1?"s":""}`;
   const tbody=document.getElementById("tbody");
   if(!s.length){tbody.innerHTML=`<tr><td colspan="12" class="empty">No restaurants match the current filters.</td></tr>`;return;}
-
   tbody.innerHTML=s.map((r,idx)=>{
     const id=`r${r.restNum||idx}`;
     const isOpen=expanded.has(id);
-    const vc=varCls(r.forecastVarPct);
-    const ec=varCls(r.annEBITDAPct);
+    const vc=varCls(r.forecastVarPct),ec=varCls(r.annEBITDAPct);
     const fss=r.fssGrade?`<span class="fss fss-${r.fssGrade}">${r.fssGrade}</span>`:"—";
     const eStr=r.annEBITDAPct!=null?(r.annEBITDAPct>=0?"+":"")+r.annEBITDAPct.toFixed(1)+"%":"—";
-
-    // format forecast var $ nicely
     const fvdStr=r.forecastVarD==null?"—":(r.forecastVarD>=0?"+":"")+f$(Math.abs(r.forecastVarD)).replace("—","");
-
     const detail=`<tr class="detail-row-tr${isOpen?" open":""}" id="d${id}"><td colspan="12"><div class="detail-inner">
       <div class="dg"><div class="dg-title">📍 Location &amp; Profile</div>
         <div class="dr"><span class="dl">Address</span><span class="dv">${r.address||"—"}</span></div>
@@ -287,7 +275,6 @@ function renderTable(rows){
         <div class="dr"><span class="dl">ROI</span><span class="dv">${r.roi!=null?r.roi.toFixed(1)+"%":"—"}</span></div>
       </div>
     </div></td></tr>`;
-
     return`<tr class="acc-row${isOpen?" open":""}" id="${id}" onclick="toggle('${id}')">
       <td><span class="exp-icon">▶</span></td>
       <td style="font-weight:700;">${r.restNum||"—"}</td>
@@ -307,8 +294,7 @@ function renderTable(rows){
 
 function toggle(id){
   if(expanded.has(id))expanded.delete(id);else expanded.add(id);
-  const row=document.getElementById(id);
-  const det=document.getElementById("d"+id);
+  const row=document.getElementById(id),det=document.getElementById("d"+id);
   if(!row||!det)return;
   row.classList.toggle("open",expanded.has(id));
   det.classList.toggle("open",expanded.has(id));
