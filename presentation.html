@@ -134,102 +134,84 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .mc-teal   { background: rgba(13,148,136,.05); border-color: rgba(13,148,136,.2); }
 .mc-green  { background: rgba(22,163,74,.05);  border-color: rgba(22,163,74,.2); }
 
-/* ── SLIDE 4: OVERLAY APPROACH ─────────────────────────────────
-   Tabs and header live in #s4-overlay: a position:fixed element
-   that is a SIBLING of #deck, completely outside all slide stacking
-   contexts. It is shown/hidden by JS. Nothing can ever cover it.
-   The #s4 slide div only contains the iframe browser area, which
-   is offset down by the overlay height via top: 108px.
-──────────────────────────────────────────────────────────────── */
-#s4 { background: var(--plk-smoke); }
+/* ── SLIDE 4: IFRAME SHOWCASE ── */
+#s4 { background: #1a1a1a; }
 
-/* Overlay: fixed, always on top, shown only when slide 4 is active */
+/* Fixed overlay: title + tabs, lives outside #deck so nothing blocks clicks */
 #s4-overlay {
   display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0;
+  position: fixed; top: 0; left: 0; right: 0;
   z-index: 99999;
-  background: #F2EDE8;
-  padding: 10px 32px 8px;
-  flex-direction: column;
-  gap: 6px;
-  pointer-events: all;
-  box-shadow: 0 2px 8px rgba(26,8,0,.06);
+  background: var(--plk-smoke);
+  padding: 10px 28px 8px;
+  flex-direction: column; gap: 6px;
+  box-shadow: 0 2px 8px rgba(26,8,0,.08);
 }
 #s4-overlay.visible { display: flex; }
-#s4-overlay-header { flex-shrink: 0; }
-#s4-overlay-tabs { display: flex; gap: 6px; flex-shrink: 0; }
+#s4-overlay-top { flex-shrink: 0; }
+#s4-overlay-tabs { display: flex; gap: 5px; flex-shrink: 0; }
 
-/* Tab buttons — inside a fixed overlay, nothing can ever cover them */
 .s4-tab {
-  flex: 1;
-  display: flex; align-items: center; justify-content: center; gap: 6px;
-  padding: 8px 10px; border-radius: 8px; border: 1.5px solid #e5e7eb;
-  background: #fff; cursor: pointer;
-  font-family: 'Bebas Neue', sans-serif; font-size: 13px; color: #9B7D6E;
-  transition: all .18s; white-space: nowrap;
+  flex: 1; padding: 7px 8px; border-radius: 7px;
+  border: 1.5px solid #e5e7eb; background: #fff;
+  cursor: pointer; font-family: var(--font-display); font-size: 12px;
+  color: var(--plk-muted); transition: all .15s; white-space: nowrap;
+  display: flex; align-items: center; justify-content: center; gap: 4px;
 }
-.s4-tab:hover { border-color: #E8521A; color: #E8521A; background: rgba(232,82,26,.04); }
-.s4-tab.active { background: #E8521A; border-color: #E8521A; color: #fff; }
-.s4t-icon { font-size: 16px; line-height: 1; }
+.s4-tab:hover { border-color: var(--plk-orange); color: var(--plk-orange); }
+.s4-tab.active { background: var(--plk-orange); border-color: var(--plk-orange); color: #fff; }
 
-/* Browser area: offset down so it sits below the fixed overlay */
-#s4-browser-area {
+/* Browser shell: pushed down by overlay height (~95px) */
+#s4-browser-shell {
   position: absolute;
-  top: 130px; left: 32px; right: 32px; bottom: 16px;
+  top: 95px; left: 24px; right: 24px; bottom: 12px;
   display: flex; flex-direction: column;
   border-radius: 10px; overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0,0,0,.15);
-  background: white;
+  box-shadow: 0 8px 40px rgba(0,0,0,.4);
 }
-#s4-topbar {
-  flex-shrink: 0; background: #f0f0f0;
-  border-bottom: 1px solid #e0e0e0; padding: 8px 14px;
-  display: flex; align-items: center; gap: 10px;
+
+/* Chrome bar */
+#s4-chrome {
+  flex-shrink: 0; background: #e8e8e8;
+  border-bottom: 1px solid #d0d0d0;
+  padding: 7px 12px; display: flex; align-items: center; gap: 10px;
 }
-.s4-mock-dots { display: flex; gap: 5px; }
-.s4-mock-dots span { width: 10px; height: 10px; border-radius: 50%; }
+#s4-chrome-dots { display: flex; gap: 5px; }
+#s4-chrome-dots span { width: 11px; height: 11px; border-radius: 50%; }
 #s4-url-pill {
   flex: 1; background: white; border-radius: 5px; padding: 3px 10px;
-  font-family: var(--font-mono); font-size: 11px; color: #666;
-  border: 1px solid #ddd; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  font-family: var(--font-mono); font-size: 11px; color: #555;
+  border: 1px solid #d0d0d0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-.s4-open-link {
-  padding: 3px 12px; border-radius: 6px; background: rgba(232,82,26,.12);
-  color: #E8521A; font-family: 'Bebas Neue', sans-serif; font-size: 11px;
-  text-decoration: none; white-space: nowrap; transition: background .2s; flex-shrink: 0;
+#s4-open-link {
+  padding: 3px 12px; border-radius: 5px; background: rgba(232,82,26,.12);
+  color: var(--plk-orange); font-family: var(--font-mono); font-size: 11px;
+  text-decoration: none; white-space: nowrap; transition: background .2s; font-weight: 600;
 }
-.s4-open-link:hover { background: #E8521A; color: #fff; }
-#s4-scroll {
-  flex: 1;
-  position: relative;
-  overflow: hidden; /* iframe handles its own scroll internally */
+#s4-open-link:hover { background: var(--plk-orange); color: #fff; }
+
+/* Frame wrap: fills everything below chrome */
+#s4-frame-wrap {
+  flex: 1; position: relative; overflow: hidden; background: #f9fafb;
+}
+
+/* iframe: absolute fill, scrolling handled by the page itself */
+#s4-frame-wrap iframe {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  border: none;
+}
+
+#s4-loading {
+  position: absolute; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
   background: #f9fafb;
 }
-#s4-iframe {
-  /* Fill the container completely — let the iframe page scroll itself */
-  display: block;
-  width: 100%;
-  height: 100%;
-  border: none;
-  opacity: 0;
-  transition: opacity .3s;
-  pointer-events: none; /* keep none until loaded */
-}
-#s4-iframe.loaded {
-  opacity: 1;
-  pointer-events: all; /* once loaded, iframe handles all interaction including scroll */
-}
-#s4-loading {
-  position: absolute; inset: 0; display: flex; align-items: center;
-  justify-content: center; flex-direction: column; gap: 12px;
-  background: #f9fafb; z-index: 10; pointer-events: none;
-}
 #s4-blocked {
-  position: absolute; inset: 0; display: none; align-items: center;
-  justify-content: center; background: linear-gradient(135deg,#fafafa,#f0f0f0); z-index: 10;
+  position: absolute; inset: 0; z-index: 10;
+  display: none; align-items: center; justify-content: center;
+  background: linear-gradient(135deg, #fafafa, #f0f0f0);
 }
-#s4-blocked-inner { text-align: center; padding: 24px; }
 
 /* ── OTHER SLIDES ── */
 .s4-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
@@ -460,59 +442,61 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 </div>
 
 <!-- SLIDE 4 — Dashboard Showcase -->
-<!-- The slide div only contains the iframe/browser area — NO tabs inside it -->
 <div class="slide" id="s4">
-  <!-- Everything here is the browser chrome + iframe, pushed down by s4-top-offset -->
-  <div id="s4-browser-area">
-    <div id="s4-topbar">
-      <div class="s4-mock-dots">
+  <div id="s4-browser-shell">
+    <!-- Browser chrome bar -->
+    <div id="s4-chrome">
+      <div id="s4-chrome-dots">
         <span style="background:#ff5f57"></span>
         <span style="background:#febc2e"></span>
         <span style="background:#28c840"></span>
       </div>
       <div id="s4-url-pill">plk-dev-dash.vercel.app</div>
-      <span style="font-family:var(--font-mono);font-size:10px;color:var(--plk-muted)">scroll ↕ to explore</span>
-      <a class="s4-open-link" id="s4-open-link" href="https://plk-dev-dash.vercel.app/" target="_blank">↗ Open live</a>
+      <a id="s4-open-link" href="https://plk-dev-dash.vercel.app/" target="_blank">↗ Open live</a>
     </div>
-    <div id="s4-scroll">
-      <!-- iframe fills 100% width+height of s4-scroll, handles its own scrolling -->
-      <iframe id="s4-iframe" src="" title="PLK Dashboard" allow="fullscreen; autoplay; payment; scripts"></iframe>
-      <!-- Loading and blocked overlays sit on top via position:absolute z-index:10 -->
+    <!-- iframe fills everything below chrome bar -->
+    <div id="s4-frame-wrap">
       <div id="s4-loading">
-        <div style="width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:var(--plk-orange);border-radius:50%;animation:spin 0.8s linear infinite"></div>
-        <div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted)">Loading dashboard…</div>
+        <div style="width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:#E8521A;border-radius:50%;animation:spin 0.8s linear infinite"></div>
+        <div style="font-family:'DM Mono',monospace;font-size:11px;color:#9B7D6E;margin-top:8px">Loading dashboard…</div>
       </div>
+      <iframe id="s4-iframe"
+        src=""
+        scrolling="yes"
+        allowfullscreen
+        style="position:absolute;inset:0;width:100%;height:100%;border:none;opacity:0;transition:opacity .3s;"
+      ></iframe>
       <div id="s4-blocked">
-        <div id="s4-blocked-inner">
-          <div style="font-size:44px;margin-bottom:14px">🍗</div>
-          <div style="font-family:var(--font-display);font-size:22px;color:var(--plk-dark);margin-bottom:8px" id="s4-blocked-title">Dashboard</div>
-          <div style="font-size:13px;color:var(--plk-muted);margin-bottom:6px;max-width:320px;line-height:1.5" id="s4-blocked-desc"></div>
-          <div style="font-size:12px;color:#9ca3af;margin-bottom:20px">This page blocks embedding — open it directly:</div>
-          <a id="s4-blocked-link" href="https://plk-dev-dash.vercel.app/" target="_blank" style="display:inline-block;background:var(--plk-orange);color:#fff;font-family:var(--font-display);font-size:15px;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:.04em">OPEN LIVE ↗</a>
+        <div style="text-align:center;padding:32px">
+          <div style="font-size:48px;margin-bottom:16px">🍗</div>
+          <div id="s4-blocked-title" style="font-family:'Bebas Neue',sans-serif;font-size:26px;color:#1A0800;margin-bottom:8px"></div>
+          <div id="s4-blocked-desc" style="font-size:13px;color:#9B7D6E;max-width:320px;margin:0 auto 6px;line-height:1.5"></div>
+          <div style="font-size:12px;color:#9ca3af;margin-bottom:20px">This page can't be embedded — open it directly:</div>
+          <a id="s4-blocked-link" href="https://plk-dev-dash.vercel.app/" target="_blank"
+            style="display:inline-block;background:#E8521A;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:16px;padding:12px 32px;border-radius:8px;text-decoration:none;letter-spacing:.05em">
+            OPEN LIVE ↗
+          </a>
         </div>
       </div>
     </div>
   </div>
 </div>
 
-<!--
-  SLIDE 4 TABS + HEADER: live OUTSIDE #deck entirely so no slide stacking
-  context can ever block clicks. Shown/hidden via JS when slide 4 is active.
--->
+<!-- SLIDE 4 HEADER + TABS — fixed outside #deck so nothing can cover them -->
 <div id="s4-overlay">
-  <div id="s4-overlay-header">
+  <div id="s4-overlay-top">
     <div>
-      <div style="font-family:var(--font-mono);font-size:10px;color:var(--plk-orange);letter-spacing:.15em;text-transform:uppercase;margin-bottom:1px">The suite — live &amp; interactive</div>
-      <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(18px,2.2vw,32px);color:#1A0800;line-height:1">Five dashboards, one deployment — click to explore</div>
+      <div style="font-family:'DM Mono',monospace;font-size:10px;color:#E8521A;letter-spacing:.15em;text-transform:uppercase;margin-bottom:2px">The suite — live &amp; interactive</div>
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:clamp(20px,2.5vw,36px);color:#1A0800;line-height:1">Five dashboards, one deployment — click to explore</div>
     </div>
   </div>
   <div id="s4-overlay-tabs">
-    <button class="s4-tab active" id="s4t-0" onclick="s4Switch(0)"><span class="s4t-icon">🏠</span> Home</button>
-    <button class="s4-tab" id="s4t-1" onclick="s4Switch(1)"><span class="s4t-icon">📈</span> NRO Performance</button>
-    <button class="s4-tab" id="s4t-2" onclick="s4Switch(2)"><span class="s4t-icon">🏗️</span> Development Execution</button>
-    <button class="s4-tab" id="s4t-3" onclick="s4Switch(3)"><span class="s4t-icon">🔒</span> Closures</button>
-    <button class="s4-tab" id="s4t-4" onclick="s4Switch(4)"><span class="s4t-icon">🗺️</span> REM Pipeline</button>
-    <button class="s4-tab" id="s4t-5" onclick="s4Switch(5)"><span class="s4t-icon">✅</span> YTD Openings</button>
+    <button class="s4-tab active" id="s4t-0" onclick="s4Switch(0)">🏠 Home</button>
+    <button class="s4-tab" id="s4t-1" onclick="s4Switch(1)">📈 NRO Performance</button>
+    <button class="s4-tab" id="s4t-2" onclick="s4Switch(2)">🏗️ Development Execution</button>
+    <button class="s4-tab" id="s4t-3" onclick="s4Switch(3)">🔒 Closures</button>
+    <button class="s4-tab" id="s4t-4" onclick="s4Switch(4)">🗺️ REM Pipeline</button>
+    <button class="s4-tab" id="s4t-5" onclick="s4Switch(5)">✅ YTD Openings</button>
   </div>
 </div>
 
@@ -804,12 +788,31 @@ const S4_DESCRIPTIONS = [
 
 let s4Current = 0;
 
+// ── SLIDE 4: DASHBOARD SWITCHER ─────────────────────────────────────────────
+const S4_DASHBOARDS = [
+  { label:'Home',                 slug:'' },
+  { label:'NRO Performance',      slug:'dashboard' },
+  { label:'Development Execution',slug:'development-execution' },
+  { label:'Closures',             slug:'closures' },
+  { label:'REM Pipeline',         slug:'rem-pipeline' },
+  { label:'YTD Openings',         slug:'ytd-openings' },
+];
+const S4_DESCRIPTIONS = [
+  'The suite landing page — navigate to any dashboard from here.',
+  'NRO Performance Hub — openings, EBITDA, ARS & FSS trends.',
+  'Development Execution — live pipeline waterfall, risk mix, drill-down.',
+  'Closure Dashboard — closure pipeline, reasons, controlled vs. non-controlled.',
+  'REM Pipeline — SA & Prospect sites by division, risk level filters.',
+  'YTD Openings — year-to-date tracker, budget vs. actual, FZ rollup.',
+];
+let s4Current = 0;
+
 function s4Switch(idx) {
   document.getElementById('s4t-' + s4Current).classList.remove('active');
   s4Current = idx;
   document.getElementById('s4t-' + idx).classList.add('active');
 
-  const d   = S4_DASHBOARDS[idx];
+  const d = S4_DASHBOARDS[idx];
   const url = d.slug ? 'https://plk-dev-dash.vercel.app/' + d.slug : 'https://plk-dev-dash.vercel.app/';
 
   const pill = document.getElementById('s4-url-pill');
@@ -821,7 +824,6 @@ function s4Switch(idx) {
   const loading = document.getElementById('s4-loading');
   const blocked = document.getElementById('s4-blocked');
 
-  // Update fallback text
   const bt = document.getElementById('s4-blocked-title');
   const bl = document.getElementById('s4-blocked-link');
   const bd = document.getElementById('s4-blocked-desc');
@@ -830,50 +832,34 @@ function s4Switch(idx) {
   if (bd) bd.textContent = S4_DESCRIPTIONS[idx] || '';
 
   if (!iframe) return;
-
-  // Reset iframe state
-  iframe.classList.remove('loaded');
-  iframe.style.pointerEvents = 'none';
-  iframe.onload  = null;
-  iframe.onerror = null;
-  iframe.src = '';
-
+  iframe.style.opacity = '0';
+  iframe.onload = null; iframe.onerror = null; iframe.src = '';
   if (loading) loading.style.display = 'flex';
   if (blocked) blocked.style.display = 'none';
 
   let done = false;
-  // Give 18s — some dashboards fetch live data and are slow
   const t = setTimeout(() => {
-    if (done) return;
-    done = true;
+    if (done) return; done = true;
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'flex';
-  }, 18000);
+  }, 15000);
 
   iframe.onload = () => {
-    if (done) return;
-    done = true;
+    if (done) return; done = true;
     clearTimeout(t);
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'none';
-    iframe.classList.add('loaded');
-    // Enable pointer events so mouse/touch/scroll work inside the iframe
-    iframe.style.pointerEvents = 'all';
+    iframe.style.opacity = '1';
   };
-
   iframe.onerror = () => {
-    if (done) return;
-    done = true;
+    if (done) return; done = true;
     clearTimeout(t);
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'flex';
   };
-
-  // Small delay before setting src to ensure clean reset
-  setTimeout(() => { iframe.src = url; }, 50);
+  setTimeout(() => { iframe.src = url; }, 30);
 }
 
-// Start on NRO Performance when page loads (slide 4 overlay will show when navigated to)
 window.addEventListener('load', () => { s4Switch(1); });
 
 // ── SLIDE STATE ─────────────────────────────────────────────────────────────
@@ -893,7 +879,7 @@ function goTo(n) {
   document.getElementById('progress-bar').style.width = (current / TOTAL * 100) + '%';
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current - 1));
 
-  // Show overlay (header + tabs) only on slide 4
+  // Show/hide the fixed s4 overlay (title + tabs)
   const overlay = document.getElementById('s4-overlay');
   if (overlay) overlay.classList.toggle('visible', current === 4);
 
@@ -901,15 +887,10 @@ function goTo(n) {
   const badge = document.getElementById('claude-badge');
   if (badge) badge.style.display = current === 4 ? 'none' : '';
 
-  // Move nav to bottom-right on slide 4 so it doesn't overlap the overlay tabs
+  // Reset nav position
   const nav = document.getElementById('nav');
-  if (current === 4) {
-    nav.style.bottom = '16px'; nav.style.right = '20px';
-    nav.style.left = 'auto'; nav.style.transform = 'none';
-  } else {
-    nav.style.bottom = ''; nav.style.right = '';
-    nav.style.left = ''; nav.style.transform = '';
-  }
+  nav.style.bottom = ''; nav.style.right = '';
+  nav.style.left = ''; nav.style.transform = '';
 
   if (current === 5) { loadPipelineData(); buildWf3Chart(); buildDivisionWaterfallCharts(); }
 }
