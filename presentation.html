@@ -7,6 +7,7 @@
   03 - Waterfall rebuilt to match development-execution.html screenshot
   04 - Export panel now shows 6 real divisional NRO opening charts
   05 - Slide 4 tabs 3-6 (Dev Exec, Closures, REM, YTD) now clickable — fixed z-index stacking
+  06 - Slide 4 tab overlap FULLY FIXED: iframe-wrap can no longer bleed over tab row
 -->
 <html lang="en">
 <head>
@@ -133,7 +134,144 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .mc-teal   { background: rgba(13,148,136,.05); border-color: rgba(13,148,136,.2); }
 .mc-green  { background: rgba(22,163,74,.05);  border-color: rgba(22,163,74,.2); }
 
+/* ── SLIDE 4: DASHBOARD SHOWCASE ──────────────────────────────── */
 #s4 { background: var(--plk-smoke); }
+
+/* FIX 06: s4-header must NOT animate/fade — keep it static and in flow */
+#s4 .s4-header {
+  padding: 14px 40px 6px !important;
+  flex-shrink: 0;
+  opacity: 1 !important;
+  animation: none !important;
+}
+
+/*
+  FIX 06 — ROOT CAUSE:
+  .s4-dash-layout had overflow:hidden which caused the browser-wrap
+  to be painted in the same stacking context as the tab nav, and
+  since browser-wrap comes AFTER the tab nav in the DOM, it sits
+  on top of it in z-order within that context.
+
+  Solution:
+  1. Remove overflow:hidden from .s4-dash-layout  → lets z-index work properly
+  2. Give .s4-tab-nav a real z-index + isolation   → tabs always paint on top
+  3. Give .s4-browser-wrap a lower z-index         → browser never covers tabs
+  4. Keep overflow:hidden only on the inner iframe-wrap so the iframe is clipped
+*/
+.s4-dash-layout {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  padding: 0 32px 16px;
+  gap: 10px;
+  min-height: 0;
+  /* NO overflow:hidden here — that was the culprit */
+  overflow: visible;
+  position: relative;   /* establish stacking context for children */
+}
+
+/* Tab row: always above the browser */
+.s4-tab-nav {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+  flex-wrap: nowrap;
+  position: relative;
+  z-index: 100;          /* high enough to beat the browser-wrap below */
+  isolation: isolate;    /* own stacking context so children can't escape */
+}
+
+.s4-tab {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 6px 10px;
+  border-radius: 8px;
+  border: 1.5px solid #e5e7eb;
+  background: #fff;
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 12px;
+  color: var(--plk-muted);
+  transition: all .2s;
+  white-space: nowrap;
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  z-index: 1;            /* relative to tab-nav isolation context */
+  pointer-events: all !important;
+}
+.s4-tab:hover { border-color: var(--plk-orange); color: var(--plk-orange); }
+.s4-tab.active { background: var(--plk-orange); border-color: var(--plk-orange); color: #fff; }
+.s4t-icon { font-size: 15px; line-height: 1; }
+
+/* Browser wrapper: below tab nav in paint order */
+.s4-browser-wrap {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  z-index: 1;            /* lower than tab-nav's z-index:100 */
+}
+
+.s4-browser {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  box-shadow: 0 8px 40px rgba(0,0,0,.15);
+  border-radius: 10px;
+  overflow: hidden;      /* clip the browser chrome, not the tab nav */
+}
+
+/* The ONE scroll container */
+.s4-iframe-wrap {
+  flex: 1;
+  position: relative;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: #f9fafb;
+}
+
+/* Iframe */
+.s4-iframe {
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 4500px;
+  border: none;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.s4-iframe.loaded { opacity: 1; }
+
+/* Overlays inside wrap */
+.s4-iframe-blocked {
+  position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+  background: linear-gradient(135deg,#fafafa 0%,#f0f0f0 100%); z-index: 3;
+}
+.s4-blocked-inner { text-align: center; padding: 24px; }
+.s4-open-link {
+  margin-left: auto; padding: 3px 12px; border-radius: 6px;
+  background: rgba(232,82,26,.12); color: var(--plk-orange);
+  font-family: var(--font-display); font-size: 11px; text-decoration: none;
+  white-space: nowrap; transition: background .2s; flex-shrink: 0;
+}
+.s4-open-link:hover { background: var(--plk-orange); color: #fff; }
+
+/* Keep nav at bottom for slide 4 */
+#nav.nav-s4-mode {
+  bottom: auto; top: 14px; right: 20px; left: auto; transform: none;
+  padding: 6px 14px; gap: 8px;
+}
+#nav.nav-s4-mode #slide-counter { font-size: 11px; min-width: 40px; }
+#nav.nav-s4-mode .nav-btn { width: 32px; height: 32px; font-size: 15px; }
+#nav.nav-s4-mode #dots { display: none; }
+
+/* ── OTHER SLIDES ── */
+#s4-steps-slide { background: var(--plk-smoke); }
 .s4-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
 .s4-steps { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 16px 9% 80px; gap: 14px; }
 .step-row { display: flex; align-items: flex-start; gap: 18px; opacity: 0; animation: fadeLeft .5s forwards; }
@@ -250,41 +388,12 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .rmp-med{background:#FEF3C7;color:#D97706;border-color:#F59E0B;}
 .rmp-high{background:#FEE2E2;color:#DC2626;border-color:#EF4444;}
 
-/* Export panel — divisional NRO charts */
-.div-nro-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 10px 12px; overflow-y: auto; flex: 1; min-height: 0; }
-.div-nro-card { background: #fafafa; border-radius: 10px; padding: 10px 12px; border: 1px solid #ececec; display: flex; flex-direction: column; gap: 6px; }
-.div-nro-hdr { display: flex; align-items: center; justify-content: space-between; }
-.div-nro-name { font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--plk-slate); }
-.exp-btn-sm { background: var(--plk-orange); color: white; border: none; border-radius: 5px; padding: 3px 9px; font-family: var(--font-body); font-size: 10px; font-weight: 700; cursor: pointer; transition: all .2s; white-space: nowrap; }
-.exp-btn-sm:hover { background: var(--plk-red); transform: scale(1.03); }
-.exp-btn-sm:disabled { background: #ccc; cursor: not-allowed; transform: none; }
-.div-nro-bars { display: flex; gap: 4px; align-items: flex-end; height: 70px; position: relative; }
-.nro-bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.nro-bar { width: 100%; border-radius: 3px 3px 0 0; position: relative; min-height: 4px; display: flex; align-items: flex-start; justify-content: center; }
-.nro-bar-val { font-family: var(--font-mono); font-size: 9px; font-weight: 700; color: white; position: absolute; top: 2px; line-height: 1; }
-.nro-bar-val.outside { color: var(--plk-slate); top: -13px; }
-.nro-bar-lbl { font-family: var(--font-mono); font-size: 8px; color: var(--plk-muted); text-align: center; margin-top: 2px; }
-
 /* div waterfall cards in panel 3 */
 .div-wf-card { background:#fafafa;border-radius:8px;padding:8px 10px;border:1px solid #ececec;display:flex;flex-direction:column;gap:4px;min-height:140px; }
 .div-wf-title { font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-slate);display:flex;align-items:center;justify-content:space-between; }
 .div-wf-exp-btn { background:var(--plk-orange);color:white;border:none;border-radius:4px;padding:2px 7px;font-family:var(--font-body);font-size:9px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap; }
 .div-wf-exp-btn:hover { background:var(--plk-red); }
 .div-wf-exp-btn:disabled { background:#ccc;cursor:not-allowed; }
-
-/* Waterfall (panel 2) — rebuilt to match screenshot */
-.wf-rebuilt { flex: 1; display: flex; flex-direction: column; min-height: 0; gap: 8px; }
-.wf-r-label { font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--plk-slate); flex-shrink: 0; }
-.wf-r-chart { flex: 1; display: flex; gap: 6px; align-items: flex-end; min-height: 0; position: relative; }
-.wf-r-col { flex: 1; display: flex; flex-direction: column; align-items: center; min-width: 0; }
-.wf-r-spacer { width: 100%; flex-shrink: 0; }
-.wf-r-seg { width: 85%; border-radius: 4px 4px 0 0; position: relative; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: filter .15s; min-height: 6px; }
-.wf-r-seg:hover { filter: brightness(1.1); }
-.wf-r-seg-val { font-family: var(--font-mono); font-size: 11px; font-weight: 700; color: white; line-height: 1; }
-.wf-r-seg-val.sm { font-size: 9px; }
-.wf-r-col-lbl { font-family: var(--font-mono); font-size: 9px; color: var(--plk-muted); text-align: center; padding-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; }
-.wf-r-play { align-self: flex-start; margin-top: 4px; flex-shrink: 0; background: var(--plk-dark); color: white; border: none; border-radius: 7px; padding: 7px 16px; font-family: var(--font-body); font-size: 12px; font-weight: 600; cursor: pointer; transition: all .2s; }
-.wf-r-play:hover { background: var(--plk-orange); }
 
 /* Live area */
 .live-area { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 0; }
@@ -306,88 +415,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .tour-next-btn:hover { background: var(--plk-red); transform: scale(1.03); }
 
 #kbd-hint { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted); background: white; border: 1px solid #E8DED8; border-radius: 50px; padding: 5px 14px; z-index: 9999; opacity: 1; transition: opacity 1s; }
-
-/* ── SLIDE 4: DASHBOARD SHOWCASE ──────────────────────────────── */
-.s4-header { padding: 14px 40px 6px; flex-shrink:0; }
-.s4-dash-layout { display:flex; flex-direction:column; flex:1; padding:0 32px 16px; gap:10px; min-height:0; overflow:hidden; }
-#s4 .s4-header { opacity:1 !important; animation:none !important; padding:14px 40px 6px !important; }
-
-/* ── FIX 05: Tab nav sits above everything — z-index ensures clicks always land ── */
-.s4-tab-nav {
-  display:flex; gap:6px; flex-shrink:0; flex-wrap:nowrap; overflow:visible;
-  position: relative;
-  z-index: 50;
-}
-
-.s4-tab {
-  display:flex; align-items:center; justify-content:center; gap:5px; padding:6px 10px;
-  border-radius:8px; border:1.5px solid #e5e7eb;
-  background:#fff; cursor:pointer; font-family:var(--font-display); font-size:12px;
-  color:var(--plk-muted); transition:all .2s; white-space:nowrap;
-  flex:1; min-width:0;
-  /* FIX 05: ensure each tab button is always on top and clickable */
-  position: relative;
-  z-index: 60;
-  pointer-events: all;
-}
-.s4-tab:hover { border-color:var(--plk-orange); color:var(--plk-orange); }
-.s4-tab.active { background:var(--plk-orange); border-color:var(--plk-orange); color:#fff; }
-.s4t-icon { font-size:15px; line-height:1; }
-
-/* Browser container */
-.s4-browser-wrap { flex:1; min-height:0; display:flex; flex-direction:column; }
-.s4-browser { display:flex; flex-direction:column; flex:1; min-height:0;
-  box-shadow:0 8px 40px rgba(0,0,0,.15); border-radius:10px; overflow:hidden; }
-
-/* The ONE scroll container — no second scrollbar */
-.s4-iframe-wrap {
-  flex:1; position:relative;
-  overflow-y:auto; overflow-x:hidden;
-  -webkit-overflow-scrolling:touch;
-  background:#f9fafb;
-}
-
-/* Iframe: absolute, tall enough for full page. pointer-events:none until loaded */
-.s4-iframe {
-  position:absolute; top:0; left:0;
-  width:100%; height:4500px;
-  border:none;
-  pointer-events:none;
-  opacity:0;
-  transition:opacity .3s;
-}
-.s4-iframe.loaded {
-  opacity:1;
-}
-
-/* Overlays inside wrap */
-.s4-iframe-blocked {
-  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  background:linear-gradient(135deg,#fafafa 0%,#f0f0f0 100%); z-index:3;
-}
-.s4-blocked-inner { text-align:center; padding:24px; }
-.s4-open-link {
-  margin-left:auto; padding:3px 12px; border-radius:6px;
-  background:rgba(232,82,26,.12); color:var(--plk-orange);
-  font-family:var(--font-display); font-size:11px; text-decoration:none;
-  white-space:nowrap; transition:background .2s; flex-shrink:0;
-}
-.s4-open-link:hover { background:var(--plk-orange); color:#fff; }
-
-/* ── SLIDE 4: nav stays at bottom — no special mode needed ── */
-#nav.nav-s4-mode {
-  bottom: auto;
-  top: 14px;
-  right: 20px;
-  left: auto;
-  transform: none;
-  padding: 6px 14px;
-  gap: 8px;
-}
-#nav.nav-s4-mode #slide-counter { font-size:11px; min-width:40px; }
-#nav.nav-s4-mode .nav-btn { width:32px; height:32px; font-size:15px; }
-#nav.nav-s4-mode #dots { display:none; }
-
 </style>
 </head>
 <body>
@@ -478,14 +505,15 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
     <div class="slide-eyebrow">The suite — live &amp; interactive</div>
     <div class="slide-title">Five dashboards, one deployment — click to explore</div>
   </div>
+  <!-- FIX 06: tab nav is a SIBLING of browser-wrap, not nested inside anything with overflow:hidden -->
   <div class="s4-dash-layout">
     <div class="s4-tab-nav" id="s4-tabs">
-      <button class="s4-tab active" onclick="s4Switch(0)" id="s4t-0"><span class="s4t-icon">🏠</span><span class="s4t-label">Home</span></button>
-      <button class="s4-tab" onclick="s4Switch(1)" id="s4t-1"><span class="s4t-icon">📈</span><span class="s4t-label">NRO</span></button>
-      <button class="s4-tab" onclick="s4Switch(2)" id="s4t-2"><span class="s4t-icon">🏗️</span><span class="s4t-label">Dev Exec</span></button>
-      <button class="s4-tab" onclick="s4Switch(3)" id="s4t-3"><span class="s4t-icon">🔒</span><span class="s4t-label">Closures</span></button>
-      <button class="s4-tab" onclick="s4Switch(4)" id="s4t-4"><span class="s4t-icon">🗺️</span><span class="s4t-label">REM</span></button>
-      <button class="s4-tab" onclick="s4Switch(5)" id="s4t-5"><span class="s4t-icon">✅</span><span class="s4t-label">YTD</span></button>
+      <button class="s4-tab active" id="s4t-0" onclick="s4Switch(0)"><span class="s4t-icon">🏠</span><span class="s4t-label">Home</span></button>
+      <button class="s4-tab" id="s4t-1" onclick="s4Switch(1)"><span class="s4t-icon">📈</span><span class="s4t-label">NRO</span></button>
+      <button class="s4-tab" id="s4t-2" onclick="s4Switch(2)"><span class="s4t-icon">🏗️</span><span class="s4t-label">Dev Exec</span></button>
+      <button class="s4-tab" id="s4t-3" onclick="s4Switch(3)"><span class="s4t-icon">🔒</span><span class="s4t-label">Closures</span></button>
+      <button class="s4-tab" id="s4t-4" onclick="s4Switch(4)"><span class="s4t-icon">🗺️</span><span class="s4t-label">REM</span></button>
+      <button class="s4-tab" id="s4t-5" onclick="s4Switch(5)"><span class="s4t-icon">✅</span><span class="s4t-label">YTD</span></button>
     </div>
     <div class="s4-browser-wrap">
       <div class="s4-browser mock-browser">
@@ -496,14 +524,11 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
           <a class="s4-open-link" id="s4-open-link" href="https://plk-dev-dash.vercel.app/" target="_blank">↗ Open live</a>
         </div>
         <div class="s4-iframe-wrap" id="s4-iframe-wrap">
-          <!-- Loading spinner -->
           <div id="s4-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#f9fafb;z-index:10;flex-direction:column;gap:12px">
             <div style="width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:var(--plk-orange);border-radius:50%;animation:spin 0.8s linear infinite"></div>
             <div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted)">Loading dashboard…</div>
           </div>
-          <!-- The live iframe -->
           <iframe id="s4-iframe" src="" class="s4-iframe" title="PLK Dashboard" allow="fullscreen; autoplay; payment"></iframe>
-          <!-- Fallback when iframe is blocked -->
           <div class="s4-iframe-blocked" id="s4-blocked" style="display:none">
             <div class="s4-blocked-inner">
               <div style="font-size:44px;margin-bottom:14px">🍗</div>
