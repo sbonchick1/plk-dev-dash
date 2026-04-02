@@ -31,7 +31,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   transform: translateX(60px); overflow: hidden;
 }
 #s4.slide { overflow: visible; }
-#s4.slide .s4-browser { overflow: hidden; }
+/* removed: was clipping iframe */
 .slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
 .slide.exit   { opacity: 0; transform: translateX(-60px); }
 
@@ -349,8 +349,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .s4t-icon { font-size:15px; line-height:1; }
 .s4-browser-wrap { flex:1; min-height:0; display:flex; flex-direction:column; }
 .s4-browser { display:flex; flex-direction:column; flex:1; min-height:0; box-shadow:0 8px 40px rgba(0,0,0,.15); }
-.s4-iframe-wrap { flex:1; min-height:0; position:relative; overflow-y:auto; overflow-x:hidden; background:#f9fafb; border-radius:0 0 10px 10px; -webkit-overflow-scrolling:touch; }
-.s4-iframe { width:100%; height:2200px; border:none; display:block; pointer-events:all; }
+.s4-iframe-wrap { flex:1; min-height:0; position:relative; overflow-y:scroll; overflow-x:hidden; background:#f9fafb; border-radius:0 0 10px 10px; -webkit-overflow-scrolling:touch; }
+.s4-iframe { width:100%; height:100%; min-height:700px; border:none; display:block; pointer-events:all; }
 .s4-iframe-blocked {
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
   background: linear-gradient(135deg,#fafafa 0%,#f0f0f0 100%);
@@ -379,10 +379,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 #nav.nav-s4-mode .nav-btn { width:32px; height:32px; font-size:15px; }
 #nav.nav-s4-mode #dots { display:none; }
 
-/* ── SLIDE 4: single clean scroll — wrap scrolls, iframe is tall/static ── */
-#s4 .s4-browser-wrap { overflow: hidden; }
-#s4 .s4-browser { overflow: hidden !important; border-radius: 10px; }
-#s4 .mock-browser { overflow: hidden !important; }
+/* ── SLIDE 4: mock-browser must NOT clip iframe-wrap ─────────── */
+#s4 .s4-browser { overflow: visible !important; border-radius: 10px; }
+#s4 .mock-browser { overflow: visible !important; }
+#s4 .s4-browser-wrap { overflow: visible; }
 
 </style>
 </head>
@@ -805,64 +805,70 @@ function s4Switch(idx) {
   const d = S4_DASHBOARDS[idx];
   const url = d.slug ? 'https://plk-dev-dash.vercel.app/' + d.slug : 'https://plk-dev-dash.vercel.app/';
 
-  // Update pill + open link
+  // Update URL pill + open link
   const pill = document.getElementById('s4-url-pill');
   const link = document.getElementById('s4-open-link');
   if (pill) pill.textContent = d.slug ? 'plk-dev-dash.vercel.app/' + d.slug : 'plk-dev-dash.vercel.app';
   if (link) link.href = url;
 
-  // Reset scroll position
+  // Reset scroll to top
   const wrap = document.getElementById('s4-iframe-wrap');
   if (wrap) wrap.scrollTop = 0;
 
-  // Show loading state
-  const iframe   = document.getElementById('s4-iframe');
-  const blocked  = document.getElementById('s4-blocked');
-  const loading  = document.getElementById('s4-loading');
-  if (loading) loading.style.display = 'flex';
-  if (blocked) blocked.style.display = 'none';
-  if (iframe)  iframe.style.opacity  = '0';
+  const iframe  = document.getElementById('s4-iframe');
+  const blocked = document.getElementById('s4-blocked');
+  const loading = document.getElementById('s4-loading');
 
-  // Set blocked card content
+  // Update fallback card text
   if (blocked) {
     document.getElementById('s4-blocked-title').textContent = d.label;
     document.getElementById('s4-blocked-link').href = url;
     document.getElementById('s4-blocked-desc').textContent = S4_DESCRIPTIONS[idx] || '';
   }
 
-  // Load iframe
-  if (iframe) {
-    iframe.onload = null;
-    iframe.src = '';
-    // Short delay so browser clears previous page first
-    setTimeout(() => {
-      iframe.src = url;
-      // Give the iframe 6 seconds to prove it loaded; if it fires load event it's good
-      let didLoad = false;
-      const loadTimer = setTimeout(() => {
-        if (!didLoad) {
-          // Timed out — show fallback
-          if (loading) loading.style.display = 'none';
-          if (blocked) blocked.style.display = 'flex';
-          if (iframe)  iframe.style.opacity  = '0';
-        }
-      }, 8000);
-      iframe.onload = () => {
-        didLoad = true;
-        clearTimeout(loadTimer);
-        if (loading) loading.style.display = 'none';
-        if (blocked) blocked.style.display = 'none';
-        if (iframe)  iframe.style.opacity  = '1';
-      };
-      iframe.onerror = () => {
-        didLoad = true;
-        clearTimeout(loadTimer);
-        if (loading) loading.style.display = 'none';
-        if (blocked) blocked.style.display = 'flex';
-        if (iframe)  iframe.style.opacity  = '0';
-      };
-    }, 60);
-  }
+  // Show spinner, hide iframe & fallback
+  if (loading) loading.style.display = 'flex';
+  if (blocked) blocked.style.display = 'none';
+  if (iframe)  { iframe.style.opacity = '0'; iframe.style.pointerEvents = 'none'; }
+
+  if (!iframe) return;
+
+  // Detach old handlers
+  iframe.onload  = null;
+  iframe.onerror = null;
+
+  // Timeout: if nothing loaded in 10s, show fallback
+  let resolved = false;
+  const timer = setTimeout(() => {
+    if (resolved) return;
+    resolved = true;
+    if (loading) loading.style.display = 'none';
+    if (blocked) blocked.style.display = 'flex';
+    if (iframe)  iframe.style.opacity  = '0';
+  }, 10000);
+
+  iframe.onload = () => {
+    if (resolved) return;
+    resolved = true;
+    clearTimeout(timer);
+    if (loading) loading.style.display = 'none';
+    if (blocked) blocked.style.display = 'none';
+    // Show iframe and restore pointer events so it's interactive
+    iframe.style.opacity       = '1';
+    iframe.style.pointerEvents = 'all';
+  };
+
+  iframe.onerror = () => {
+    if (resolved) return;
+    resolved = true;
+    clearTimeout(timer);
+    if (loading) loading.style.display = 'none';
+    if (blocked) blocked.style.display = 'flex';
+    iframe.style.opacity = '0';
+  };
+
+  // Set src directly — no intermediate '' that can cause race conditions
+  iframe.src = url;
 }
 
 const S4_DESCRIPTIONS = [
@@ -896,6 +902,9 @@ function goTo(n) {
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current - 1));
   // On slide 4 (dashboard showcase): move nav to top-right so tabs are never blocked
   document.getElementById('nav').classList.toggle('nav-s4-mode', current === 4);
+  // Hide claude badge on slide 4 so it doesn't overlap tabs or nav
+  const badge = document.getElementById('claude-badge');
+  if (badge) badge.style.display = current === 4 ? 'none' : '';
   if (current === 5) { loadPipelineData(); buildWf3Chart(); buildDivisionWaterfallCharts(); }
 }
 function nextSlide() { if (current < TOTAL) goTo(current + 1); }
