@@ -1181,8 +1181,7 @@ function buildWf3Chart() {
   // Build canvas inside wf3-canvas element
   const canvasEl = document.getElementById('wf3-canvas');
   if (!canvasEl) return;
-  if (!LIVE_ROWS.length && wf3ChartData) return; // already built
-
+  // Always rebuild — live data may have just arrived
   const bu = LIVE_ROWS.filter(r=>is2026Live(r));
   const counts = {Prospect:0,SA:0,PC:0,Permitting:0,UC:0,Open:0};
   bu.forEach(r=>{if(r.status&&counts.hasOwnProperty(r.status))counts[r.status]++;});
@@ -1205,10 +1204,18 @@ function openWf3Drill(divisionName, status, riskFilter, title) {
 function closeWf3Drill() { document.getElementById('wf3-drill-modal').style.display='none'; }
 
 // ── PANEL 03: Divisional waterfall charts ──
-let divWfBuilt = false;
+// Fallback counts used when live data hasn't loaded yet (matches dev-execution.html static screenshot)
+const DIV_FALLBACK = {
+  Northeast:  {Prospect:1,SA:1,PC:2,Permitting:5,UC:12,Open:4,  budget:32},
+  Southeast:  {Prospect:1,SA:0,PC:2,Permitting:4,UC:10,Open:5,  budget:28},
+  Central:    {Prospect:1,SA:0,PC:2,Permitting:3,UC:8, Open:4,  budget:25},
+  West:       {Prospect:1,SA:1,PC:1,Permitting:2,UC:6, Open:3,  budget:22},
+  Canada:     {Prospect:0,SA:0,PC:1,Permitting:1,UC:2, Open:1,  budget:8},
+  'Non-Trad': {Prospect:0,SA:0,PC:0,Permitting:0,UC:1, Open:0,  budget:4},
+};
+
 function buildDivisionWaterfallCharts() {
-  if (divWfBuilt) return;
-  divWfBuilt = true;
+  // Always rebuild so live data always shows — no once-only guard
   DIVISION_CONFIGS.forEach(cfg => { buildDivWfCard(cfg); });
 }
 
@@ -1217,10 +1224,17 @@ function buildDivWfCard(cfg) {
   const container = document.getElementById(cfg.el);
   if (!container) return;
 
-  const bu = LIVE_ROWS.filter(r=>r.division===cfg.name&&is2026Live(r));
+  const hasLive = LIVE_ROWS.length > 0;
+  const bu = hasLive ? LIVE_ROWS.filter(r=>r.division===cfg.name&&is2026Live(r)) : [];
   const counts = {Prospect:0,SA:0,PC:0,Permitting:0,UC:0,Open:0};
-  bu.forEach(r=>{if(r.status&&counts.hasOwnProperty(r.status))counts[r.status]++;});
-  const budget = LIVE_BUDGETS[cfg.name]||0;
+  if (hasLive) {
+    bu.forEach(r=>{if(r.status&&counts.hasOwnProperty(r.status))counts[r.status]++;});
+  } else {
+    // Use fallback static counts so charts render even before API responds
+    const fb = DIV_FALLBACK[cfg.name]||{};
+    Object.assign(counts, {Prospect:fb.Prospect||0,SA:fb.SA||0,PC:fb.PC||0,Permitting:fb.Permitting||0,UC:fb.UC||0,Open:fb.Open||0});
+  }
+  const budget = hasLive ? (LIVE_BUDGETS[cfg.name]||0) : (DIV_FALLBACK[cfg.name]?.budget||0);
   const safeId = 'divwf-canvas-'+cfg.id;
 
   container.innerHTML = `
@@ -1280,24 +1294,54 @@ function showWaterfallDrillModal(modalId, headerId, titleId, subId, badgeId, row
 }
 
 // ── EXPORT: calls the same /api/export_chart endpoint as dev-execution ──
-let nroExporting = false;
+const nroExportingMap = {}; // per-division lock so one export doesn't block others
 async function exportDivWaterfall(divisionName, divId) {
-  if (nroExporting) return;
-  nroExporting = true;
+  if (nroExportingMap[divId]) return;
+  nroExportingMap[divId] = true;
 
   const btn = document.getElementById('divwf-exp-'+divId);
   if (btn) btn.disabled = true;
 
-  // Build payload matching what dev-execution sends to /api/export_chart
-  const d = DIV_WF_DATA[divId];
+  // Build payload matching exactly what dev-execution.html sends to /api/export_chart
+  // If DIV_WF_DATA not yet set (chart not yet clicked), compute from LIVE_ROWS directly
+  let d = DIV_WF_DATA[divId];
+  if (!d) {
+    // Compute on the fly from live data
+    const cfg = DIVISION_CONFIGS.find(c=>c.id===divId);
+    if (cfg) {
+      const hasLive = LIVE_ROWS.length > 0;
+      const bu = hasLive ? LIVE_ROWS.filter(r=>r.division===cfg.name&&is2026Live(r)) : [];
+      const counts = {Prospect:0,SA:0,PC:0,Permitting:0,UC:0,Open:0};
+      if (hasLive) bu.forEach(r=>{if(r.status&&counts.hasOwnProperty(r.status))counts[r.status]++;});
+      else { const fb=DIV_FALLBACK[cfg.name]||{}; Object.keys(counts).forEach(k=>counts[k]=fb[k]||0); }
+      const budget = hasLive ? (LIVE_BUDGETS[cfg.name]||0) : (DIV_FALLBACK[cfg.name]?.budget||0);
+      const fyBU = Object.values(counts).reduce((a,b)=>a+b,0);
+      const upsideCount = LIVE_ROWS.filter(r=>r.division===cfg.name&&(r.riskLevel||'').trim().toLowerCase()==='upside').length;
+      const fyBUPlusUpside = fyBU + upsideCount;
+      const gapToBudget = budget - fyBUPlusUpside;
+      const STATUSES = ['Prospect','SA','PC','Permitting','UC','Open'];
+      const labels = [...STATUSES,'FY BU','Upside','FY BU + Upside','Gap to Budget','Budget'];
+      const displayValues = [...STATUSES.map(s=>counts[s]),fyBU,upsideCount,fyBUPlusUpside,gapToBudget,budget];
+      d = { labels, displayValues, budget, fyBU, upsideCount, fyBUPlusUpside, gap:fyBU-budget, divisionName:cfg.name, counts };
+      DIV_WF_DATA[divId] = d;
+    }
+  }
+
   const sites = LIVE_ROWS.filter(r=>r.division===divisionName&&(is2026Live(r)||(r.riskLevel||'').trim().toLowerCase()==='upside'))
     .map(s=>({sipId:s.sipId||'',restNum:s.restNum||'',fz:s.fz||'',address:s.address||'',city:s.city||'',state:s.state||'',status:s.status||'',fzOpenDate:s.fzOpenDate||'',plkOpenDate:s.plkOpenDate||'',riskLevel:s.riskLevel||'',lastComment:s.lastComment||''}));
 
   const payload = d ? {
-    divisionName, labels:d.labels, displayValues:d.displayValues,
-    budget:d.budget, fyBU:d.fyBU, upsideCount:d.upsideCount,
-    gap:d.gap, sites
-  } : { divisionName, labels:[], displayValues:[], budget:0, fyBU:0, upsideCount:0, gap:0, sites };
+    divisionName,
+    labels: d.labels,
+    displayValues: d.displayValues,
+    budget: d.budget,
+    fyBU: d.fyBU,
+    upsideCount: d.upsideCount,
+    fyBUPlusUpside: d.fyBUPlusUpside || (d.fyBU + d.upsideCount),
+    gapToBudget: d.budget - ((d.fyBUPlusUpside)||(d.fyBU+d.upsideCount)),
+    gap: d.gap,
+    sites
+  } : { divisionName, labels:[], displayValues:[], budget:0, fyBU:0, upsideCount:0, fyBUPlusUpside:0, gapToBudget:0, gap:0, sites };
 
   // Show progress overlay
   const overlay = document.getElementById('nro-exp-overlay');
@@ -1324,12 +1368,11 @@ async function exportDivWaterfall(divisionName, divId) {
     const a = document.createElement('a');
     a.href=url; a.download=`Waterfall_${divisionName.replace(/[^a-zA-Z0-9 ]/g,'_')}.xlsx`;
     document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
-    setTimeout(()=>{ overlay.style.display='none'; if(btn){btn.disabled=false;btn.textContent='✅ Done!';} nroExporting=false; setTimeout(()=>{if(btn)btn.textContent='⬇ Export';},2500); },1400);
+    setTimeout(()=>{ overlay.style.display='none'; if(btn){btn.disabled=false;btn.textContent='✅ Done!';} nroExportingMap[divId]=false; setTimeout(()=>{if(btn)btn.textContent='⬇ Export';},2500); },1400);
   } catch(err) {
     clearInterval(stepTimer);
-    fill.style.width='100%'; msg.textContent='⚠️ Using animated demo (API offline)'; icon.textContent='📊';
-    // Fallback: show success animation anyway
-    setTimeout(()=>{ overlay.style.display='none'; if(btn){btn.disabled=false;btn.textContent='⬇ Export';} nroExporting=false; }, 2000);
+    fill.style.width='100%'; msg.textContent='⚠️ API offline — check plk-dev-dash.vercel.app'; icon.textContent='⚠️';
+    setTimeout(()=>{ overlay.style.display='none'; if(btn){btn.disabled=false;btn.textContent='⬇ Export';} nroExportingMap[divId]=false; }, 2500);
   }
 }
 
