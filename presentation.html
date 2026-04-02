@@ -30,8 +30,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   transition: opacity 0.5s cubic-bezier(.4,0,.2,1), transform 0.5s cubic-bezier(.4,0,.2,1);
   transform: translateX(60px); overflow: hidden;
 }
-#s4.slide { overflow: visible; }
-/* removed: was clipping iframe */
+#s4.slide { overflow: hidden; }
+/* s4 browser has its own overflow:hidden */
 .slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
 .slide.exit   { opacity: 0; transform: translateX(-60px); }
 
@@ -335,34 +335,62 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 #kbd-hint { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted); background: white; border: 1px solid #E8DED8; border-radius: 50px; padding: 5px 14px; z-index: 9999; opacity: 1; transition: opacity 1s; }
 
 /* ── SLIDE 4: DASHBOARD SHOWCASE ──────────────────────────────── */
-.s4-header { padding: 24px 48px 10px; flex-shrink: 0; }
-.s4-dash-layout { display:flex; flex-direction:column; flex:1; padding: 0 32px 18px; gap: 10px; min-height: 0; }
-.s4-tab-nav { display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap; }
+.s4-header { padding: 20px 40px 8px; flex-shrink:0; }
+.s4-dash-layout { display:flex; flex-direction:column; flex:1; padding:0 32px 16px; gap:10px; min-height:0; overflow:hidden; }
+
+/* Tabs sit ABOVE everything — z-index ensures clicks always land */
+.s4-tab-nav { display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap; position:relative; z-index:10; }
 .s4-tab {
-  display:flex; align-items:center; gap:7px; padding: 7px 16px;
-  border-radius: 8px; border: 1.5px solid #e5e7eb;
-  background: #fff; cursor:pointer; font-family:var(--font-display); font-size:13px;
-  color: var(--plk-muted); transition: all .2s; white-space:nowrap;
+  display:flex; align-items:center; gap:7px; padding:7px 16px;
+  border-radius:8px; border:1.5px solid #e5e7eb;
+  background:#fff; cursor:pointer; font-family:var(--font-display); font-size:13px;
+  color:var(--plk-muted); transition:all .2s; white-space:nowrap;
+  position:relative; z-index:10;
 }
-.s4-tab:hover { border-color: var(--plk-orange); color: var(--plk-orange); }
-.s4-tab.active { background: var(--plk-orange); border-color: var(--plk-orange); color: #fff; }
+.s4-tab:hover { border-color:var(--plk-orange); color:var(--plk-orange); }
+.s4-tab.active { background:var(--plk-orange); border-color:var(--plk-orange); color:#fff; }
 .s4t-icon { font-size:15px; line-height:1; }
+
+/* Browser container */
 .s4-browser-wrap { flex:1; min-height:0; display:flex; flex-direction:column; }
-.s4-browser { display:flex; flex-direction:column; flex:1; min-height:0; box-shadow:0 8px 40px rgba(0,0,0,.15); }
-.s4-iframe-wrap { flex:1; min-height:0; position:relative; overflow-y:scroll; overflow-x:hidden; background:#f9fafb; border-radius:0 0 10px 10px; -webkit-overflow-scrolling:touch; }
-.s4-iframe { width:100%; height:100%; min-height:700px; border:none; display:block; pointer-events:all; }
+.s4-browser { display:flex; flex-direction:column; flex:1; min-height:0;
+  box-shadow:0 8px 40px rgba(0,0,0,.15); border-radius:10px; overflow:hidden; }
+
+/* The ONE scroll container — no second scrollbar */
+.s4-iframe-wrap {
+  flex:1; position:relative;
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  background:#f9fafb;
+}
+
+/* Iframe: absolute, tall enough for full page. pointer-events:none until loaded */
+.s4-iframe {
+  position:absolute; top:0; left:0;
+  width:100%; height:3000px;
+  border:none;
+  pointer-events:none;        /* tabs clickable until iframe fully loaded */
+  opacity:0;
+  transition:opacity .3s;
+}
+.s4-iframe.loaded {
+  pointer-events:all;         /* restored after onload fires */
+  opacity:1;
+}
+
+/* Overlays inside wrap */
 .s4-iframe-blocked {
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
-  background: linear-gradient(135deg,#fafafa 0%,#f0f0f0 100%);
+  background:linear-gradient(135deg,#fafafa 0%,#f0f0f0 100%); z-index:3;
 }
 .s4-blocked-inner { text-align:center; padding:24px; }
 .s4-open-link {
-  margin-left:auto; padding: 3px 12px; border-radius:6px;
-  background: rgba(232,82,26,.12); color:var(--plk-orange);
+  margin-left:auto; padding:3px 12px; border-radius:6px;
+  background:rgba(232,82,26,.12); color:var(--plk-orange);
   font-family:var(--font-display); font-size:11px; text-decoration:none;
-  white-space:nowrap; transition: background .2s; flex-shrink:0;
+  white-space:nowrap; transition:background .2s; flex-shrink:0;
 }
-.s4-open-link:hover { background: var(--plk-orange); color:#fff; }
+.s4-open-link:hover { background:var(--plk-orange); color:#fff; }
 
 
 /* ── SLIDE 4: nav floats to corner so tabs are never blocked ─── */
@@ -379,10 +407,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 #nav.nav-s4-mode .nav-btn { width:32px; height:32px; font-size:15px; }
 #nav.nav-s4-mode #dots { display:none; }
 
-/* ── SLIDE 4: mock-browser must NOT clip iframe-wrap ─────────── */
-#s4 .s4-browser { overflow: visible !important; border-radius: 10px; }
-#s4 .mock-browser { overflow: visible !important; }
-#s4 .s4-browser-wrap { overflow: visible; }
+/* s4 uses .s4-browser overflow:hidden (set on .s4-browser directly) */
 
 </style>
 </head>
@@ -497,7 +522,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
             <div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted)">Loading dashboard…</div>
           </div>
           <!-- The live iframe -->
-          <iframe id="s4-iframe" src="https://plk-dev-dash.vercel.app/" class="s4-iframe" title="PLK Dashboard" allow="fullscreen" style="opacity:0"></iframe>
+          <iframe id="s4-iframe" src="" class="s4-iframe" title="PLK Dashboard" allow="fullscreen; autoplay; payment" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-popups-to-escape-sandbox allow-downloads"></iframe>
           <!-- Fallback when iframe is blocked -->
           <div class="s4-iframe-blocked" id="s4-blocked" style="display:none">
             <div class="s4-blocked-inner">
@@ -799,75 +824,73 @@ const S4_DASHBOARDS = [
 ];
 let s4Current = 0;
 function s4Switch(idx) {
+  // Update active tab
   document.getElementById('s4t-' + s4Current).classList.remove('active');
   s4Current = idx;
   document.getElementById('s4t-' + idx).classList.add('active');
-  const d = S4_DASHBOARDS[idx];
+
+  const d   = S4_DASHBOARDS[idx];
   const url = d.slug ? 'https://plk-dev-dash.vercel.app/' + d.slug : 'https://plk-dev-dash.vercel.app/';
 
-  // Update URL pill + open link
+  // Update address bar + open link
   const pill = document.getElementById('s4-url-pill');
   const link = document.getElementById('s4-open-link');
   if (pill) pill.textContent = d.slug ? 'plk-dev-dash.vercel.app/' + d.slug : 'plk-dev-dash.vercel.app';
   if (link) link.href = url;
 
-  // Reset scroll to top
+  // Reset scroll
   const wrap = document.getElementById('s4-iframe-wrap');
   if (wrap) wrap.scrollTop = 0;
 
   const iframe  = document.getElementById('s4-iframe');
-  const blocked = document.getElementById('s4-blocked');
   const loading = document.getElementById('s4-loading');
+  const blocked = document.getElementById('s4-blocked');
 
-  // Update fallback card text
+  // Update fallback text
   if (blocked) {
-    document.getElementById('s4-blocked-title').textContent = d.label;
-    document.getElementById('s4-blocked-link').href = url;
-    document.getElementById('s4-blocked-desc').textContent = S4_DESCRIPTIONS[idx] || '';
+    const bt = document.getElementById('s4-blocked-title');
+    const bl = document.getElementById('s4-blocked-link');
+    const bd = document.getElementById('s4-blocked-desc');
+    if (bt) bt.textContent = d.label;
+    if (bl) bl.href = url;
+    if (bd) bd.textContent = S4_DESCRIPTIONS[idx] || '';
   }
-
-  // Show spinner, hide iframe & fallback
-  if (loading) loading.style.display = 'flex';
-  if (blocked) blocked.style.display = 'none';
-  if (iframe)  { iframe.style.opacity = '0'; iframe.style.pointerEvents = 'none'; }
 
   if (!iframe) return;
 
-  // Detach old handlers
+  // Reset iframe state: hide it, show spinner
+  iframe.classList.remove('loaded');
   iframe.onload  = null;
   iframe.onerror = null;
+  if (loading) loading.style.display = 'flex';
+  if (blocked) blocked.style.display = 'none';
 
-  // Timeout: if nothing loaded in 10s, show fallback
-  let resolved = false;
-  const timer = setTimeout(() => {
-    if (resolved) return;
-    resolved = true;
+  // Timeout fallback
+  let done = false;
+  const t = setTimeout(() => {
+    if (done) return;
+    done = true;
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'flex';
-    if (iframe)  iframe.style.opacity  = '0';
-  }, 10000);
+  }, 12000);
 
   iframe.onload = () => {
-    if (resolved) return;
-    resolved = true;
-    clearTimeout(timer);
+    if (done) return;
+    done = true;
+    clearTimeout(t);
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'none';
-    // Show iframe and restore pointer events so it's interactive
-    iframe.style.opacity       = '1';
-    iframe.style.pointerEvents = 'all';
+    iframe.classList.add('loaded'); // makes it visible + interactive via CSS
   };
 
   iframe.onerror = () => {
-    if (resolved) return;
-    resolved = true;
-    clearTimeout(timer);
+    if (done) return;
+    done = true;
+    clearTimeout(t);
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'flex';
-    iframe.style.opacity = '0';
   };
 
-  // Set src directly — no intermediate '' that can cause race conditions
   iframe.src = url;
 }
 
@@ -882,7 +905,7 @@ const S4_DESCRIPTIONS = [
 
 
 // ── SLIDE 4: initial iframe load ────────────────────────────────────────────
-window.addEventListener('load', () => { s4Switch(0); });
+window.addEventListener('load', () => { s4Switch(1); }); // start on NRO Performance
 
 // ── SLIDE STATE ─────────────────────────────────────────────────────────────
 const TOTAL = 7;
