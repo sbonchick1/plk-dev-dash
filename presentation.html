@@ -349,8 +349,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .s4t-icon { font-size:15px; line-height:1; }
 .s4-browser-wrap { flex:1; min-height:0; display:flex; flex-direction:column; }
 .s4-browser { display:flex; flex-direction:column; flex:1; min-height:0; box-shadow:0 8px 40px rgba(0,0,0,.15); }
-.s4-iframe-wrap { flex:1; min-height:0; position:relative; overflow:auto; background:#f9fafb; border-radius:0 0 10px 10px; -webkit-overflow-scrolling:touch; }
-.s4-iframe { width:100%; height:100%; min-height:600px; border:none; display:block; pointer-events:all; }
+.s4-iframe-wrap { flex:1; min-height:0; position:relative; overflow-y:auto; overflow-x:hidden; background:#f9fafb; border-radius:0 0 10px 10px; -webkit-overflow-scrolling:touch; }
+.s4-iframe { width:100%; height:2200px; border:none; display:block; pointer-events:all; }
 .s4-iframe-blocked {
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
   background: linear-gradient(135deg,#fafafa 0%,#f0f0f0 100%);
@@ -379,10 +379,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 #nav.nav-s4-mode .nav-btn { width:32px; height:32px; font-size:15px; }
 #nav.nav-s4-mode #dots { display:none; }
 
-/* ── SLIDE 4: iframe must scroll freely ─────────────────────── */
-#s4 .s4-iframe-wrap { overflow: auto !important; -webkit-overflow-scrolling: touch; }
-#s4 .s4-browser { overflow: visible !important; }
-#s4 .mock-browser { overflow: visible !important; }
+/* ── SLIDE 4: single clean scroll — wrap scrolls, iframe is tall/static ── */
+#s4 .s4-browser-wrap { overflow: hidden; }
+#s4 .s4-browser { overflow: hidden !important; border-radius: 10px; }
+#s4 .mock-browser { overflow: hidden !important; }
 
 </style>
 </head>
@@ -490,14 +490,22 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
           <div class="mock-url-pill" id="s4-url-pill">plk-dev-dash.vercel.app</div>
           <a class="s4-open-link" id="s4-open-link" href="https://plk-dev-dash.vercel.app/" target="_blank">↗ Open</a>
         </div>
-        <div class="s4-iframe-wrap">
-          <iframe id="s4-iframe" src="https://plk-dev-dash.vercel.app/" class="s4-iframe" title="PLK Dashboard" loading="lazy" scrolling="yes" allow="fullscreen"></iframe>
+        <div class="s4-iframe-wrap" id="s4-iframe-wrap">
+          <!-- Loading spinner -->
+          <div id="s4-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#f9fafb;z-index:10;flex-direction:column;gap:12px">
+            <div style="width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:var(--plk-orange);border-radius:50%;animation:spin 0.8s linear infinite"></div>
+            <div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted)">Loading dashboard…</div>
+          </div>
+          <!-- The live iframe -->
+          <iframe id="s4-iframe" src="https://plk-dev-dash.vercel.app/" class="s4-iframe" title="PLK Dashboard" allow="fullscreen" style="opacity:0"></iframe>
+          <!-- Fallback when iframe is blocked -->
           <div class="s4-iframe-blocked" id="s4-blocked" style="display:none">
             <div class="s4-blocked-inner">
-              <div style="font-size:40px;margin-bottom:12px">🔗</div>
-              <div style="font-family:var(--font-display);font-size:20px;color:var(--plk-dark);margin-bottom:6px" id="s4-blocked-title">NRO Performance</div>
-              <div style="font-size:13px;color:var(--plk-muted);margin-bottom:18px">Opens live from Vercel — click to view</div>
-              <a id="s4-blocked-link" href="https://plk-dev-dash.vercel.app/dashboard" target="_blank" style="display:inline-block;background:var(--plk-orange);color:#fff;font-family:var(--font-display);font-size:14px;padding:10px 24px;border-radius:8px;text-decoration:none;">Open Dashboard ↗</a>
+              <div style="font-size:44px;margin-bottom:14px">🍗</div>
+              <div style="font-family:var(--font-display);font-size:22px;color:var(--plk-dark);margin-bottom:8px" id="s4-blocked-title">Dashboard</div>
+              <div style="font-size:13px;color:var(--plk-muted);margin-bottom:6px;max-width:320px;line-height:1.5" id="s4-blocked-desc"></div>
+              <div style="font-size:12px;color:#9ca3af;margin-bottom:20px">This page blocks embedding — open it directly:</div>
+              <a id="s4-blocked-link" href="https://plk-dev-dash.vercel.app/" target="_blank" style="display:inline-block;background:var(--plk-orange);color:#fff;font-family:var(--font-display);font-size:15px;padding:12px 28px;border-radius:8px;text-decoration:none;letter-spacing:.04em">OPEN LIVE ↗</a>
             </div>
           </div>
         </div>
@@ -796,43 +804,79 @@ function s4Switch(idx) {
   document.getElementById('s4t-' + idx).classList.add('active');
   const d = S4_DASHBOARDS[idx];
   const url = d.slug ? 'https://plk-dev-dash.vercel.app/' + d.slug : 'https://plk-dev-dash.vercel.app/';
+
+  // Update pill + open link
   const pill = document.getElementById('s4-url-pill');
   const link = document.getElementById('s4-open-link');
-  const blocked = document.getElementById('s4-blocked');
   if (pill) pill.textContent = d.slug ? 'plk-dev-dash.vercel.app/' + d.slug : 'plk-dev-dash.vercel.app';
   if (link) link.href = url;
+
+  // Reset scroll position
+  const wrap = document.getElementById('s4-iframe-wrap');
+  if (wrap) wrap.scrollTop = 0;
+
+  // Show loading state
+  const iframe   = document.getElementById('s4-iframe');
+  const blocked  = document.getElementById('s4-blocked');
+  const loading  = document.getElementById('s4-loading');
+  if (loading) loading.style.display = 'flex';
+  if (blocked) blocked.style.display = 'none';
+  if (iframe)  iframe.style.opacity  = '0';
+
+  // Set blocked card content
   if (blocked) {
     document.getElementById('s4-blocked-title').textContent = d.label;
     document.getElementById('s4-blocked-link').href = url;
+    document.getElementById('s4-blocked-desc').textContent = S4_DESCRIPTIONS[idx] || '';
   }
-  // Swap iframe src
-  const iframe = document.getElementById('s4-iframe');
+
+  // Load iframe
   if (iframe) {
+    iframe.onload = null;
     iframe.src = '';
-    setTimeout(() => { iframe.src = url; }, 50);
+    // Short delay so browser clears previous page first
+    setTimeout(() => {
+      iframe.src = url;
+      // Give the iframe 6 seconds to prove it loaded; if it fires load event it's good
+      let didLoad = false;
+      const loadTimer = setTimeout(() => {
+        if (!didLoad) {
+          // Timed out — show fallback
+          if (loading) loading.style.display = 'none';
+          if (blocked) blocked.style.display = 'flex';
+          if (iframe)  iframe.style.opacity  = '0';
+        }
+      }, 8000);
+      iframe.onload = () => {
+        didLoad = true;
+        clearTimeout(loadTimer);
+        if (loading) loading.style.display = 'none';
+        if (blocked) blocked.style.display = 'none';
+        if (iframe)  iframe.style.opacity  = '1';
+      };
+      iframe.onerror = () => {
+        didLoad = true;
+        clearTimeout(loadTimer);
+        if (loading) loading.style.display = 'none';
+        if (blocked) blocked.style.display = 'flex';
+        if (iframe)  iframe.style.opacity  = '0';
+      };
+    }, 60);
   }
 }
-// Show fallback if iframe blocked by X-Frame-Options
-window.addEventListener('load', () => {
-  const iframe = document.getElementById('s4-iframe');
-  if (!iframe) return;
-  // Small timeout: if the iframe hasn't loaded at all (blocked before load fires), show fallback
-  let loaded = false;
-  iframe.addEventListener('load', () => {
-    loaded = true;
-    try {
-      // If we can access contentDocument, it loaded fine
-      void (iframe.contentDocument || iframe.contentWindow.document);
-      document.getElementById('s4-blocked').style.display = 'none';
-    } catch(e) {
-      // Cross-origin loaded but blocked
-      document.getElementById('s4-blocked').style.display = 'none'; // iframe rendered fine cross-origin
-    }
-  });
-  iframe.addEventListener('error', () => {
-    document.getElementById('s4-blocked').style.display = 'flex';
-  });
-});
+
+const S4_DESCRIPTIONS = [
+  'The suite landing page — navigate to any dashboard from here.',
+  'NRO Performance Hub — openings, EBITDA, ARS & FSS trends 2020–2025.',
+  'Development Execution — live pipeline waterfall, risk mix, drill-down by site.',
+  'Closure Dashboard — closure pipeline, reasons, controlled vs. non-controlled.',
+  'REM Pipeline — SA & Prospect sites by division, risk level filters.',
+  'YTD Openings — year-to-date tracker, budget vs. actual, FZ rollup.',
+];
+
+
+// ── SLIDE 4: initial iframe load ────────────────────────────────────────────
+window.addEventListener('load', () => { s4Switch(0); });
 
 // ── SLIDE STATE ─────────────────────────────────────────────────────────────
 const TOTAL = 7;
