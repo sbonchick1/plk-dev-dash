@@ -22,8 +22,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .section{background:white;border-radius:16px;padding:28px 32px;margin-bottom:28px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);}
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:14px;border-bottom:2px solid #f0f0f0;flex-wrap:wrap;gap:10px;}
 .section-title{font-size:17px;font-weight:700;color:#1a1a1a;display:flex;align-items:center;gap:8px;}
-.kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin-bottom:28px;}
-.kpi-card{background:white;border-radius:12px;padding:18px 20px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
+/* ── KPI BANNER: always one row, never wraps ── */
+.kpi-banner{display:flex;flex-wrap:nowrap;gap:12px;margin-bottom:28px;}
+.kpi-banner>.kpi-card{flex:1 1 0;min-width:0;}
+.kpi-banner .kpi-value{font-size:clamp(15px,1.8vw,26px);}
+.kpi-banner .kpi-label{font-size:clamp(7px,.65vw,10px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kpi-banner .kpi-sub{font-size:clamp(7px,.62vw,11px);}
+.kpi-card{background:white;border-radius:12px;padding:16px 12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#E8521A);}
 .kpi-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-weight:600;}
 .kpi-value{font-size:26px;font-weight:800;color:#1a1a1a;line-height:1;margin-bottom:4px;}
@@ -129,7 +134,7 @@ canvas.clickable{cursor:pointer;}
 .overlay-title{font-size:18px;font-weight:600;color:#374151;}
 .overlay-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
 .retry-btn{background:#E8521A;color:white;border:none;border-radius:8px;padding:10px 24px;font-size:14px;font-weight:600;cursor:pointer;margin-top:16px;}
-@media(max-width:900px){.chart-grid{grid-template-columns:1fr;}.container{padding:24px;}.page-title{font-size:28px;}.filters-bar{gap:8px;}}
+@media(max-width:900px){.chart-grid{grid-template-columns:1fr;}.container{padding:24px;}.page-title{font-size:28px;}.filters-bar{gap:8px;}.kpi-banner{flex-wrap:wrap!important;}}
 </style>
 </head>
 <body>
@@ -394,38 +399,28 @@ function removePill(key,val){FSTATE[key].delete(val);syncCheckboxes(key);updateB
 const BAR_LABELS_PLUGIN = {
   id: 'barLabelsAbove',
   afterDraw(chart) {
-    const GAP = 3;
-    const FONT_SIZE = 10;
+    const GAP = 3, FONT_SIZE = 10;
     chart.data.datasets.forEach((ds, di) => {
       const meta = chart.getDatasetMeta(di);
       if (meta.hidden || meta.type !== 'bar') return;
       const firstBar = meta.data.find(b => b && b.width > 0);
       if (!firstBar) return;
-      const barWidth = firstBar.width;
-      const rotate = barWidth < 24;
+      const barWidth = firstBar.width, rotate = barWidth < 24;
       meta.data.forEach((bar, i) => {
         const val = ds.data[i];
         if (val == null || val === 0) return;
         let label;
         const abs = Math.abs(val);
-        if (abs >= 1e6)         label = '$' + (val / 1e6).toFixed(1) + 'M';
-        else if (abs >= 1e3)    label = '$' + (val / 1e3).toFixed(0) + 'K';
+        if (abs >= 1e6) label = '$' + (val / 1e6).toFixed(1) + 'M';
+        else if (abs >= 1e3) label = '$' + (val / 1e3).toFixed(0) + 'K';
         else if (val % 1 === 0) label = String(val);
-        else                    label = val.toFixed(2);
-        const x = bar.x;
-        const y = bar.y - GAP;
-        const ctx = chart.ctx;
+        else label = val.toFixed(2);
+        const x = bar.x, y = bar.y - GAP, ctx = chart.ctx;
         ctx.save();
         ctx.font = `bold ${FONT_SIZE}px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif`;
         ctx.fillStyle = '#374151';
-        if (rotate) {
-          ctx.translate(x, y); ctx.rotate(-Math.PI / 2);
-          ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
-          ctx.fillText(label, 2, 0);
-        } else {
-          ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-          ctx.fillText(label, x, y);
-        }
+        if (rotate) { ctx.translate(x, y); ctx.rotate(-Math.PI / 2); ctx.textAlign = 'left'; ctx.textBaseline = 'middle'; ctx.fillText(label, 2, 0); }
+        else { ctx.textAlign = 'center'; ctx.textBaseline = 'bottom'; ctx.fillText(label, x, y); }
         ctx.restore();
       });
     });
@@ -439,7 +434,6 @@ const SCALE_CFG = {
   x:{grid:{display:false},border:{display:false},ticks:{color:"#9ca3af",font:{size:11}}},
   y:{display:false,grid:{display:false},border:{display:false},beginAtZero:true}
 };
-
 const TIP_BASE = {animation:false,backgroundColor:"#1f2937",titleColor:"white",bodyColor:"white",padding:10,cornerRadius:6,titleFont:{weight:"normal"},bodyFont:{weight:"normal"}};
 
 function bar(id, labels, datasets, opts={}) {
@@ -450,8 +444,7 @@ function bar(id, labels, datasets, opts={}) {
     type: "bar",
     data: { labels, datasets },
     options: {
-      responsive: true, maintainAspectRatio: true,
-      animation: false,
+      responsive: true, maintainAspectRatio: true, animation: false,
       interaction: { mode: "nearest", intersect: true },
       layout: { padding: { top: 36, ...((extra.layout||{}).padding||{}) } },
       plugins: {
