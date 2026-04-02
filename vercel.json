@@ -8,5 +8,15 @@
     { "source": "/closures",              "destination": "/closures.html" },
     { "source": "/ytd-openings",          "destination": "/ytd-openings.html" },
     { "source": "/rem-pipeline",          "destination": "/rem-pipeline.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Frame-Options",              "value": "ALLOWALL" },
+        { "key": "Content-Security-Policy",      "value": "frame-ancestors *" },
+        { "key": "Access-Control-Allow-Origin",  "value": "*" }
+      ]
+    }
   ]
 }
