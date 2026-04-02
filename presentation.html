@@ -180,9 +180,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .fun-fact-box p { font-family: var(--font-body); font-size: 12.5px; color: var(--plk-slate); line-height: 1.6; }
 .fun-fact-box strong { color: var(--plk-orange); }
 
-#s8 { background: var(--plk-white); }
-.s8-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
-.s8-grid { flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 18px; padding: 22px 9% 80px; }
+#s6 { background: var(--plk-white); }
+.s6-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
+.s6-grid { flex: 1; display: grid; grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); gap: 18px; padding: 22px 9% 80px; }
 .takeaway-card { border-radius: 16px; padding: 24px 26px; display: flex; flex-direction: column; opacity: 0; animation: fadeUp .4s forwards; }
 .ta-icon { font-size: 32px; margin-bottom: 12px; }
 .ta-title { font-family: var(--font-body); font-size: 17px; font-weight: 700; color: var(--plk-dark); margin-bottom: 8px; }
@@ -194,20 +194,20 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .ta-dark .ta-body { color: rgba(255,255,255,.65); }
 .ta-smoke  { background: var(--plk-smoke); border: 1.5px solid #E0D5CC; }
 
-#s9 { background: var(--plk-dark); justify-content: center; align-items: center; }
-.s9-bg { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 40%, rgba(232,82,26,.15) 0%, transparent 60%); }
-.s9-content { position: relative; z-index: 2; text-align: center; padding: 0 10% 80px; }
-.s9-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--plk-gold); letter-spacing: .2em; text-transform: uppercase; margin-bottom: 20px; opacity: 0; animation: fadeUp .5s .2s forwards; }
-.s9-title { font-family: var(--font-display); font-size: clamp(60px, 9vw, 120px); color: white; line-height: .92; margin-bottom: 24px; opacity: 0; animation: fadeUp .5s .4s forwards; }
-.s9-title span { color: var(--plk-orange); display: block; }
-.s9-sub { font-family: var(--font-body); font-size: 17px; color: rgba(255,255,255,.55); max-width: 560px; margin: 0 auto 36px; line-height: 1.6; opacity: 0; animation: fadeUp .5s .6s forwards; }
-.s9-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; opacity: 0; animation: fadeUp .5s .8s forwards; }
-.s9-btn { padding: 14px 30px; border-radius: 10px; font-family: var(--font-body); font-size: 15px; font-weight: 700; text-decoration: none; transition: all .2s; cursor: pointer; border: none; }
-.s9-btn-primary { background: var(--plk-orange); color: white; }
-.s9-btn-primary:hover { background: #d14515; transform: scale(1.03); }
-.s9-btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,.3); }
-.s9-btn-outline:hover { background: rgba(255,255,255,.08); }
-.s9-claude-note { margin-top: 40px; font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.3); opacity: 0; animation: fadeUp .5s 1s forwards; }
+#s7 { background: var(--plk-dark); justify-content: center; align-items: center; }
+.s7-bg { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse at 50% 40%, rgba(232,82,26,.15) 0%, transparent 60%); }
+.s7-content { position: relative; z-index: 2; text-align: center; padding: 0 10% 80px; }
+.s7-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--plk-gold); letter-spacing: .2em; text-transform: uppercase; margin-bottom: 20px; opacity: 0; animation: fadeUp .5s .2s forwards; }
+.s7-title { font-family: var(--font-display); font-size: clamp(60px, 9vw, 120px); color: white; line-height: .92; margin-bottom: 24px; opacity: 0; animation: fadeUp .5s .4s forwards; }
+.s7-title span { color: var(--plk-orange); display: block; }
+.s7-sub { font-family: var(--font-body); font-size: 17px; color: rgba(255,255,255,.55); max-width: 560px; margin: 0 auto 36px; line-height: 1.6; opacity: 0; animation: fadeUp .5s .6s forwards; }
+.s7-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; opacity: 0; animation: fadeUp .5s .8s forwards; }
+.s7-btn { padding: 14px 30px; border-radius: 10px; font-family: var(--font-body); font-size: 15px; font-weight: 700; text-decoration: none; transition: all .2s; cursor: pointer; border: none; }
+.s7-btn-primary { background: var(--plk-orange); color: white; }
+.s7-btn-primary:hover { background: #d14515; transform: scale(1.03); }
+.s7-btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,.3); }
+.s7-btn-outline:hover { background: rgba(255,255,255,.08); }
+.s7-claude-note { margin-top: 40px; font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.3); opacity: 0; animation: fadeUp .5s 1s forwards; }
 
 /* ── TOUR ── */
 .tour-shell { display: flex; height: 100%; overflow: hidden; }
@@ -331,6 +331,37 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .tour-next-btn:hover { background: var(--plk-red); transform: scale(1.03); }
 
 #kbd-hint { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted); background: white; border: 1px solid #E8DED8; border-radius: 50px; padding: 5px 14px; z-index: 9999; opacity: 1; transition: opacity 1s; }
+
+/* ── SLIDE 4: DASHBOARD SHOWCASE ──────────────────────────────── */
+.s4-header { padding: 24px 48px 10px; flex-shrink: 0; }
+.s4-dash-layout { display:flex; flex-direction:column; flex:1; padding: 0 32px 18px; gap: 10px; min-height: 0; }
+.s4-tab-nav { display:flex; gap:8px; flex-shrink:0; flex-wrap:wrap; }
+.s4-tab {
+  display:flex; align-items:center; gap:7px; padding: 7px 16px;
+  border-radius: 8px; border: 1.5px solid #e5e7eb;
+  background: #fff; cursor:pointer; font-family:var(--font-display); font-size:13px;
+  color: var(--plk-muted); transition: all .2s; white-space:nowrap;
+}
+.s4-tab:hover { border-color: var(--plk-orange); color: var(--plk-orange); }
+.s4-tab.active { background: var(--plk-orange); border-color: var(--plk-orange); color: #fff; }
+.s4t-icon { font-size:15px; line-height:1; }
+.s4-browser-wrap { flex:1; min-height:0; display:flex; flex-direction:column; }
+.s4-browser { display:flex; flex-direction:column; flex:1; min-height:0; box-shadow:0 8px 40px rgba(0,0,0,.15); }
+.s4-iframe-wrap { flex:1; min-height:0; position:relative; overflow:hidden; background:#f9fafb; border-radius:0 0 10px 10px; }
+.s4-iframe { width:100%; height:100%; border:none; display:block; }
+.s4-iframe-blocked {
+  position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
+  background: linear-gradient(135deg,#fafafa 0%,#f0f0f0 100%);
+}
+.s4-blocked-inner { text-align:center; padding:24px; }
+.s4-open-link {
+  margin-left:auto; padding: 3px 12px; border-radius:6px;
+  background: rgba(232,82,26,.12); color:var(--plk-orange);
+  font-family:var(--font-display); font-size:11px; text-decoration:none;
+  white-space:nowrap; transition: background .2s; flex-shrink:0;
+}
+.s4-open-link:hover { background: var(--plk-orange); color:#fff; }
+
 </style>
 </head>
 <body>
@@ -417,51 +448,43 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 
 <!-- SLIDE 4 -->
 <div class="slide" id="s4">
-  <div class="s4-header"><div class="slide-eyebrow">The process</div><div class="slide-title">How I built it — four steps, all plain English</div></div>
-  <div class="s4-steps">
-    <div class="step-row" style="animation-delay:.15s"><div class="step-num" style="background:var(--plk-orange)">1</div><div class="step-body"><div class="step-tag">DESCRIBE THE VISION</div><div class="step-title">I told Claude what I needed</div><div class="step-desc">No code, no spec doc — I just described it: "I want a live dashboard pulling from Smartsheet that shows our pipeline with charts and the ability to drill down." Claude figured out the rest.</div></div></div>
-    <div class="step-row" style="animation-delay:.27s"><div class="step-num" style="background:var(--plk-gold)">2</div><div class="step-body"><div class="step-tag">ITERATIVE BUILDING</div><div class="step-title">Review visually, ask for changes</div><div class="step-desc">Claude wrote the HTML, CSS, Chart.js code, and Vercel API functions. I'd look at the result and just say what to change — "move the legend", "make the bars taller", "fix the hover glitch."</div></div></div>
-    <div class="step-row" style="animation-delay:.39s"><div class="step-num" style="background:var(--plk-red)">3</div><div class="step-body"><div class="step-tag">BUG FIXES IN PLAIN ENGLISH</div><div class="step-title">Describe the problem, get the fix</div><div class="step-desc">When charts flickered or columns overflowed, I described it exactly as I saw it. Claude diagnosed the root cause — sometimes finding 2 separate bugs at once — and patched it immediately.</div></div></div>
-    <div class="step-row" style="animation-delay:.51s"><div class="step-num" style="background:#16A34A">4</div><div class="step-body"><div class="step-tag">FEATURE EXPANSION</div><div class="step-title">Keep adding — it keeps up</div><div class="step-desc">Once the base worked, I kept asking for more: clickable risk mix cells, Excel export buttons, shared CSS across all dashboards, waterfall charts, newsletter templates. All through conversation.</div></div></div>
+  <div class="s4-header">
+    <div class="slide-eyebrow">The suite — live &amp; interactive</div>
+    <div class="slide-title">Five dashboards, one deployment — click to explore</div>
   </div>
-</div>
-
-<!-- SLIDE 5 -->
-<div class="slide" id="s5">
-  <div class="s5-header"><div class="slide-eyebrow">Real examples — 6 totally different tasks</div><div class="slide-title">Claude handles everything — bugs, design, data, documents</div></div>
-  <div class="s5-grid">
-    <div class="ex-card" style="animation-delay:.1s;border-top:3px solid var(--plk-red)"><div class="ex-cat" style="color:var(--plk-red);background:rgba(192,57,43,.08)">🐛 Bug Fix</div><div class="ex-prompt">The chart tooltips glitch when hovering — they flicker and show both datasets at once.</div><div class="ex-divider"></div><div class="ex-result">Found 2 root causes in one pass: tooltip firing on both datasets + <code>afterDatasetsDraw</code> running per-dataset instead of per-render. Fixed across all 16 charts instantly.</div></div>
-    <div class="ex-card" style="animation-delay:.18s;border-top:3px solid var(--plk-orange)"><div class="ex-cat" style="color:var(--plk-orange);background:rgba(232,82,26,.08)">🎨 Layout Redesign</div><div class="ex-prompt">The legend is overlapping with the data labels on the EBITDA chart. Let's move it so it doesn't overlap.</div><div class="ex-divider"></div><div class="ex-result">Moved the legend to <code>position: 'bottom'</code> in the shared <code>bar()</code> helper + added top padding. Change applied automatically to all grouped bar charts.</div></div>
-    <div class="ex-card" style="animation-delay:.26s;border-top:3px solid var(--plk-gold)"><div class="ex-cat" style="color:#B45309;background:rgba(245,166,35,.1)">📰 Document Creation</div><div class="ex-prompt">Here is my Canva newsletter — Canva doesn't handle tables well. Can you recreate this as a Word doc?</div><div class="ex-divider"></div><div class="ex-result">Read the uploaded newsletter images, rebuilt the full 2-page April 2026 PLK Development Newsletter as a formatted .docx — red headers, opening tables, bullet sections, all preserved.</div></div>
-    <div class="ex-card" style="animation-delay:.34s;border-top:3px solid #16A34A"><div class="ex-cat" style="color:#16A34A;background:rgba(22,163,74,.08)">♻️ Code Refactor</div><div class="ex-prompt">The CSS is duplicated across 5 HTML files. Can we extract it into one shared stylesheet?</div><div class="ex-divider"></div><div class="ex-result">Created <code>shared.css</code> — 133 lines covering reset, KPI banner, tables, modals, risk mix, export button, and responsive breakpoints. Each dashboard file trimmed from ~200 lines to ~38 lines.</div></div>
-    <div class="ex-card" style="animation-delay:.42s;border-top:3px solid #6D28D9"><div class="ex-cat" style="color:#6D28D9;background:rgba(109,40,217,.08)">🏗️ Architecture</div><div class="ex-prompt">The text is in text boxes, not inside the actual Excel table cells. Fix it for the Upside, Early Stages, and Prospect tables.</div><div class="ex-divider"></div><div class="ex-result">Diagnosed column width overflow (cols summed to 4.93" vs 4.88" available). Recalculated all three table layouts with autofit logic — text now renders properly inside every cell.</div></div>
-    <div class="ex-card" style="animation-delay:.5s;border-top:3px solid #0D9488"><div class="ex-cat" style="color:#0D9488;background:rgba(13,148,136,.08)">📊 Data Migration</div><div class="ex-prompt">I want to migrate my dashboard from Render to Vercel. My code is on GitHub — walk me through it.</div><div class="ex-divider"></div><div class="ex-result">Audited the full repo, rewrote <code>vercel.json</code> with correct rewrites for all 6 routes, identified the <code>public/index.html</code> naming conflict causing 404s, and got it live in one session.</div></div>
-  </div>
-</div>
-
-<!-- SLIDE 6 -->
-<div class="slide" id="s6">
-  <div class="s6-header"><div class="slide-eyebrow">Audience interaction</div><div class="slide-title">Let's hear from you — quick show of hands 🙋</div></div>
-  <div class="s6-body">
-    <div class="poll-section">
-      <div class="poll-q">What would YOU use Claude for on your team?</div>
-      <div class="poll-option" style="animation-delay:.2s" onclick="vote(0)"><div class="poll-bar" id="bar-0" style="width:0%"></div><span class="poll-emoji">📊</span><span style="position:relative">Reports & dashboards</span><span class="poll-count" id="cnt-0"><span class="poll-pct" id="pct-0"></span></span></div>
-      <div class="poll-option" style="animation-delay:.28s" onclick="vote(1)"><div class="poll-bar" id="bar-1" style="width:0%"></div><span class="poll-emoji">✉️</span><span style="position:relative">Emails & communication</span><span class="poll-count" id="cnt-1"><span class="poll-pct" id="pct-1"></span></span></div>
-      <div class="poll-option" style="animation-delay:.36s" onclick="vote(2)"><div class="poll-bar" id="bar-2" style="width:0%"></div><span class="poll-emoji">📑</span><span style="position:relative">Documents & templates</span><span class="poll-count" id="cnt-2"><span class="poll-pct" id="pct-2"></span></span></div>
-      <div class="poll-option" style="animation-delay:.44s" onclick="vote(3)"><div class="poll-bar" id="bar-3" style="width:0%"></div><span class="poll-emoji">🔍</span><span style="position:relative">Research & analysis</span><span class="poll-count" id="cnt-3"><span class="poll-pct" id="pct-3"></span></span></div>
-      <div class="poll-option" style="animation-delay:.52s" onclick="vote(4)"><div class="poll-bar" id="bar-4" style="width:0%"></div><span class="poll-emoji">🤷</span><span style="position:relative">Not sure yet</span><span class="poll-count" id="cnt-4"><span class="poll-pct" id="pct-4"></span></span></div>
+  <div class="s4-dash-layout">
+    <div class="s4-tab-nav" id="s4-tabs">
+      <button class="s4-tab active" onclick="s4Switch(0)" id="s4t-0"><span class="s4t-icon">📈</span><span class="s4t-label">NRO Performance</span></button>
+      <button class="s4-tab" onclick="s4Switch(1)" id="s4t-1"><span class="s4t-icon">🏗️</span><span class="s4t-label">Dev Execution</span></button>
+      <button class="s4-tab" onclick="s4Switch(2)" id="s4t-2"><span class="s4t-icon">🔒</span><span class="s4t-label">Closures</span></button>
+      <button class="s4-tab" onclick="s4Switch(3)" id="s4t-3"><span class="s4t-icon">🗺️</span><span class="s4t-label">REM Pipeline</span></button>
+      <button class="s4-tab" onclick="s4Switch(4)" id="s4t-4"><span class="s4t-icon">✅</span><span class="s4t-label">YTD Openings</span></button>
     </div>
-    <div class="ai-section">
-      <div class="ai-bubble">
-        <div class="ai-msg">Hi team 👋 I'm Claude — the AI that built this entire presentation <em>and</em> the 5-dashboard suite you're seeing today.<br><br>This deck? <strong>Built from a conversation.</strong> No design tools, no templates — just describing what was needed.<br><br>The dashboards? Same process. Plain English requests, iterative feedback, and a lot of <strong>"can we fix this?"</strong><div class="typing-dots"><span></span><span></span><span></span></div></div>
+    <div class="s4-browser-wrap">
+      <div class="s4-browser mock-browser">
+        <div class="mock-topbar">
+          <div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
+          <div class="mock-url-pill" id="s4-url-pill">plk-dev-dash.vercel.app/dashboard</div>
+          <a class="s4-open-link" id="s4-open-link" href="https://plk-dev-dash.vercel.app/dashboard" target="_blank">↗ Open</a>
+        </div>
+        <div class="s4-iframe-wrap">
+          <iframe id="s4-iframe" src="https://plk-dev-dash.vercel.app/dashboard" class="s4-iframe" title="PLK Dashboard" loading="lazy"></iframe>
+          <div class="s4-iframe-blocked" id="s4-blocked" style="display:none">
+            <div class="s4-blocked-inner">
+              <div style="font-size:40px;margin-bottom:12px">🔗</div>
+              <div style="font-family:var(--font-display);font-size:20px;color:var(--plk-dark);margin-bottom:6px" id="s4-blocked-title">NRO Performance</div>
+              <div style="font-size:13px;color:var(--plk-muted);margin-bottom:18px">Opens live from Vercel — click to view</div>
+              <a id="s4-blocked-link" href="https://plk-dev-dash.vercel.app/dashboard" target="_blank" style="display:inline-block;background:var(--plk-orange);color:#fff;font-family:var(--font-display);font-size:14px;padding:10px 24px;border-radius:8px;text-decoration:none;">Open Dashboard ↗</a>
+            </div>
+          </div>
+        </div>
       </div>
-      <div class="fun-fact-box" style="margin-top:12px"><p>🍗 <strong>Fun fact:</strong> This presentation was generated in a single Claude session — including the slide layouts, PLK color scheme, animations, interactive poll, and the dashboard preview on the next slide.</p></div>
     </div>
   </div>
 </div>
 
-<!-- SLIDE 7: FEATURE TOUR -->
-<div class="slide" id="s7">
+<!-- SLIDE 5: FEATURE TOUR -->
+<div class="slide" id="s5">
   <div class="tour-shell">
     <div class="tour-nav">
       <div class="tour-nav-label">FEATURE TOUR</div>
@@ -703,8 +726,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   </div><!-- /tour-shell -->
 </div><!-- /s7 -->
 
-<!-- SLIDE 8 -->
-<div class="slide" id="s8">
+<!-- SLIDE 6 -->
+<div class="slide" id="s6">
   <div class="s8-header"><div class="slide-eyebrow">Key takeaways</div><div class="slide-title">What this means for our team</div></div>
   <div class="s8-grid">
     <div class="takeaway-card ta-orange" style="animation-delay:.15s"><div class="ta-icon">🚀</div><div class="ta-title">Speed that changes the game</div><div class="ta-body">What would've taken a developer weeks took days. The first working dashboard was live within a single conversation session.</div></div>
@@ -714,8 +737,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   </div>
 </div>
 
-<!-- SLIDE 9 -->
-<div class="slide" id="s9">
+<!-- SLIDE 7 -->
+<div class="slide" id="s7">
   <div class="s9-bg"></div>
   <div class="s9-content">
     <div class="s9-eyebrow">Thank you · Questions · Let's talk</div>
@@ -733,8 +756,62 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
+
+// ── SLIDE 4: DASHBOARD SWITCHER ─────────────────────────────────────────────
+const S4_DASHBOARDS = [
+  { label: 'NRO Performance',    slug: 'dashboard' },
+  { label: 'Dev Execution',      slug: 'development-execution' },
+  { label: 'Closures',           slug: 'closures' },
+  { label: 'REM Pipeline',       slug: 'rem-pipeline' },
+  { label: 'YTD Openings',       slug: 'ytd-openings' },
+];
+let s4Current = 0;
+function s4Switch(idx) {
+  document.getElementById('s4t-' + s4Current).classList.remove('active');
+  s4Current = idx;
+  document.getElementById('s4t-' + idx).classList.add('active');
+  const d = S4_DASHBOARDS[idx];
+  const url = 'https://plk-dev-dash.vercel.app/' + d.slug;
+  const pill = document.getElementById('s4-url-pill');
+  const link = document.getElementById('s4-open-link');
+  const blocked = document.getElementById('s4-blocked');
+  if (pill) pill.textContent = 'plk-dev-dash.vercel.app/' + d.slug;
+  if (link) link.href = url;
+  if (blocked) {
+    document.getElementById('s4-blocked-title').textContent = d.label;
+    document.getElementById('s4-blocked-link').href = url;
+  }
+  // Swap iframe src
+  const iframe = document.getElementById('s4-iframe');
+  if (iframe) {
+    iframe.src = '';
+    setTimeout(() => { iframe.src = url; }, 50);
+  }
+}
+// Show fallback if iframe blocked by X-Frame-Options
+window.addEventListener('load', () => {
+  const iframe = document.getElementById('s4-iframe');
+  if (!iframe) return;
+  // Small timeout: if the iframe hasn't loaded at all (blocked before load fires), show fallback
+  let loaded = false;
+  iframe.addEventListener('load', () => {
+    loaded = true;
+    try {
+      // If we can access contentDocument, it loaded fine
+      void (iframe.contentDocument || iframe.contentWindow.document);
+      document.getElementById('s4-blocked').style.display = 'none';
+    } catch(e) {
+      // Cross-origin loaded but blocked
+      document.getElementById('s4-blocked').style.display = 'none'; // iframe rendered fine cross-origin
+    }
+  });
+  iframe.addEventListener('error', () => {
+    document.getElementById('s4-blocked').style.display = 'flex';
+  });
+});
+
 // ── SLIDE STATE ─────────────────────────────────────────────────────────────
-const TOTAL = 9;
+const TOTAL = 7;
 let current = 1;
 
 function goTo(n) {
@@ -749,7 +826,7 @@ function goTo(n) {
   document.getElementById('next-btn').disabled = current === TOTAL;
   document.getElementById('progress-bar').style.width = (current / TOTAL * 100) + '%';
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current - 1));
-  if (current === 7) { loadPipelineData(); buildWf3Chart(); buildDivisionWaterfallCharts(); }
+  if (current === 5) { loadPipelineData(); buildWf3Chart(); buildDivisionWaterfallCharts(); }
 }
 function nextSlide() { if (current < TOTAL) goTo(current + 1); }
 function prevSlide() { if (current > 1) goTo(current - 1); }
@@ -794,7 +871,7 @@ function updatePoll() {
 let pollSeeded = false;
 const deckEl = document.getElementById('deck');
 new MutationObserver(() => {
-  if (document.getElementById('s6').classList.contains('active') && !pollSeeded) { pollSeeded = true; setTimeout(seedVotes, 600); }
+  /* poll slide removed */
 }).observe(deckEl, { subtree: true, attributes: true, attributeFilter: ['class'] });
 
 // ── LIVE CLOCK ───────────────────────────────────────────────────────────────
