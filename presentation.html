@@ -134,10 +134,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .mc-teal   { background: rgba(13,148,136,.05); border-color: rgba(13,148,136,.2); }
 .mc-green  { background: rgba(22,163,74,.05);  border-color: rgba(22,163,74,.2); }
 
-/* ── SLIDE 4: IFRAME SHOWCASE ── */
+/* ── SLIDE 4: DASHBOARD LAUNCHER ── */
 #s4 { background: var(--plk-smoke); }
 
-/* Fixed overlay: title + tabs, lives outside #deck so nothing blocks clicks */
 #s4-overlay {
   display: none;
   position: fixed; top: 0; left: 0; right: 0;
@@ -161,16 +160,15 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .s4-tab:hover { border-color: var(--plk-orange); color: var(--plk-orange); }
 .s4-tab.active { background: var(--plk-orange); border-color: var(--plk-orange); color: #fff; }
 
-/* Browser shell: top is set dynamically by JS after overlay renders */
+/* Browser shell */
 #s4-browser-shell {
   position: absolute;
-  top: 0; left: 24px; right: 24px; bottom: 12px; /* top overridden by JS */
+  top: 0; left: 24px; right: 24px; bottom: 12px;
   display: flex; flex-direction: column;
   border-radius: 10px; overflow: hidden;
   box-shadow: 0 8px 40px rgba(0,0,0,.3);
 }
 
-/* Chrome bar */
 #s4-chrome {
   flex-shrink: 0; background: #e8e8e8;
   border-bottom: 1px solid #d0d0d0;
@@ -184,34 +182,28 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   border: 1px solid #d0d0d0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 #s4-open-link {
-  padding: 3px 12px; border-radius: 5px; background: rgba(232,82,26,.12);
-  color: var(--plk-orange); font-family: var(--font-mono); font-size: 11px;
-  text-decoration: none; white-space: nowrap; transition: background .2s; font-weight: 600;
+  padding: 4px 14px; border-radius: 5px; background: var(--plk-orange);
+  color: white; font-family: var(--font-body); font-size: 12px; font-weight: 700;
+  text-decoration: none; white-space: nowrap; transition: background .2s;
 }
-#s4-open-link:hover { background: var(--plk-orange); color: #fff; }
+#s4-open-link:hover { background: var(--plk-red); }
 
-/* Frame wrap — iframe fills this completely, handles its own scroll */
+/* Preview area — shows screenshot + launch prompt */
 #s4-frame-wrap {
   flex: 1;
   position: relative;
   overflow: hidden;
   background: #f9fafb;
 }
-
-/* iframe fills 100% — pointer-events always on so it's fully interactive */
 #s4-frame-wrap iframe {
   position: absolute; top: 0; left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   border: none;
   opacity: 0;
   transition: opacity .4s;
   pointer-events: all;
 }
-#s4-frame-wrap iframe.loaded {
-  opacity: 1;
-}
-
+#s4-frame-wrap iframe.loaded { opacity: 1; }
 #s4-loading {
   position: absolute; inset: 0; z-index: 10;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -454,7 +446,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 <!-- SLIDE 4 — Dashboard Showcase -->
 <div class="slide" id="s4">
   <div id="s4-browser-shell">
-    <!-- Browser chrome bar -->
     <div id="s4-chrome">
       <div id="s4-chrome-dots">
         <span style="background:#ff5f57"></span>
@@ -464,7 +455,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
       <div id="s4-url-pill">plk-dev-dash.vercel.app</div>
       <a id="s4-open-link" href="https://plk-dev-dash.vercel.app/" target="_blank">↗ Open live</a>
     </div>
-    <!-- iframe fills everything below chrome bar -->
     <div id="s4-frame-wrap">
       <div id="s4-loading">
         <div style="width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:#E8521A;border-radius:50%;animation:spin 0.8s linear infinite"></div>
@@ -492,7 +482,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   </div>
 </div>
 
-<!-- SLIDE 4 HEADER + TABS — fixed outside #deck so nothing can cover them -->
+<!-- SLIDE 4 HEADER + TABS — fixed outside #deck -->
 <div id="s4-overlay">
   <div id="s4-overlay-top">
     <div>
