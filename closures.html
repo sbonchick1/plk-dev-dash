@@ -21,9 +21,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
 .export-btn:hover{background:#dcfce7;border-color:#4ade80;}
 .export-btn svg{width:15px;height:15px;}
 
-/* KPI Banner */
-.kpi-banner{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:14px;margin-bottom:32px;}
-.kpi-card{background:white;border-radius:12px;padding:18px 20px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
+/* ── KPI BANNER: always one row, never wraps ── */
+.kpi-banner{display:flex;flex-wrap:nowrap;gap:12px;margin-bottom:32px;}
+.kpi-banner>.kpi-card{flex:1 1 0;min-width:0;}
+.kpi-banner .kpi-value{font-size:clamp(15px,1.8vw,26px);}
+.kpi-banner .kpi-label{font-size:clamp(7px,.65vw,10px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kpi-banner .kpi-sub{font-size:clamp(7px,.62vw,11px);}
+.kpi-card{background:white;border-radius:12px;padding:16px 12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,0.05);position:relative;overflow:hidden;}
 .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#C1272D);}
 .kpi-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.8px;margin-bottom:6px;font-weight:600;}
 .kpi-value{font-size:26px;font-weight:800;color:#1a1a1a;line-height:1;margin-bottom:4px;}
@@ -62,8 +66,6 @@ td.border-l{border-left:2px solid #e5e7eb;}
 .rank-1{background:#059669;color:white;}.rank-2{background:#34d399;color:white;}
 .rank-3{background:#fbbf24;color:white;}.rank-4{background:#fb923c;color:white;}
 .rank-5{background:#f87171;color:white;}.rank-6{background:#C1272D;color:white;}
-
-/* ── Risk Mix cell — min-width matches dev-execution (130px) ── */
 .risk-mix-cell{min-width:130px;}
 .risk-bar{display:flex;height:14px;border-radius:6px;overflow:hidden;gap:2px;margin-bottom:8px;}
 .risk-seg{height:100%;cursor:pointer;transition:opacity 0.15s,filter 0.15s;min-width:4px;}
@@ -75,8 +77,6 @@ td.border-l{border-left:2px solid #e5e7eb;}
 .risk-pill-item:hover{filter:brightness(0.9);}
 .risk-pill-item.zero{opacity:0.32;cursor:default;pointer-events:none;}
 .risk-pill-item .rp-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
-
-/* Side-by-side charts */
 .charts-side{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
 .chart-card{background:white;border-radius:12px;padding:22px;border:1px solid #e5e7eb;}
 .chart-card.le-card{border-top:4px solid #C1272D;}
@@ -90,13 +90,9 @@ td.border-l{border-left:2px solid #e5e7eb;}
 .chart-legend{display:flex;gap:14px;margin-top:10px;flex-wrap:wrap;}
 .legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;}
 .legend-swatch{width:12px;height:12px;border-radius:2px;flex-shrink:0;}
-
-/* FZ Rollup accordion */
 .fz-table thead th{background:#fafafa;}
 .fz-row-hidden{display:none;}
 #fz-expand-btn:hover{border-color:#C1272D;color:#C1272D;}
-
-/* Modal */
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity 0.2s;}
 .modal-overlay.open{opacity:1;pointer-events:auto;}
 .modal{background:white;border-radius:16px;width:100%;max-width:1200px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,0.2);transform:translateY(20px);transition:transform 0.2s;}
@@ -140,7 +136,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
 .legend-bar{display:flex;align-items:center;gap:16px;margin-top:14px;flex-wrap:wrap;}
 .legend-item2{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
 .legend-dot2{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
-@media(max-width:900px){.charts-side{grid-template-columns:1fr;}.container{padding:24px;}.page-title{font-size:28px;}}
+@media(max-width:900px){.charts-side{grid-template-columns:1fr;}.container{padding:24px;}.page-title{font-size:28px;}.kpi-banner{flex-wrap:wrap!important;}}
 </style>
 </head>
 <body>
@@ -151,7 +147,6 @@ td.border-l{border-left:2px solid #e5e7eb;}
   <div class="overlay-sub">Fetching from Smartsheet</div>
 </div>
 
-<!-- Drill-down Modal -->
 <div class="modal-overlay" id="drill-modal">
   <div class="modal">
     <div class="modal-header">
@@ -230,11 +225,7 @@ td.border-l{border-left:2px solid #e5e7eb;}
     </div>
     <h1 class="page-title">Restaurant Closure Performance Dashboard</h1>
     <p class="page-subtitle">2026 closure pipeline analysis by division and closure reason with budget tracking</p>
-
-    <!-- KPI Banner -->
     <div class="kpi-banner" id="kpi-banner"></div>
-
-    <!-- 2026 Pipeline Table -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📊</span>2026 Closure Pipeline vs. Budget</div>
@@ -279,8 +270,6 @@ td.border-l{border-left:2px solid #e5e7eb;}
       </div>
       <p style="margin-top:10px;font-size:11px;color:#9ca3af;font-style:italic;">* Rank: weighted score 40% Current Achievement + 60% Projected Achievement vs budget — fewer closures relative to budget = better rank. Click any Risk Mix segment or pill to view those sites.</p>
     </div>
-
-    <!-- Closure Reason Charts (side by side) -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>📈</span>2026 Closure Pipeline — Reason Analysis</div>
@@ -326,8 +315,6 @@ td.border-l{border-left:2px solid #e5e7eb;}
         </div>
       </div>
     </div>
-
-    <!-- FZ Rollup -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>🏢</span>Closure Pipeline — Rollup by Franchisee (FZ)</div>
@@ -350,8 +337,6 @@ td.border-l{border-left:2px solid #e5e7eb;}
         <p style="font-size:11px;color:#9ca3af;font-style:italic;">* Shows franchisees with at least 1 site across LE, LE (Opp), 2027 LE, 2028 LE, or Mitigate. Click any count to view.</p>
       </div>
     </div>
-
-    <!-- Combined 2027 / 2028 Pipeline Table -->
     <div class="section">
       <div class="section-header">
         <div class="section-title"><span>🔮</span>2027 &amp; 2028 Pipeline Visibility — by Closure Reason</div>
@@ -390,7 +375,6 @@ const REASON_COLORS = {
   "Loss of Property Control":"#00A99D","Relocation":"#1d4ed8","F2F":"#059669",
   "Bad Trade Area":"#6b7280","California - Potential Closure":"#0ea5e9","Other":"#9ca3af"
 };
-
 const CLOSURE_RISK_LEVELS = [
   { key:"Low Risk",        label:"Low",      color:"#059669", bg:"#D1FAE5", text:"#065F46" },
   { key:"Medium Risk",     label:"Medium",   color:"#fbbf24", bg:"#FEF3C7", text:"#92400E" },
@@ -398,14 +382,11 @@ const CLOSURE_RISK_LEVELS = [
   { key:"Definite Closure",label:"Definite", color:"#C1272D", bg:"#fee2e2", text:"#7f1d1d" },
   { key:"Closed",          label:"Closed",   color:"#6b7280", bg:"#f3f4f6", text:"#374151" },
 ];
-
 const fmt$ = n => n==null?"N/A": Math.abs(n)>=1e6?`$${(n/1e6).toFixed(2)}M`:`$${(n/1e3).toFixed(0)}K`;
-
 let ALL_DATA=[], BUDGETS={};
 let MODAL_SITES=[], MODAL_TITLE_TEXT="";
 let modalSortCol=-1, modalSortDir=1;
 let FZ_REASONS=[], FUTURE_REASONS=[];
-
 function isLE(r)       { return r.closureBucket==="LE"; }
 function isLEOpp(r)    { return r.closureBucket==="LE (Opp)"; }
 function isClosed(r)   { return r.closureRisk&&r.closureRisk.trim()==="Closed"; }
@@ -417,19 +398,10 @@ function isNotInLE(r)  { return r.closureBucket==="Not in LE"; }
 function normalizeReason(r){ return ALL_REASONS.includes(r.closureReason)?r.closureReason:"Other"; }
 function gapClass(g)   { return g>0?"gap-positive":g<0?"gap-negative":"gap-zero"; }
 function achieveClass(p){ return p>=90?"achievement-high":p>=70?"achievement-medium":"achievement-low"; }
-
-// ── Risk Mix cell builder ─────────────────────────────────────────────────────
 function buildRiskMixCell(divName, nLow, nMed, nHigh, nDef, nClosed) {
   const total = nLow + nMed + nHigh + nDef + nClosed || 1;
-  const counts = {
-    "Low Risk": nLow,
-    "Medium Risk": nMed,
-    "High Risk": nHigh,
-    "Definite Closure": nDef,
-    "Closed": nClosed
-  };
+  const counts = {"Low Risk":nLow,"Medium Risk":nMed,"High Risk":nHigh,"Definite Closure":nDef,"Closed":nClosed};
   const edd = divName.replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-
   const barSegs = CLOSURE_RISK_LEVELS.map(rl => {
     const cnt = counts[rl.key] || 0;
     if (cnt === 0) return '';
@@ -437,18 +409,14 @@ function buildRiskMixCell(divName, nLow, nMed, nHigh, nDef, nClosed) {
     const clickAttr = `onclick="openRiskDrillDown('${edd}','${rl.key.replace(/'/g,"\\'")}','${edd} · ${rl.label} Risk')"`;
     return `<div class="risk-seg" style="width:${pct}%;background:${rl.color};" data-count="${cnt}" title="${rl.label}: ${cnt} site${cnt!==1?'s':''}" ${clickAttr}></div>`;
   }).join('');
-
   const pills = CLOSURE_RISK_LEVELS.map(rl => {
     const cnt = counts[rl.key] || 0;
     if (cnt === 0) return '';
     const clickAttr = `onclick="openRiskDrillDown('${edd}','${rl.key.replace(/'/g,"\\'")}','${edd} · ${rl.label} Risk')"`;
     return `<span class="risk-pill-item" style="background:${rl.bg};color:${rl.text};border-color:${rl.color};" ${clickAttr} title="${rl.label}: ${cnt} site${cnt!==1?'s':''}"><span class="rp-dot" style="background:${rl.color};"></span>${rl.label} <strong>${cnt}</strong></span>`;
   }).join('');
-
   return `<td class="risk-mix-cell"><div class="risk-bar">${barSegs}</div><div class="risk-pills">${pills}</div></td>`;
 }
-
-// ── KPI Banner ──────────────────────────────────────────────────────────────
 function renderKPIBanner() {
   const totalBudget = Object.values(BUDGETS).reduce((a,b)=>a+b,0);
   const leRows      = ALL_DATA.filter(r=>isLE(r));
@@ -458,29 +426,19 @@ function renderKPIBanner() {
   const ltg=Math.max(0,totalBudget-closedYTD);
   const projAch=totalBudget>0?Math.round(leCount/totalBudget*100):0;
   const currAch=totalBudget>0?Math.round(closedYTD/totalBudget*100):0;
-  const ctrlCount=leRows.filter(r=>r.plkControl==="Yes").length;
-  const ctrlPct=leCount>0?Math.round(ctrlCount/leCount*100):0;
   const arsVals=leRows.filter(r=>r.ars2025!=null).map(r=>r.ars2025);
   const avgARS=arsVals.length?arsVals.reduce((a,b)=>a+b,0)/arsVals.length:null;
   const ebitdaVals=leRows.filter(r=>r.ttmEbitda!=null).map(r=>r.ttmEbitda);
   const avgEBITDA=ebitdaVals.length?ebitdaVals.reduce((a,b)=>a+b,0)/ebitdaVals.length:null;
-
   const cards = [
-    {label:"2026 LE Closures",       value:leCount,       sub:`of ${totalBudget} budget`,    color:"#C1272D",
-     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#C1272D;width:${Math.min(100,projAch)}%"></div></div>`,
-     cls:projAch>=100?"kpi-urgent":""},
-    {label:"LE (Opp) — Downside Risk", value:leOppCount,    sub:"Additional 2026 risk",         color:"#E8521A",extra:"",cls:""},
-    {label:"Closed YTD",             value:closedYTD,     sub:`of ${totalBudget} budget`,     color:"#6b7280",
-     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#6b7280;width:${Math.min(100,currAch)}%"></div></div>`,cls:""},
-    {label:"Closures LTG",           value:ltg,           sub:"Left to go vs budget",          color:"#F7941D",extra:"",cls:ltg===0?"kpi-good":""},
-    {label:"Avg 2025 ARS",           value:fmt$(avgARS),  sub:"2026 LE units",                 color:"#00A99D",extra:"",cls:""},
-    {label:"Avg TTM EBITDA",         value:fmt$(avgEBITDA),sub:"2026 LE units",                color:"#1d4ed8",extra:"",cls:avgEBITDA!=null&&avgEBITDA<0?"kpi-urgent":""},
-    {label:"Current Achievement",    value:currAch+"%",   sub:"Closed vs budget",              color:"#1d4ed8",
-     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#1d4ed8;width:${Math.min(100,currAch)}%"></div></div>`,
-     cls:currAch>=100?"kpi-urgent":""},
-    {label:"Projected Achievement",  value:projAch+"%",   sub:"LE vs budget",                  color:"#991b1b",
-     extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#991b1b;width:${Math.min(100,projAch)}%"></div></div>`,
-     cls:projAch>=100?"kpi-urgent":""},
+    {label:"2026 LE Closures",value:leCount,sub:`of ${totalBudget} budget`,color:"#C1272D",extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#C1272D;width:${Math.min(100,projAch)}%"></div></div>`,cls:projAch>=100?"kpi-urgent":""},
+    {label:"LE (Opp) — Downside Risk",value:leOppCount,sub:"Additional 2026 risk",color:"#E8521A",extra:"",cls:""},
+    {label:"Closed YTD",value:closedYTD,sub:`of ${totalBudget} budget`,color:"#6b7280",extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#6b7280;width:${Math.min(100,currAch)}%"></div></div>`,cls:""},
+    {label:"Closures LTG",value:ltg,sub:"Left to go vs budget",color:"#F7941D",extra:"",cls:ltg===0?"kpi-good":""},
+    {label:"Avg 2025 ARS",value:fmt$(avgARS),sub:"2026 LE units",color:"#00A99D",extra:"",cls:""},
+    {label:"Avg TTM EBITDA",value:fmt$(avgEBITDA),sub:"2026 LE units",color:"#1d4ed8",extra:"",cls:avgEBITDA!=null&&avgEBITDA<0?"kpi-urgent":""},
+    {label:"Current Achievement",value:currAch+"%",sub:"Closed vs budget",color:"#1d4ed8",extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#1d4ed8;width:${Math.min(100,currAch)}%"></div></div>`,cls:currAch>=100?"kpi-urgent":""},
+    {label:"Projected Achievement",value:projAch+"%",sub:"LE vs budget",color:"#991b1b",extra:`<div class="kpi-progress-wrap"><div class="kpi-progress-bar" style="--kpi-color:#991b1b;width:${Math.min(100,projAch)}%"></div></div>`,cls:projAch>=100?"kpi-urgent":""},
   ];
   document.getElementById("kpi-banner").innerHTML=cards.map(c=>`
     <div class="kpi-card ${c.cls}" style="--kpi-color:${c.color}">
@@ -490,8 +448,6 @@ function renderKPIBanner() {
       ${c.extra}
     </div>`).join("");
 }
-
-// ── 2026 Table ──────────────────────────────────────────────────────────────
 function renderTable2026() {
   const divStats=DIVISIONS.map(div=>{
     const leRows=ALL_DATA.filter(r=>r.division===div.name&&isLE(r));
@@ -500,14 +456,13 @@ function renderTable2026() {
     const leCount=leRows.length, leOppCount=leOppRows.length, closedYTD=closedRows.length;
     const budget=BUDGETS[div.name]||0, gap=leCount-budget;
     const currPct=budget>0?(closedYTD/budget*100):0, projPct=budget>0?(leCount/budget*100):0;
-    const nLow  = leRows.filter(r=>r.closureRisk==="Low Risk").length;
-    const nMed  = leRows.filter(r=>r.closureRisk==="Medium Risk").length;
-    const nHigh = leRows.filter(r=>r.closureRisk==="High Risk").length;
-    const nDef  = leRows.filter(r=>r.closureRisk==="Definite Closure").length;
-    const nClosed = leRows.filter(r=>r.closureRisk==="Closed").length;
+    const nLow=leRows.filter(r=>r.closureRisk==="Low Risk").length;
+    const nMed=leRows.filter(r=>r.closureRisk==="Medium Risk").length;
+    const nHigh=leRows.filter(r=>r.closureRisk==="High Risk").length;
+    const nDef=leRows.filter(r=>r.closureRisk==="Definite Closure").length;
+    const nClosed=leRows.filter(r=>r.closureRisk==="Closed").length;
     return{div,leCount,leOppCount,closedYTD,budget,gap,currPct,projPct,nLow,nMed,nHigh,nDef,nClosed};
   });
-
   const byProj=[...divStats].sort((a,b)=>a.projPct-b.projPct);
   const byCurr=[...divStats].sort((a,b)=>a.currPct-b.currPct);
   const projRank={},currRank={};
@@ -516,7 +471,6 @@ function renderTable2026() {
   divStats.forEach(d=>{d.wScore=0.4*currRank[d.div.name]+0.6*projRank[d.div.name];});
   const rankMap={};
   [...divStats].sort((a,b)=>a.wScore-b.wScore).forEach((d,i)=>rankMap[d.div.name]=i);
-
   const totals={le:0,leOpp:0,closed:0,budget:0,nLow:0,nMed:0,nHigh:0,nDef:0,nClosed:0};
   let html="";
   divStats.forEach(({div,leCount,leOppCount,closedYTD,budget,gap,currPct,projPct,nLow,nMed,nHigh,nDef,nClosed})=>{
@@ -553,8 +507,6 @@ function renderTable2026() {
   </tr>`;
   document.getElementById("tbody-2026").innerHTML=html;
 }
-
-// ── Risk drill-down helper ───────────────────────────────────────────────────
 function openRiskDrillDown(divName, riskLevel, title) {
   let sites = ALL_DATA.filter(r => isLE(r));
   if (divName && divName !== "US&C") sites = sites.filter(r => r.division === divName);
@@ -565,8 +517,6 @@ function openRiskDrillDown(divName, riskLevel, title) {
   resetModalFilters();
   document.getElementById("drill-modal").classList.add("open");
 }
-
-// ── Helper: wrap label ──────────────────────────────────────────────────────
 function wrapLabel(str, maxLen) {
   if (!str || str.length <= maxLen) return str;
   const words = str.split(' ');
@@ -580,8 +530,6 @@ function wrapLabel(str, maxLen) {
   if (cur) lines.push(cur);
   return lines.length > 1 ? lines : str;
 }
-
-// ── Reason Charts ────────────────────────────────────────────────────────────
 function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const reasonCounts={};
   ALL_REASONS.forEach(r=>reasonCounts[r]={ctrl:0,nonCtrl:0});
@@ -590,7 +538,6 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
     if(r.plkControl==="Yes") reasonCounts[reason].ctrl++;
     else reasonCounts[reason].nonCtrl++;
   });
-
   const activeReasons=ALL_REASONS.filter(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl>0);
   const grandTotal=rows.length;
   const bucket = canvasId.includes("opp") ? "LE (Opp)" : "LE";
@@ -599,330 +546,184 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const labels=[...activeReasons,"Total"];
   const wrappedLabels = labels.map(l => wrapLabel(l, 13));
   const n=labels.length;
-
   const baseData=[], ctrlData=[], nonCtrlData=[];
   let cumulative=0;
   activeReasons.forEach(reason=>{
-    const ctrl=reasonCounts[reason].ctrl;
-    const nonCtrl=reasonCounts[reason].nonCtrl;
-    baseData.push(cumulative);
-    ctrlData.push(ctrl);
-    nonCtrlData.push(nonCtrl);
+    const ctrl=reasonCounts[reason].ctrl, nonCtrl=reasonCounts[reason].nonCtrl;
+    baseData.push(cumulative); ctrlData.push(ctrl); nonCtrlData.push(nonCtrl);
     cumulative+=ctrl+nonCtrl;
   });
   baseData.push(0); ctrlData.push(0); nonCtrlData.push(0);
-
   const displayVals=[...activeReasons.map(r=>reasonCounts[r].ctrl+reasonCounts[r].nonCtrl), grandTotal];
-
   const ctx=document.getElementById(canvasId);
   const existing = Chart.getChart(ctx);
   if (existing) existing.destroy();
-
-  // ── Label plugin: draws bar-top numbers using an overlay canvas so Chart.js
-  //    redraws never accumulate paint. We render once after initial draw, then
-  //    only re-render when the chart itself redraws (which we minimise below).
   const labelPlugin = {
     id: "labels_" + canvasId,
-    // beforeDraw clears our stored positions so stale paint never survives a redraw
     beforeDraw() {},
     afterDraw(chart) {
-      const meta1 = chart.getDatasetMeta(1);
-      const meta2 = chart.getDatasetMeta(2);
-      const meta3 = chart.getDatasetMeta(3);
-      const cCtx  = chart.ctx;
-
-      // Save full state — restore() undoes ALL our paint ops cleanly
+      const meta1 = chart.getDatasetMeta(1), meta2 = chart.getDatasetMeta(2), meta3 = chart.getDatasetMeta(3);
+      const cCtx = chart.ctx;
       cCtx.save();
       cCtx.font = "bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-      cCtx.fillStyle = "#374151";
-      cCtx.textAlign = "center";
-      cCtx.textBaseline = "bottom";
-
+      cCtx.fillStyle = "#374151"; cCtx.textAlign = "center"; cCtx.textBaseline = "bottom";
       displayVals.forEach((val, i) => {
         if (!val && val !== 0) return;
         let topY = null, barX = null;
-
-        if (i === n - 1) {
-          const b = meta3 && meta3.data[i];
-          if (b && b.x != null && b.y != null) { topY = b.y; barX = b.x; }
-        } else {
-          const b1 = meta1 && meta1.data[i];
-          const b2 = meta2 && meta2.data[i];
-          const ctrl    = ctrlData[i];
-          const nonCtrl = nonCtrlData[i];
-          if (ctrl > 0 && nonCtrl > 0 && b1 && b2) {
-            topY = Math.min(b1.y, b2.y); barX = b2.x;
-          } else if (ctrl > 0 && b1 && b1.y != null) {
-            topY = b1.y; barX = b1.x;
-          } else if (nonCtrl > 0 && b2 && b2.y != null) {
-            topY = b2.y; barX = b2.x;
-          }
+        if (i === n - 1) { const b = meta3 && meta3.data[i]; if (b && b.x != null && b.y != null) { topY = b.y; barX = b.x; } }
+        else {
+          const b1 = meta1 && meta1.data[i], b2 = meta2 && meta2.data[i];
+          const ctrl = ctrlData[i], nonCtrl = nonCtrlData[i];
+          if (ctrl > 0 && nonCtrl > 0 && b1 && b2) { topY = Math.min(b1.y, b2.y); barX = b2.x; }
+          else if (ctrl > 0 && b1 && b1.y != null) { topY = b1.y; barX = b1.x; }
+          else if (nonCtrl > 0 && b2 && b2.y != null) { topY = b2.y; barX = b2.x; }
         }
-
         if (topY == null || barX == null) return;
         cCtx.fillText(String(val), barX, topY - 3);
       });
-
       cCtx.restore();
     }
   };
-
   new Chart(ctx, {
     type: "bar",
     data: {
       labels: wrappedLabels,
       datasets: [
-        // ds0: invisible base (waterfall offset)
-        {
-          label: "_base",
-          data: baseData,
-          backgroundColor: "rgba(0,0,0,0)",
-          borderColor: "rgba(0,0,0,0)",
-          borderWidth: 0,
-          stack: "wf"
-        },
-        // ds1: PLK Controlled
-        {
-          label: "PLK Controlled",
-          data: ctrlData,
-          backgroundColor: wrappedLabels.map((_,i) => i===n-1 ? "rgba(0,0,0,0)" : ctrlColor),
-          borderRadius: 0,
-          stack: "wf"
-        },
-        // ds2: Non-Controlled
-        {
-          label: "Non-Controlled",
-          data: nonCtrlData,
-          backgroundColor: wrappedLabels.map((_,i) => i===n-1 ? "rgba(0,0,0,0)" : nonCtrlColor),
-          borderRadius: 4,
-          stack: "wf"
-        },
-        // ds3: Total bar — separate stack, only last index
-        {
-          label: "_total",
-          data: wrappedLabels.map((_,i) => i===n-1 ? grandTotal : 0),
-          backgroundColor: totalColor,
-          borderRadius: 4,
-          stack: "wf2"
-        }
+        {label:"_base",data:baseData,backgroundColor:"rgba(0,0,0,0)",borderColor:"rgba(0,0,0,0)",borderWidth:0,stack:"wf"},
+        {label:"PLK Controlled",data:ctrlData,backgroundColor:wrappedLabels.map((_,i)=>i===n-1?"rgba(0,0,0,0)":ctrlColor),borderRadius:0,stack:"wf"},
+        {label:"Non-Controlled",data:nonCtrlData,backgroundColor:wrappedLabels.map((_,i)=>i===n-1?"rgba(0,0,0,0)":nonCtrlColor),borderRadius:4,stack:"wf"},
+        {label:"_total",data:wrappedLabels.map((_,i)=>i===n-1?grandTotal:0),backgroundColor:totalColor,borderRadius:4,stack:"wf2"}
       ]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: true,
-      // ── KEY FIX: disable all animations so Chart.js never triggers continuous
-      //    redraws while the mouse is held over a bar. Without this, every hover
-      //    tick schedules a redraw, and the label plugin accumulates paint.
-      animation: false,
-      // Only respond to click events — mousemove/mouseout still handled by the
-      // external listener below for the custom tooltip div.
-      events: ["click", "mousemove", "mouseout"],
-      interaction: {
-        mode: "nearest",
-        intersect: true
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          animation: false,
-          backgroundColor: "#1f2937",
-          titleColor: "white",
-          bodyColor: "white",
-          padding: 10,
-          cornerRadius: 6,
-          titleFont: { weight: "normal" },
-          bodyFont: { weight: "normal" },
-          filter: item => {
-            if (item.dataIndex === n-1) return item.datasetIndex === 3;
-            // Only show the segment actually under the cursor (ds1 or ds2), not both
-            return item.datasetIndex === 1 || item.datasetIndex === 2;
+      responsive:true, maintainAspectRatio:true, animation:false,
+      events:["click","mousemove","mouseout"],
+      interaction:{mode:"nearest",intersect:true},
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          animation:false, backgroundColor:"#1f2937", titleColor:"white", bodyColor:"white",
+          padding:10, cornerRadius:6, titleFont:{weight:"normal"}, bodyFont:{weight:"normal"},
+          filter:item=>{
+            if(item.dataIndex===n-1) return item.datasetIndex===3;
+            return item.datasetIndex===1||item.datasetIndex===2;
           },
-          callbacks: {
-            title: items => {
-              const i = items[0].dataIndex;
-              return i === n-1 ? "Total" : labels[i];
-            },
-            label: item => {
-              const i = item.dataIndex;
-              if (i === n-1) return `Total closures: ${grandTotal}  ·  Click to View`;
-              const lbl = labels[i];
-              const ctrl    = reasonCounts[lbl]?.ctrl    || 0;
-              const nonCtrl = reasonCounts[lbl]?.nonCtrl || 0;
-              const barTotal = ctrl + nonCtrl;
-              let run = 0;
-              for (let j = 0; j <= i; j++) {
-                const r = activeReasons[j];
-                run += (reasonCounts[r]?.ctrl || 0) + (reasonCounts[r]?.nonCtrl || 0);
-              }
-              const hoveredLbl = item.datasetIndex === 1 ? "PLK Controlled" : "Non-Controlled";
-              const hoveredVal = item.datasetIndex === 1 ? ctrl : nonCtrl;
+          callbacks:{
+            title:items=>{const i=items[0].dataIndex;return i===n-1?"Total":labels[i];},
+            label:item=>{
+              const i=item.dataIndex;
+              if(i===n-1) return `Total closures: ${grandTotal}  ·  Click to View`;
+              const lbl=labels[i], ctrl=reasonCounts[lbl]?.ctrl||0, nonCtrl=reasonCounts[lbl]?.nonCtrl||0;
+              const barTotal=ctrl+nonCtrl;
+              let run=0; for(let j=0;j<=i;j++){const r=activeReasons[j];run+=(reasonCounts[r]?.ctrl||0)+(reasonCounts[r]?.nonCtrl||0);}
+              const hoveredLbl=item.datasetIndex===1?"PLK Controlled":"Non-Controlled";
+              const hoveredVal=item.datasetIndex===1?ctrl:nonCtrl;
               return `${hoveredLbl}: ${hoveredVal}  |  Bar Total: ${barTotal}  |  Running: ${run}  ·  Click to View`;
             }
           }
         }
       },
-      scales: {
-        x: {
-          stacked: true,
-          grid: { display: false },
-          border: { display: false },
-          ticks: { color: "#374151", font: { size: 11 }, maxRotation: 0, minRotation: 0, autoSkip: false }
-        },
-        y: {
-          stacked: true,
-          grid: { display: false },
-          border: { display: false },
-          ticks: { display: false },
-          beginAtZero: true
-        }
+      scales:{
+        x:{stacked:true,grid:{display:false},border:{display:false},ticks:{color:"#374151",font:{size:11},maxRotation:0,minRotation:0,autoSkip:false}},
+        y:{stacked:true,grid:{display:false},border:{display:false},ticks:{display:false},beginAtZero:true}
       },
-      layout: { padding: { top: 28 } }
+      layout:{padding:{top:28}}
     },
-    plugins: [labelPlugin]
+    plugins:[labelPlugin]
   });
-
-  // Remove old click handler before attaching new one
-  if (ctx._reasonClickHandler) ctx.removeEventListener("click", ctx._reasonClickHandler);
-  ctx._reasonClickHandler = function(e) {
-    const ch = Chart.getChart(ctx); if (!ch) return;
-    const pts = ch.getElementsAtEventForMode(e, "nearest", { intersect: true }, false);
-    if (!pts.length) return;
-    const i = pts[0].index;
-    if (i === n-1) {
-      const bucket = canvasId.includes("opp") ? "LE (Opp)" : "LE";
-      openDrillDown({ bucket }, `US&C · ${bucket} · All Reasons`, `All divisions`);
-      return;
-    }
-    const reason = activeReasons[i];
-    const bucket = canvasId.includes("opp") ? "LE (Opp)" : "LE";
-    openDrillDown({ bucket, reason }, `US&C · ${bucket} · ${reason}`, `All divisions · ${bucket}`);
+  if(ctx._reasonClickHandler) ctx.removeEventListener("click",ctx._reasonClickHandler);
+  ctx._reasonClickHandler=function(e){
+    const ch=Chart.getChart(ctx); if(!ch) return;
+    const pts=ch.getElementsAtEventForMode(e,"nearest",{intersect:true},false);
+    if(!pts.length) return;
+    const i=pts[0].index;
+    if(i===n-1){const bucket=canvasId.includes("opp")?"LE (Opp)":"LE";openDrillDown({bucket},`US&C · ${bucket} · All Reasons`,`All divisions`);return;}
+    const reason=activeReasons[i];
+    const bucket=canvasId.includes("opp")?"LE (Opp)":"LE";
+    openDrillDown({bucket,reason},`US&C · ${bucket} · ${reason}`,`All divisions · ${bucket}`);
   };
-  ctx.addEventListener("click", ctx._reasonClickHandler);
-  ctx.style.cursor = "pointer";
+  ctx.addEventListener("click",ctx._reasonClickHandler);
+  ctx.style.cursor="pointer";
 }
-
 function renderReasonCharts(){
-  buildReasonChart("chart-le-reasons",  ALL_DATA.filter(r=>isLE(r)),    "#7B2D8B","#C1272D","#00A99D");
-  buildReasonChart("chart-opp-reasons", ALL_DATA.filter(r=>isLEOpp(r)), "#7B2D8B","#E8521A","#00A99D");
+  buildReasonChart("chart-le-reasons",ALL_DATA.filter(r=>isLE(r)),"#7B2D8B","#C1272D","#00A99D");
+  buildReasonChart("chart-opp-reasons",ALL_DATA.filter(r=>isLEOpp(r)),"#7B2D8B","#E8521A","#00A99D");
 }
-
-// ── FZ Rollup ─────────────────────────────────────────────────────────────────
-let fzExpanded = false;
-const FZ_TOP = 10;
-
-function toggleFZExpand() {
-  fzExpanded = !fzExpanded;
-  const hiddenRows = document.querySelectorAll("tr[data-fz-hidden]");
-  hiddenRows.forEach(row => { row.style.display = fzExpanded ? "" : "none"; });
-  document.getElementById("fz-expand-icon").textContent = fzExpanded ? "▲" : "▼";
-  document.getElementById("fz-expand-label").textContent = fzExpanded
-    ? "Show top 10 only"
-    : `Show all ${hiddenRows.length + FZ_TOP} FZs`;
+let fzExpanded=false;
+const FZ_TOP=10;
+function toggleFZExpand(){
+  fzExpanded=!fzExpanded;
+  const hiddenRows=document.querySelectorAll("tr[data-fz-hidden]");
+  hiddenRows.forEach(row=>{row.style.display=fzExpanded?"":"none";});
+  document.getElementById("fz-expand-icon").textContent=fzExpanded?"▲":"▼";
+  document.getElementById("fz-expand-label").textContent=fzExpanded?"Show top 10 only":`Show all ${hiddenRows.length+FZ_TOP} FZs`;
 }
-
 function renderFZRollup(){
-  fzExpanded = false;
-  const BUCKETS = [
-    {key:"LE",       label:"LE",       fn:isLE,       style:"background:#fee2e2;color:#991b1b;"},
-    {key:"LE (Opp)", label:"LE (Opp)", fn:isLEOpp,    style:"background:#fef3c7;color:#92400e;"},
-    {key:"2027 LE",  label:"2027 LE",  fn:is2027,     style:"background:#eff6ff;color:#1d4ed8;"},
-    {key:"2028 LE",  label:"2028 LE",  fn:is2028,     style:"background:#f0fdf4;color:#166534;"},
-    {key:"Mitigate", label:"Mitigate", fn:isMitigate, style:"background:#faf5ff;color:#6b21a8;"},
+  fzExpanded=false;
+  const BUCKETS=[
+    {key:"LE",label:"LE",fn:isLE,style:"background:#fee2e2;color:#991b1b;"},
+    {key:"LE (Opp)",label:"LE (Opp)",fn:isLEOpp,style:"background:#fef3c7;color:#92400e;"},
+    {key:"2027 LE",label:"2027 LE",fn:is2027,style:"background:#eff6ff;color:#1d4ed8;"},
+    {key:"2028 LE",label:"2028 LE",fn:is2028,style:"background:#f0fdf4;color:#166534;"},
+    {key:"Mitigate",label:"Mitigate",fn:isMitigate,style:"background:#faf5ff;color:#6b21a8;"},
   ];
-
-  const relevantRows = ALL_DATA.filter(r =>
-    isLE(r)||isLEOpp(r)||is2027(r)||is2028(r)||isMitigate(r));
-
-  const fzMap = {};
-  relevantRows.forEach(r => {
-    const fz = r.fz || "Unknown";
-    if (!fzMap[fz]) { fzMap[fz] = {fz, total:0}; BUCKETS.forEach(b => fzMap[fz][b.key]=0); }
-    BUCKETS.forEach(b => { if (b.fn(r)) fzMap[fz][b.key]++; });
+  const relevantRows=ALL_DATA.filter(r=>isLE(r)||isLEOpp(r)||is2027(r)||is2028(r)||isMitigate(r));
+  const fzMap={};
+  relevantRows.forEach(r=>{
+    const fz=r.fz||"Unknown";
+    if(!fzMap[fz]){fzMap[fz]={fz,total:0};BUCKETS.forEach(b=>fzMap[fz][b.key]=0);}
+    BUCKETS.forEach(b=>{if(b.fn(r))fzMap[fz][b.key]++;});
     fzMap[fz].total++;
   });
-
-  const fzList = Object.values(fzMap)
-    .filter(f => f.total > 0)
-    .sort((a,b) => b.total - a.total);
-
-  const totals = {total:0};
-  BUCKETS.forEach(b => totals[b.key]=0);
-  fzList.forEach(fz => {
-    totals.total += fz.total;
-    BUCKETS.forEach(b => totals[b.key] += fz[b.key]);
-  });
-
-  const hiddenCount = Math.max(0, fzList.length - FZ_TOP);
-  const expandBtn = document.getElementById("fz-expand-btn");
-  if (hiddenCount === 0) {
-    expandBtn.style.display = "none";
-  } else {
-    expandBtn.style.display = "flex";
-    document.getElementById("fz-expand-label").textContent = `Show all ${fzList.length} FZs`;
-    document.getElementById("fz-expand-icon").textContent = "▼";
-  }
-
-  document.getElementById("fz-thead").innerHTML = `<tr>
+  const fzList=Object.values(fzMap).filter(f=>f.total>0).sort((a,b)=>b.total-a.total);
+  const totals={total:0};BUCKETS.forEach(b=>totals[b.key]=0);
+  fzList.forEach(fz=>{totals.total+=fz.total;BUCKETS.forEach(b=>totals[b.key]+=fz[b.key]);});
+  const hiddenCount=Math.max(0,fzList.length-FZ_TOP);
+  const expandBtn=document.getElementById("fz-expand-btn");
+  if(hiddenCount===0){expandBtn.style.display="none";}
+  else{expandBtn.style.display="flex";document.getElementById("fz-expand-label").textContent=`Show all ${fzList.length} FZs`;document.getElementById("fz-expand-icon").textContent="▼";}
+  document.getElementById("fz-thead").innerHTML=`<tr>
     <th class="left">Franchisee (FZ)</th>
     ${BUCKETS.map(b=>`<th style="${b.style}">${b.label}</th>`).join("")}
     <th style="background:#f9fafb;color:#374151;font-weight:700;">Total</th>
   </tr>`;
-
-  let html = fzList.map((fz, idx) => {
-    const ef = fz.fz.replace(/'/g,"\\'");
-    const isHidden = idx >= FZ_TOP;
-    const cells = BUCKETS.map(b => {
-      const cnt = fz[b.key];
-      if (!cnt) return `<td class="number-cell" style="color:#d1d5db;">—</td>`;
-      const ek = b.key.replace(/'/g,"\\'");
-      return `<td class="number-cell clickable" onclick="openDrillDown({fz:'${ef}',bucket:'${ek}'},'${ef} · ${ek}','${ef}')"><span>${cnt}</span></td>`;
+  let html=fzList.map((fz,idx)=>{
+    const ef=fz.fz.replace(/'/g,"\\'");
+    const isHidden=idx>=FZ_TOP;
+    const cells=BUCKETS.map(b=>{
+      const cnt=fz[b.key];
+      if(!cnt)return`<td class="number-cell" style="color:#d1d5db;">—</td>`;
+      const ek=b.key.replace(/'/g,"\\'");
+      return`<td class="number-cell clickable" onclick="openDrillDown({fz:'${ef}',bucket:'${ek}'},'${ef} · ${ek}','${ef}')"><span>${cnt}</span></td>`;
     });
-    const rankBadge = `<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#f3f4f6;font-size:10px;font-weight:700;color:#6b7280;margin-right:6px;flex-shrink:0;">${idx+1}</span>`;
-    const hiddenAttrs = isHidden ? `data-fz-hidden="1" style="display:none;"` : "";
-    return `<tr ${hiddenAttrs}>
-      <td class="division-cell">${rankBadge}${fz.fz}</td>
-      ${cells.join("")}
-      <td class="number-cell" style="font-weight:700;color:#374151;">${fz.total}</td>
-    </tr>`;
+    const rankBadge=`<span style="display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#f3f4f6;font-size:10px;font-weight:700;color:#6b7280;margin-right:6px;flex-shrink:0;">${idx+1}</span>`;
+    const hiddenAttrs=isHidden?`data-fz-hidden="1" style="display:none;"`:"";
+    return`<tr ${hiddenAttrs}><td class="division-cell">${rankBadge}${fz.fz}</td>${cells.join("")}<td class="number-cell" style="font-weight:700;color:#374151;">${fz.total}</td></tr>`;
   }).join("");
-
-  html += `<tr class="total-row">
-    <td class="division-cell">Total</td>
-    ${BUCKETS.map(b=>`<td class="number-cell">${totals[b.key]}</td>`).join("")}
-    <td class="number-cell" style="font-weight:700;">${totals.total}</td>
-  </tr>`;
-
-  document.getElementById("fz-tbody").innerHTML = html;
-  FZ_REASONS = BUCKETS.map(b => b.key);
+  html+=`<tr class="total-row"><td class="division-cell">Total</td>${BUCKETS.map(b=>`<td class="number-cell">${totals[b.key]}</td>`).join("")}<td class="number-cell" style="font-weight:700;">${totals.total}</td></tr>`;
+  document.getElementById("fz-tbody").innerHTML=html;
+  FZ_REASONS=BUCKETS.map(b=>b.key);
 }
-
-// ── Combined 2027 / 2028 Table ────────────────────────────────────────────────
 function renderFuturePipeline(){
-  const rows27=ALL_DATA.filter(r=>is2027(r));
-  const rows28=ALL_DATA.filter(r=>is2028(r));
-
+  const rows27=ALL_DATA.filter(r=>is2027(r)), rows28=ALL_DATA.filter(r=>is2028(r));
   const reasonSet=new Set();
   [...rows27,...rows28].forEach(r=>reasonSet.add(normalizeReason(r)));
   FUTURE_REASONS=ALL_REASONS.filter(r=>reasonSet.has(r));
-
   function buildMap(rows){
     const map={};
-    DIVISIONS.forEach(div=>{ map[div.name]={total:0,reasons:{}}; FUTURE_REASONS.forEach(r=>map[div.name].reasons[r]=0); });
+    DIVISIONS.forEach(div=>{map[div.name]={total:0,reasons:{}};FUTURE_REASONS.forEach(r=>map[div.name].reasons[r]=0);});
     rows.forEach(r=>{
       if(!map[r.division])return;
       map[r.division].total++;
       const reason=normalizeReason(r);
-      if(FUTURE_REASONS.includes(reason)) map[r.division].reasons[reason]++;
+      if(FUTURE_REASONS.includes(reason))map[r.division].reasons[reason]++;
     });
     return map;
   }
   const map27=buildMap(rows27), map28=buildMap(rows28);
-
   const mitMap={}, nilMap={};
-  DIVISIONS.forEach(div=>{ mitMap[div.name]=ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length; nilMap[div.name]=ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length; });
-
+  DIVISIONS.forEach(div=>{mitMap[div.name]=ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;nilMap[div.name]=ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;});
   const n=FUTURE_REASONS.length;
-
   const thead=document.getElementById("future-thead");
   thead.innerHTML=`
     <tr>
@@ -939,79 +740,33 @@ function renderFuturePipeline(){
       <th class="grp-shared grp-border-l">Mitigate</th>
       <th class="grp-shared">Not in LE</th>
     </tr>`;
-
   const tbody=document.getElementById("future-tbody");
   const totals27={reasons:{},total:0}, totals28={reasons:{},total:0}, totalsMit={total:0}, totalsNil={total:0};
   FUTURE_REASONS.forEach(r=>{totals27.reasons[r]=0;totals28.reasons[r]=0;});
-
   let html=DIVISIONS.map(div=>{
     const d27=map27[div.name], d28=map28[div.name];
     const mit=mitMap[div.name]||0, nil=nilMap[div.name]||0;
-    totals27.total+=d27.total; totals28.total+=d28.total;
-    totalsMit.total+=mit; totalsNil.total+=nil;
+    totals27.total+=d27.total;totals28.total+=d28.total;totalsMit.total+=mit;totalsNil.total+=nil;
     FUTURE_REASONS.forEach(r=>{totals27.reasons[r]+=(d27.reasons[r]||0);totals28.reasons[r]+=(d28.reasons[r]||0);});
-
-    const cells27=FUTURE_REASONS.map((r,i)=>{
-      const cnt=d27.reasons[r]||0;
-      const borderClass=i===0?" border-l":"";
-      if(!cnt)return`<td class="number-cell${borderClass}">—</td>`;
-      const ed=div.name.replace(/'/g,"\\'"),er=r.replace(/'/g,"\\'");
-      return`<td class="number-cell clickable${borderClass}" onclick="openDrillDown({division:'${ed}',bucket:'2027 LE',reason:'${er}'},'${ed} · 2027 LE · ${er}','${ed}')"><span>${cnt}</span></td>`;
-    });
-    const cells28=FUTURE_REASONS.map((r,i)=>{
-      const cnt=d28.reasons[r]||0;
-      const borderClass=i===0?" border-l":"";
-      if(!cnt)return`<td class="number-cell${borderClass}">—</td>`;
-      const ed=div.name.replace(/'/g,"\\'"),er=r.replace(/'/g,"\\'");
-      return`<td class="number-cell clickable${borderClass}" onclick="openDrillDown({division:'${ed}',bucket:'2028 LE',reason:'${er}'},'${ed} · 2028 LE · ${er}','${ed}')"><span>${cnt}</span></td>`;
-    });
+    const cells27=FUTURE_REASONS.map((r,i)=>{const cnt=d27.reasons[r]||0;const bc=i===0?" border-l":"";if(!cnt)return`<td class="number-cell${bc}">—</td>`;const ed=div.name.replace(/'/g,"\\'"),er=r.replace(/'/g,"\\'");return`<td class="number-cell clickable${bc}" onclick="openDrillDown({division:'${ed}',bucket:'2027 LE',reason:'${er}'},'${ed} · 2027 LE · ${er}','${ed}')"><span>${cnt}</span></td>`;});
+    const cells28=FUTURE_REASONS.map((r,i)=>{const cnt=d28.reasons[r]||0;const bc=i===0?" border-l":"";if(!cnt)return`<td class="number-cell${bc}">—</td>`;const ed=div.name.replace(/'/g,"\\'"),er=r.replace(/'/g,"\\'");return`<td class="number-cell clickable${bc}" onclick="openDrillDown({division:'${ed}',bucket:'2028 LE',reason:'${er}'},'${ed} · 2028 LE · ${er}','${ed}')"><span>${cnt}</span></td>`;});
     const mitCC=mit>0?`<td class="number-cell clickable border-l" onclick="openDrillDown({division:'${div.name.replace(/'/g,"\\'")}',bucket:'Mitigate'},'${div.name} · Mitigate','${div.name}')"><span>${mit}</span></td>`:`<td class="number-cell border-l">—</td>`;
     const nilCC=nil>0?`<td class="number-cell clickable" onclick="openDrillDown({division:'${div.name.replace(/'/g,"\\'")}',bucket:'Not in LE'},'${div.name} · Not in LE','${div.name}')"><span>${nil}</span></td>`:`<td class="number-cell">—</td>`;
-    return`<tr>
-      <td class="division-cell">${div.name}</td>
-      ${cells27.join("")}
-      <td class="number-cell" style="font-weight:700;color:#1d4ed8;">${d27.total||"—"}</td>
-      ${cells28.join("")}
-      <td class="number-cell" style="font-weight:700;color:#166534;">${d28.total||"—"}</td>
-      ${mitCC}${nilCC}
-    </tr>`;
+    return`<tr><td class="division-cell">${div.name}</td>${cells27.join("")}<td class="number-cell" style="font-weight:700;color:#1d4ed8;">${d27.total||"—"}</td>${cells28.join("")}<td class="number-cell" style="font-weight:700;color:#166534;">${d28.total||"—"}</td>${mitCC}${nilCC}</tr>`;
   }).join("");
-
-  html+=`<tr class="total-row">
-    <td class="division-cell">US&amp;C Total</td>
-    ${FUTURE_REASONS.map((r,i)=>`<td class="number-cell${i===0?" border-l":""}">${totals27.reasons[r]||0}</td>`).join("")}
-    <td class="number-cell" style="font-weight:700;color:#1d4ed8;">${totals27.total}</td>
-    ${FUTURE_REASONS.map((r,i)=>`<td class="number-cell${i===0?" border-l":""}">${totals28.reasons[r]||0}</td>`).join("")}
-    <td class="number-cell" style="font-weight:700;color:#166534;">${totals28.total}</td>
-    <td class="number-cell border-l">${totalsMit.total}</td>
-    <td class="number-cell">${totalsNil.total}</td>
-  </tr>`;
+  html+=`<tr class="total-row"><td class="division-cell">US&amp;C Total</td>${FUTURE_REASONS.map((r,i)=>`<td class="number-cell${i===0?" border-l":""}">${totals27.reasons[r]||0}</td>`).join("")}<td class="number-cell" style="font-weight:700;color:#1d4ed8;">${totals27.total}</td>${FUTURE_REASONS.map((r,i)=>`<td class="number-cell${i===0?" border-l":""}">${totals28.reasons[r]||0}</td>`).join("")}<td class="number-cell" style="font-weight:700;color:#166534;">${totals28.total}</td><td class="number-cell border-l">${totalsMit.total}</td><td class="number-cell">${totalsNil.total}</td></tr>`;
   tbody.innerHTML=html;
 }
-
-// ── Clickable cell helper ────────────────────────────────────────────────────
 function clickableCell(count,divName,bucket,filterKey,label){
   if(count===0)return`<td class="number-cell">0</td>`;
   const ed=divName.replace(/'/g,"\\'"),eb=bucket?bucket.replace(/'/g,"\\'"):"",el=label.replace(/'/g,"\\'");
   return`<td class="number-cell clickable" onclick="openDrillDown({division:'${ed}',bucket:'${eb}',filterKey:'${filterKey}'},'${el}','${ed}')"><span>${count}</span></td>`;
 }
-
-// ── Modal ────────────────────────────────────────────────────────────────────
-function getSiteRow(s){
-  return[s.restNum||"",s.fz||"",s.address||"",s.city||"",s.state||"",
-         s.dateOfClosure||"",s.closureBucket||"",s.closureRisk||"",
-         s.closureReason||"",s.plkControl||"",
-         s.ars2025!=null?String(s.ars2025):"",
-         s.ttmEbitda!=null?String(s.ttmEbitda):"",s.comments||""];
-}
+function getSiteRow(s){return[s.restNum||"",s.fz||"",s.address||"",s.city||"",s.state||"",s.dateOfClosure||"",s.closureBucket||"",s.closureRisk||"",s.closureReason||"",s.plkControl||"",s.ars2025!=null?String(s.ars2025):"",s.ttmEbitda!=null?String(s.ttmEbitda):"",s.comments||""];}
 function renderModalTable(){
-  const bucketF=document.getElementById("modal-filter-bucket").value;
-  const riskF  =document.getElementById("modal-filter-risk").value;
-  const ctrlF  =document.getElementById("modal-filter-ctrl").value;
-  const reasonF=document.getElementById("modal-filter-reason").value;
-  let sites=MODAL_SITES.filter(s=>
-    (!bucketF||s.closureBucket===bucketF)&&(!riskF||s.closureRisk===riskF)&&
-    (!ctrlF||s.plkControl===ctrlF)&&(!reasonF||s.closureReason===reasonF));
+  const bucketF=document.getElementById("modal-filter-bucket").value, riskF=document.getElementById("modal-filter-risk").value;
+  const ctrlF=document.getElementById("modal-filter-ctrl").value, reasonF=document.getElementById("modal-filter-reason").value;
+  let sites=MODAL_SITES.filter(s=>(!bucketF||s.closureBucket===bucketF)&&(!riskF||s.closureRisk===riskF)&&(!ctrlF||s.plkControl===ctrlF)&&(!reasonF||s.closureReason===reasonF));
   if(modalSortCol>=0) sites=[...sites].sort((a,b)=>getSiteRow(a)[modalSortCol].localeCompare(getSiteRow(b)[modalSortCol],undefined,{sensitivity:"base"})*modalSortDir);
   document.getElementById("modal-count").textContent=`${sites.length} site${sites.length!==1?"s":""}`;
   const tbody=document.getElementById("modal-tbody");
@@ -1026,17 +781,7 @@ function renderModalTable(){
     const arsStr=s.ars2025!=null?fmt$(s.ars2025):"—";
     const ebitdaStr=s.ttmEbitda!=null?fmt$(s.ttmEbitda):"—";
     const eColor=s.ttmEbitda!=null&&s.ttmEbitda<0?"color:#C1272D;font-weight:600":"";
-    return`<tr>
-      <td><strong>${s.restNum||"—"}</strong></td><td>${s.fz||"—"}</td>
-      <td style="white-space:nowrap">${s.address||"—"}</td><td>${s.city||"—"}</td><td>${s.state||"—"}</td>
-      <td style="white-space:nowrap">${s.dateOfClosure||"—"}</td><td>${s.closureBucket||"—"}</td>
-      <td><span class="risk-badge ${rc}">${s.closureRisk||"—"}</span></td>
-      <td style="white-space:nowrap;font-size:11px;">${s.closureReason||"—"}</td>
-      <td>${ctrlBadge}</td>
-      <td style="text-align:right;font-variant-numeric:tabular-nums;">${arsStr}</td>
-      <td style="text-align:right;font-variant-numeric:tabular-nums;${eColor}">${ebitdaStr}</td>
-      <td style="max-width:220px;white-space:normal;font-size:11px;color:#6b7280;">${s.comments||"—"}</td>
-    </tr>`;
+    return`<tr><td><strong>${s.restNum||"—"}</strong></td><td>${s.fz||"—"}</td><td style="white-space:nowrap">${s.address||"—"}</td><td>${s.city||"—"}</td><td>${s.state||"—"}</td><td style="white-space:nowrap">${s.dateOfClosure||"—"}</td><td>${s.closureBucket||"—"}</td><td><span class="risk-badge ${rc}">${s.closureRisk||"—"}</span></td><td style="white-space:nowrap;font-size:11px;">${s.closureReason||"—"}</td><td>${ctrlBadge}</td><td style="text-align:right;font-variant-numeric:tabular-nums;">${arsStr}</td><td style="text-align:right;font-variant-numeric:tabular-nums;${eColor}">${ebitdaStr}</td><td style="max-width:220px;white-space:normal;font-size:11px;color:#6b7280;">${s.comments||"—"}</td></tr>`;
   }).join("");
 }
 function sortModal(col){
@@ -1057,11 +802,11 @@ function openDrillDown(filter,title,subtitle){
   if(filter.fz) sites=sites.filter(r=>r.fz===filter.fz);
   if(filter.bucket){
     const b=filter.bucket, fk=filter.filterKey||"";
-    if(b==="LE"||fk==="2026 LE")        sites=sites.filter(r=>isLE(r));
+    if(b==="LE"||fk==="2026 LE") sites=sites.filter(r=>isLE(r));
     else if(b==="LE (Opp)"||fk==="leOpp") sites=sites.filter(r=>isLEOpp(r));
-    else if(b==="Closed"||fk==="closed")   sites=sites.filter(r=>isClosed(r));
-    else if(b==="2027 LE"||fk==="2027")    sites=sites.filter(r=>is2027(r));
-    else if(b==="2028 LE"||fk==="2028")    sites=sites.filter(r=>is2028(r));
+    else if(b==="Closed"||fk==="closed") sites=sites.filter(r=>isClosed(r));
+    else if(b==="2027 LE"||fk==="2027") sites=sites.filter(r=>is2027(r));
+    else if(b==="2028 LE"||fk==="2028") sites=sites.filter(r=>is2028(r));
     else if(b==="Mitigate"||fk==="mitigate") sites=sites.filter(r=>isMitigate(r));
     else if(b==="Not in LE"||fk==="notInLE") sites=sites.filter(r=>isNotInLE(r));
   }
@@ -1074,8 +819,6 @@ function openDrillDown(filter,title,subtitle){
 }
 function closeModal(){document.getElementById("drill-modal").classList.remove("open");}
 document.getElementById("drill-modal").addEventListener("click",function(e){if(e.target===this)closeModal();});
-
-// ── Excel exports ────────────────────────────────────────────────────────────
 function exportModalToExcel(){
   const bF=document.getElementById("modal-filter-bucket").value,rF=document.getElementById("modal-filter-risk").value;
   const cF=document.getElementById("modal-filter-ctrl").value,rsF=document.getElementById("modal-filter-reason").value;
@@ -1110,19 +853,14 @@ function exportFZRollup(){
   const bucketFns={"LE":isLE,"LE (Opp)":isLEOpp,"2027 LE":is2027,"2028 LE":is2028,"Mitigate":isMitigate};
   const relevantRows=ALL_DATA.filter(r=>isLE(r)||isLEOpp(r)||is2027(r)||is2028(r)||isMitigate(r));
   const fzMap={};
-  relevantRows.forEach(r=>{
-    const fz=r.fz||"Unknown"; if(!fzMap[fz]){fzMap[fz]={fz,total:0};BUCKETS.forEach(b=>fzMap[fz][b]=0);}
-    BUCKETS.forEach(b=>{if(bucketFns[b](r))fzMap[fz][b]++;});
-    fzMap[fz].total++;
-  });
+  relevantRows.forEach(r=>{const fz=r.fz||"Unknown";if(!fzMap[fz]){fzMap[fz]={fz,total:0};BUCKETS.forEach(b=>fzMap[fz][b]=0);}BUCKETS.forEach(b=>{if(bucketFns[b](r))fzMap[fz][b]++;});fzMap[fz].total++;});
   const fzList=Object.values(fzMap).filter(f=>f.total>0).sort((a,b)=>b.total-a.total);
   const wb=XLSX.utils.book_new();
   const rows=[["Franchisee (FZ)",...BUCKETS,"Total"]];
   fzList.forEach(fz=>rows.push([fz.fz,...BUCKETS.map(b=>fz[b]||0),fz.total]));
   const ws=XLSX.utils.aoa_to_sheet(rows);
   ws["!cols"]=[28,...BUCKETS.map(()=>12),10].map(w=>({wch:w}));
-  XLSX.utils.book_append_sheet(wb,ws,"FZ Rollup");
-  XLSX.writeFile(wb,"FZ_Rollup_Closures.xlsx");
+  XLSX.utils.book_append_sheet(wb,ws,"FZ Rollup");XLSX.writeFile(wb,"FZ_Rollup_Closures.xlsx");
 }
 function exportFuturePipeline(){
   const wb=XLSX.utils.book_new();
@@ -1132,10 +870,9 @@ function exportFuturePipeline(){
     const r28=ALL_DATA.filter(r=>r.division===div.name&&is2028(r));
     const cnt27={},cnt28={};
     FUTURE_REASONS.forEach(r=>{cnt27[r]=0;cnt28[r]=0;});
-    r27.forEach(r=>{ const rn=normalizeReason(r); if(cnt27[rn]!==undefined)cnt27[rn]++; });
-    r28.forEach(r=>{ const rn=normalizeReason(r); if(cnt28[rn]!==undefined)cnt28[rn]++; });
-    const t27=FUTURE_REASONS.reduce((a,r)=>a+cnt27[r],0);
-    const t28=FUTURE_REASONS.reduce((a,r)=>a+cnt28[r],0);
+    r27.forEach(r=>{const rn=normalizeReason(r);if(cnt27[rn]!==undefined)cnt27[rn]++;});
+    r28.forEach(r=>{const rn=normalizeReason(r);if(cnt28[rn]!==undefined)cnt28[rn]++;});
+    const t27=FUTURE_REASONS.reduce((a,r)=>a+cnt27[r],0), t28=FUTURE_REASONS.reduce((a,r)=>a+cnt28[r],0);
     const mit=ALL_DATA.filter(r=>r.division===div.name&&isMitigate(r)).length;
     const nil=ALL_DATA.filter(r=>r.division===div.name&&isNotInLE(r)).length;
     rows.push([div.name,...FUTURE_REASONS.map(r=>cnt27[r]),t27,...FUTURE_REASONS.map(r=>cnt28[r]),t28,mit,nil]);
@@ -1143,31 +880,23 @@ function exportFuturePipeline(){
   const ws=XLSX.utils.aoa_to_sheet(rows);
   XLSX.utils.book_append_sheet(wb,ws,"2027-2028 Pipeline");XLSX.writeFile(wb,"2027_2028_Closure_Pipeline.xlsx");
 }
-
-// ── Reason chart export ─────────────────────────────────────────────────────
-const REASON_CHART_DATA = {};
-
-function exportReasonChart(bucket) {
-  const d = REASON_CHART_DATA[bucket];
-  if (!d) return;
-  const wb = XLSX.utils.book_new();
-  const rows = [["Closure Reason", "PLK Controlled", "Non-Controlled", "Total"]];
-  d.reasons.forEach(r => {
-    rows.push([r, d.counts[r].ctrl, d.counts[r].nonCtrl, d.counts[r].ctrl + d.counts[r].nonCtrl]);
-  });
-  rows.push(["TOTAL", d.grandTotal - d.nonCtrlTotal, d.nonCtrlTotal, d.grandTotal]);
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  ws["!cols"] = [{wch:32},{wch:16},{wch:16},{wch:10}];
-  const safe = bucket.replace(/[^a-zA-Z0-9]/g,"_");
-  XLSX.utils.book_append_sheet(wb, ws, bucket.slice(0,31));
-  XLSX.writeFile(wb, `Closure_Reason_${safe}.xlsx`);
+const REASON_CHART_DATA={};
+function exportReasonChart(bucket){
+  const d=REASON_CHART_DATA[bucket]; if(!d) return;
+  const wb=XLSX.utils.book_new();
+  const rows=[["Closure Reason","PLK Controlled","Non-Controlled","Total"]];
+  d.reasons.forEach(r=>{rows.push([r,d.counts[r].ctrl,d.counts[r].nonCtrl,d.counts[r].ctrl+d.counts[r].nonCtrl]);});
+  rows.push(["TOTAL",d.grandTotal-d.nonCtrlTotal,d.nonCtrlTotal,d.grandTotal]);
+  const ws=XLSX.utils.aoa_to_sheet(rows);
+  ws["!cols"]=[{wch:32},{wch:16},{wch:16},{wch:10}];
+  const safe=bucket.replace(/[^a-zA-Z0-9]/g,"_");
+  XLSX.utils.book_append_sheet(wb,ws,bucket.slice(0,31));
+  XLSX.writeFile(wb,`Closure_Reason_${safe}.xlsx`);
 }
-
-// ── Fetch ────────────────────────────────────────────────────────────────────
 async function fetchData(){
   try{
-    const res=await fetch(API); if(!res.ok)throw new Error(`Server responded with ${res.status}`);
-    const data=await res.json(); if(!data.rows||!data.budgets)throw new Error("Invalid data structure");
+    const res=await fetch(API); if(!res.ok) throw new Error(`Server responded with ${res.status}`);
+    const data=await res.json(); if(!data.rows||!data.budgets) throw new Error("Invalid data structure");
     ALL_DATA=data.rows; BUDGETS=data.budgets;
     document.getElementById("loading-overlay").style.display="none";
     document.getElementById("app").style.display="block";
