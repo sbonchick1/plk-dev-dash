@@ -847,10 +847,10 @@ function scaleIframe() {
   const iframe = document.getElementById('s4-iframe');
   const wrap   = document.getElementById('s4-frame-wrap');
   if (!iframe || !wrap) return;
-  const scaleX = wrap.offsetWidth  / 1440;
-  const scaleY = wrap.offsetHeight / 900;
-  const scale  = Math.min(scaleX, scaleY);
+  const scale = wrap.offsetHeight / 900;
   iframe.style.transform = `scale(${scale})`;
+  // width at this scale that fills the wrap
+  iframe.style.width = (wrap.offsetWidth / scale) + 'px';
 }
 
 window.addEventListener('resize', scaleIframe);
