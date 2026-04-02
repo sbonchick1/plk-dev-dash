@@ -1,13 +1,13 @@
 <!DOCTYPE html>
 <!--
-  PLK Development Dashboard — Interactive Presentation (PATCHED)
-  Fixes applied:
-  01 - Drill-down comments no longer truncate; full text wraps
-  02 - Risk Mix modal column headers corrected to match data
-  03 - Waterfall rebuilt to match development-execution.html screenshot
-  04 - Export panel now shows 6 real divisional NRO opening charts
-  05 - Slide 4 tabs 3-6 (Dev Exec, Closures, REM, YTD) now clickable — fixed z-index stacking
-  06 - Slide 4 tab overlap FULLY FIXED: iframe-wrap can no longer bleed over tab row
+  PLK Development Dashboard — Interactive Presentation (PATCHED v2)
+  Changes from original:
+  - Removed "Built by Claude AI" badge from all slides
+  - Feature tour nav labels now all use consistent font/size/style
+  - Feature 01 table rebuilt to match development-execution.html screenshot
+    (rank pill, Division, DDL, all 6 status cols, Total 2026, Budget, Gap,
+     Current Achievement, Projected Achievement — correct colors + footnotes)
+  - Feature 02 abbreviations fixed: "Bud" → "Budget", "BU" → "Bottoms Up"
 -->
 <html lang="en">
 <head>
@@ -62,18 +62,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   box-shadow: 0 0 8px rgba(232,82,26,.4);
 }
 
-#claude-badge {
-  position: fixed; top: 16px; right: 20px; z-index: 9999;
-  background: white; border: 1.5px solid var(--plk-orange);
-  border-radius: 50px; padding: 6px 14px 6px 10px;
-  display: flex; align-items: center; gap: 7px;
-  font-family: var(--font-mono); font-size: 11px; color: var(--plk-slate);
-  box-shadow: 0 2px 12px rgba(232,82,26,.15);
-  animation: badgePulse 3s ease-in-out infinite;
-}
-#claude-badge .ai-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--plk-orange); animation: blink 2s ease-in-out infinite; }
-@keyframes blink { 0%,100%{opacity:1;} 50%{opacity:.3;} }
-@keyframes badgePulse { 0%,100%{box-shadow:0 2px 12px rgba(232,82,26,.15);} 50%{box-shadow:0 2px 20px rgba(232,82,26,.35);} }
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes fadeUp   { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
 @keyframes fadeLeft { from{opacity:0;transform:translateX(30px)} to{opacity:1;transform:translateX(0)} }
@@ -188,7 +176,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 }
 #s4-open-link:hover { background: var(--plk-red); }
 
-/* Preview area — shows screenshot + launch prompt */
 #s4-frame-wrap {
   flex: 1;
   position: relative;
@@ -215,27 +202,123 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   background: linear-gradient(135deg, #fafafa, #f0f0f0);
 }
 
-/* ── OTHER SLIDES ── */
 .s4-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
-.s4-steps { flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 16px 9% 80px; gap: 14px; }
-.step-row { display: flex; align-items: flex-start; gap: 18px; opacity: 0; animation: fadeLeft .5s forwards; }
-.step-num { width: 44px; height: 44px; flex-shrink: 0; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 24px; color: white; }
-.step-body { flex: 1; background: white; border-radius: 12px; padding: 16px 20px; box-shadow: 0 2px 10px rgba(26,8,0,.05); }
-.step-title { font-family: var(--font-body); font-size: 15px; font-weight: 700; color: var(--plk-dark); margin-bottom: 4px; }
-.step-desc { font-family: var(--font-body); font-size: 13px; color: var(--plk-muted); line-height: 1.5; }
-.step-tag { font-family: var(--font-mono); font-size: 10px; color: var(--plk-orange); letter-spacing: .1em; }
 
 #s5 { background: var(--plk-smoke); }
-.s5-header { padding: 36px 7% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
-.s5-grid { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 1fr); gap: 12px; padding: 14px 7% 72px; }
-.ex-card { background: white; border-radius: 12px; padding: 16px 18px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 2px 10px rgba(26,8,0,.05); opacity: 0; animation: fadeUp .4s forwards; }
-.ex-cat { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 50px; letter-spacing: .06em; align-self: flex-start; }
-.ex-prompt { font-family: var(--font-body); font-size: 12.5px; color: var(--plk-dark); font-style: italic; line-height: 1.45; flex: 1; }
-.ex-prompt::before { content: '\201C'; }
-.ex-prompt::after  { content: '\201D'; }
-.ex-divider { height: 1px; background: var(--plk-smoke); }
-.ex-result { font-family: var(--font-body); font-size: 11.5px; color: var(--plk-slate); line-height: 1.55; }
-.ex-result code { font-family: var(--font-mono); font-size: 10.5px; background: var(--plk-smoke); padding: 1px 4px; border-radius: 3px; color: var(--plk-orange); }
+.tour-shell { display: flex; height: 100%; overflow: hidden; }
+.tour-nav { width: 210px; flex-shrink: 0; background: var(--plk-dark); display: flex; flex-direction: column; padding: 24px 0 20px; gap: 2px; }
+.tour-nav-label { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.3); letter-spacing: .15em; padding: 0 18px 10px; }
+.tour-step-btn { display: flex; align-items: center; gap: 10px; padding: 11px 18px; cursor: pointer; transition: background .18s; border-left: 3px solid transparent; }
+.tour-step-btn:hover { background: rgba(255,255,255,.06); }
+.tour-step-btn.active { background: rgba(232,82,26,.15); border-left-color: var(--plk-orange); }
+.tnav-num { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.3); min-width: 22px; }
+.tour-step-btn.active .tnav-num { color: var(--plk-orange); }
+/* ── CONSISTENT nav text: all use font-body, same size, same weight ── */
+.tnav-title { font-family: var(--font-body); font-size: 13px; font-weight: 600; color: rgba(255,255,255,.7); line-height: 1.2; }
+.tour-step-btn.active .tnav-title { color: white; }
+.tnav-sub { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.3); }
+.tnav-arrow { margin-left: auto; color: rgba(255,255,255,.2); font-size: 16px; }
+.tour-step-btn.active .tnav-arrow { color: var(--plk-orange); }
+.tour-open-link { margin-top: auto; margin-left: 18px; margin-right: 18px; background: var(--plk-orange); color: white; border-radius: 8px; padding: 10px 14px; text-align: center; text-decoration: none; font-family: var(--font-body); font-size: 12px; font-weight: 700; transition: background .2s; }
+.tour-open-link:hover { background: var(--plk-red); }
+.tour-stage { flex: 1; overflow: hidden; position: relative; background: var(--plk-smoke); }
+.tour-panel { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 24px 32px 70px; gap: 16px; overflow: hidden; opacity: 0; transform: translateX(24px); pointer-events: none; transition: opacity .35s ease, transform .35s ease; }
+.tour-panel.active { opacity: 1; transform: translateX(0); pointer-events: all; }
+.tph { display: flex; flex-direction: column; gap: 4px; }
+.tph-tag { display: inline-block; font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 50px; letter-spacing: .08em; margin-bottom: 4px; }
+.tph-title { font-family: var(--font-display); font-size: clamp(22px, 2.8vw, 34px); color: var(--plk-dark); line-height: 1; }
+.tph-desc { font-family: var(--font-body); font-size: 13px; color: var(--plk-muted); line-height: 1.55; max-width: 680px; }
+.mock-browser { flex: 1; display: flex; flex-direction: column; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 28px rgba(26,8,0,.1); min-height: 0; }
+.mock-topbar { background: #f0f0f0; padding: 8px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; border-bottom: 1px solid #e0e0e0; }
+.mock-dots { display: flex; gap: 5px; }
+.mock-dots span { width: 10px; height: 10px; border-radius: 50%; }
+.mock-url-pill { flex: 1; background: white; border-radius: 5px; padding: 3px 10px; font-family: var(--font-mono); font-size: 11px; color: #666; border: 1px solid #ddd; }
+
+/* ── FEATURE 01: Pipeline table matching dev-execution.html ── */
+.pdt-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:10px;white-space:nowrap;}
+.pdt-table thead th{background:var(--plk-smoke);padding:5px 6px;text-align:center;font-size:8px;color:var(--plk-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #ddd;font-weight:600;line-height:1.3;}
+.pdt-table thead th.th-left{text-align:left;}
+.pdt-table thead th.th-curr{background:#EFF6FF;color:#1D4ED8;}
+.pdt-table thead th.th-proj{background:#F0FDF4;color:#166534;}
+.pdt-table tbody tr{border-bottom:1px solid var(--plk-smoke);transition:background .12s;}
+.pdt-table tbody tr:hover{background:rgba(232,82,26,.04);}
+.pdt-total{background:rgba(232,82,26,.06)!important;border-top:2px solid var(--plk-orange)!important;border-bottom:2px solid var(--plk-orange)!important;font-weight:700;}
+.pdt-table td{padding:4px 6px;text-align:center;color:var(--plk-dark);}
+.pdt-table td.td-left{text-align:left;}
+.pdt-bold{font-weight:700;}
+.pdt-ddl{font-size:9px;color:var(--plk-muted);}
+.pdt-gap-pos{color:#059669;font-weight:700;}
+.pdt-gap-neg{color:#DC2626;font-weight:700;}
+.pdt-badge{font-size:8.5px;padding:2px 6px;border-radius:4px;font-weight:700;white-space:nowrap;display:inline-block;}
+.pdt-badge-curr{background:#EFF6FF;color:#1D4ED8;}
+.pdt-badge-proj{background:#F0FDF4;color:#166534;}
+.pdt-badge-low{background:#D1FAE5;color:#065F46;}
+.pdt-badge-med{background:#FEF3C7;color:#92400E;}
+.pdt-badge-hi {background:#FEE2E2;color:#991B1B;}
+.pdt-pill{display:inline-flex;align-items:center;justify-content:center;width:15px;height:15px;border-radius:50%;font-size:8px;font-weight:800;color:white;margin-right:2px;}
+.pdt-click{cursor:pointer;color:var(--plk-orange);text-decoration:underline;text-decoration-style:dotted;transition:all .15s;}
+.pdt-click:hover{color:var(--plk-red);background:rgba(232,82,26,.1);border-radius:3px;}
+.pdt-footnote{font-family:var(--font-body);font-size:10px;color:var(--plk-muted);margin-top:6px;font-style:italic;line-height:1.4;border-top:1px solid #e5e7eb;padding-top:5px;}
+.pdt-legend{display:flex;align-items:center;gap:10px;margin-top:5px;flex-wrap:wrap;}
+.pdt-legend-item{display:flex;align-items:center;gap:4px;font-family:var(--font-mono);font-size:9px;color:var(--plk-muted);}
+.pdt-legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+
+/* Risk Mix cell */
+.risk-mix-cell{min-width:110px;}
+.risk-bar{display:flex;height:11px;border-radius:5px;overflow:hidden;gap:1px;margin-bottom:5px;}
+.risk-seg{height:100%;cursor:pointer;transition:opacity .15s;min-width:3px;}
+.risk-seg:hover{opacity:.8;}
+.risk-pills{display:flex;flex-wrap:wrap;gap:3px;}
+.risk-pill-item{display:inline-flex;align-items:center;gap:3px;padding:1px 5px;border-radius:99px;font-size:9px;font-weight:600;cursor:pointer;border:1px solid transparent;}
+.risk-pill-item:hover{filter:brightness(.9);}
+.risk-pill-item .rp-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;}
+
+/* ── Feature 02 risk mix table ── */
+.rm-table{display:flex;flex-direction:column;gap:0;flex:1;}
+.rm-thead{display:flex;gap:8px;padding:6px 10px;background:var(--plk-smoke);border-radius:6px;font-family:var(--font-mono);font-size:10px;color:var(--plk-muted);margin-bottom:4px;}
+.rm-thead span:nth-child(1){flex:1.2;}
+.rm-thead span:nth-child(2),.rm-thead span:nth-child(3){flex:.55;}
+.rm-thead span:nth-child(4){flex:2.5;}
+.rm-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--plk-smoke);font-family:var(--font-body);font-size:12px;color:var(--plk-dark);}
+.rm-row span:nth-child(1){flex:1.2;font-weight:600;}
+.rm-row span:nth-child(2),.rm-row span:nth-child(3){flex:.55;color:var(--plk-muted);font-family:var(--font-mono);font-size:11px;}
+.rmix{flex:2.5;display:flex;flex-direction:column;gap:4px;}
+.rmix-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;cursor:pointer;}
+.rms{transition:all .15s;}
+.rms:hover{opacity:0.82;filter:brightness(1.08);}
+.rmix-pills{display:flex;gap:5px;flex-wrap:wrap;}
+.rmp{font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:50px;cursor:pointer;border:1px solid;transition:all .15s;}
+.rmp:hover{filter:brightness(.95);transform:scale(1.04);}
+.rmp-low{background:#DCFCE7;color:#16A34A;border-color:#16A34A;}
+.rmp-med{background:#FEF3C7;color:#D97706;border-color:#F59E0B;}
+.rmp-high{background:#FEE2E2;color:#DC2626;border-color:#EF4444;}
+
+/* div waterfall cards */
+.div-wf-card { background:#fafafa;border-radius:8px;padding:8px 10px;border:1px solid #ececec;display:flex;flex-direction:column;gap:4px;min-height:140px; }
+.div-wf-title { font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-slate);display:flex;align-items:center;justify-content:space-between; }
+.div-wf-exp-btn { background:var(--plk-orange);color:white;border:none;border-radius:4px;padding:2px 7px;font-family:var(--font-body);font-size:9px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap; }
+.div-wf-exp-btn:hover { background:var(--plk-red); }
+.div-wf-exp-btn:disabled { background:#ccc;cursor:not-allowed; }
+
+/* Live area */
+.live-area { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 0; }
+.live-links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; }
+.live-link { background: white; border: 1.5px solid #E8DED8; border-radius: 10px; padding: 14px 16px; text-decoration: none; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--plk-dark); transition: all .2s; display: flex; align-items: center; gap: 8px; }
+.live-link:hover { border-color: var(--plk-orange); background: rgba(232,82,26,.04); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(232,82,26,.1); }
+.live-link-main { grid-column: 1 / -1; background: var(--plk-dark); color: white; border-color: var(--plk-dark); font-size: 15px; justify-content: center; }
+.live-link-main:hover { background: var(--plk-orange); border-color: var(--plk-orange); }
+.live-stats-col { display: flex; flex-direction: column; gap: 10px; }
+.live-stat-card { background: white; border-radius: 10px; padding: 14px 18px; border: 1px solid #E8DED8; }
+.lsc-val { font-family: var(--font-display); font-size: 28px; color: var(--plk-dark); }
+.lsc-lbl { font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted); }
+.live-note { background: rgba(232,82,26,.06); border-left: 3px solid var(--plk-orange); border-radius: 6px; padding: 10px 12px; font-family: var(--font-body); font-size: 12px; color: var(--plk-slate); line-height: 1.5; }
+
+.tour-cta-row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 6px; flex-shrink: 0; }
+.tour-hint-txt { font-family: var(--font-mono); font-size: 12px; color: var(--plk-muted); }
+.tour-next-btn { background: var(--plk-orange); color: white; border: none; border-radius: 8px; padding: 9px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; }
+.tour-next-btn:hover { background: var(--plk-red); transform: scale(1.03); }
+
+#kbd-hint { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted); background: white; border: 1px solid #E8DED8; border-radius: 50px; padding: 5px 14px; z-index: 9999; opacity: 1; transition: opacity 1s; }
 
 #s6 { background: var(--plk-white); }
 .s6-header { padding: 48px 9% 0; opacity: 0; animation: fadeUp .5s .1s forwards; }
@@ -264,106 +347,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .s7-btn-primary:hover { background: #d14515; transform: scale(1.03); }
 .s7-btn-outline { background: transparent; color: white; border: 2px solid rgba(255,255,255,.3); }
 .s7-btn-outline:hover { background: rgba(255,255,255,.08); }
-.s7-claude-note { margin-top: 40px; font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.3); opacity: 0; animation: fadeUp .5s 1s forwards; }
-
-/* ── TOUR ── */
-.tour-shell { display: flex; height: 100%; overflow: hidden; }
-.tour-nav { width: 210px; flex-shrink: 0; background: var(--plk-dark); display: flex; flex-direction: column; padding: 24px 0 20px; gap: 2px; }
-.tour-nav-label { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.3); letter-spacing: .15em; padding: 0 18px 10px; }
-.tour-step-btn { display: flex; align-items: center; gap: 10px; padding: 11px 18px; cursor: pointer; transition: background .18s; border-left: 3px solid transparent; }
-.tour-step-btn:hover { background: rgba(255,255,255,.06); }
-.tour-step-btn.active { background: rgba(232,82,26,.15); border-left-color: var(--plk-orange); }
-.tnav-num { font-family: var(--font-mono); font-size: 11px; color: rgba(255,255,255,.3); min-width: 22px; }
-.tour-step-btn.active .tnav-num { color: var(--plk-orange); }
-.tnav-title { font-family: var(--font-body); font-size: 13px; font-weight: 600; color: rgba(255,255,255,.7); line-height: 1.2; }
-.tour-step-btn.active .tnav-title { color: white; }
-.tnav-sub { font-family: var(--font-mono); font-size: 10px; color: rgba(255,255,255,.3); }
-.tnav-arrow { margin-left: auto; color: rgba(255,255,255,.2); font-size: 16px; }
-.tour-step-btn.active .tnav-arrow { color: var(--plk-orange); }
-.tour-open-link { margin-top: auto; margin-left: 18px; margin-right: 18px; background: var(--plk-orange); color: white; border-radius: 8px; padding: 10px 14px; text-align: center; text-decoration: none; font-family: var(--font-body); font-size: 12px; font-weight: 700; transition: background .2s; }
-.tour-open-link:hover { background: var(--plk-red); }
-.tour-stage { flex: 1; overflow: hidden; position: relative; background: var(--plk-smoke); }
-.tour-panel { position: absolute; inset: 0; display: flex; flex-direction: column; padding: 24px 32px 70px; gap: 16px; overflow: hidden; opacity: 0; transform: translateX(24px); pointer-events: none; transition: opacity .35s ease, transform .35s ease; }
-.tour-panel.active { opacity: 1; transform: translateX(0); pointer-events: all; }
-.tph { display: flex; flex-direction: column; gap: 4px; }
-.tph-tag { display: inline-block; font-family: var(--font-mono); font-size: 10px; font-weight: 600; padding: 3px 10px; border-radius: 50px; letter-spacing: .08em; margin-bottom: 4px; }
-.tph-title { font-family: var(--font-display); font-size: clamp(22px, 2.8vw, 34px); color: var(--plk-dark); line-height: 1; }
-.tph-desc { font-family: var(--font-body); font-size: 13px; color: var(--plk-muted); line-height: 1.55; max-width: 680px; }
-.mock-browser { flex: 1; display: flex; flex-direction: column; background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 6px 28px rgba(26,8,0,.1); min-height: 0; }
-.mock-topbar { background: #f0f0f0; padding: 8px 14px; display: flex; align-items: center; gap: 10px; flex-shrink: 0; border-bottom: 1px solid #e0e0e0; }
-.mock-dots { display: flex; gap: 5px; }
-.mock-dots span { width: 10px; height: 10px; border-radius: 50%; }
-.mock-url-pill { flex: 1; background: white; border-radius: 5px; padding: 3px 10px; font-family: var(--font-mono); font-size: 11px; color: #666; border: 1px solid #ddd; }
-
-/* Pipeline table */
-.pdt-table{width:100%;border-collapse:collapse;font-family:var(--font-mono);font-size:10px;white-space:nowrap;}
-.pdt-table thead th{background:var(--plk-smoke);padding:4px 7px;text-align:center;font-size:8.5px;color:var(--plk-muted);text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #ddd;font-weight:600;}
-.pdt-table thead th.th-left{text-align:left;}
-.pdt-table tbody tr{border-bottom:1px solid var(--plk-smoke);transition:background .12s;}
-.pdt-table tbody tr:hover{background:rgba(232,82,26,.04);}
-.pdt-total{background:rgba(232,82,26,.06)!important;border-top:2px solid var(--plk-orange)!important;border-bottom:2px solid var(--plk-orange)!important;}
-.pdt-table td{padding:4px 7px;text-align:center;color:var(--plk-dark);}
-.pdt-table td.td-left{text-align:left;}
-.pdt-bold{font-weight:700;}
-.pdt-ddl{font-size:9px;color:var(--plk-muted);}
-.pdt-gap{font-weight:700;}
-.pdt-badge{font-size:8.5px;padding:1px 5px;border-radius:4px;font-weight:700;white-space:nowrap;}
-.pdt-pill{display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;font-size:8px;font-weight:800;color:white;}
-.pdt-click{cursor:pointer;color:var(--plk-orange);text-decoration:underline;text-decoration-style:dotted;transition:all .15s;}
-.pdt-click:hover{color:var(--plk-red);background:rgba(232,82,26,.1);border-radius:3px;}
-
-/* Risk Mix */
-.rm-table{display:flex;flex-direction:column;gap:0;flex:1;}
-.rm-thead{display:flex;gap:8px;padding:6px 10px;background:var(--plk-smoke);border-radius:6px;font-family:var(--font-mono);font-size:10px;color:var(--plk-muted);margin-bottom:4px;}
-.rm-thead span:nth-child(1){flex:1.2;}
-.rm-thead span:nth-child(2),.rm-thead span:nth-child(3){flex:.4;}
-.rm-thead span:nth-child(4){flex:2.5;}
-.rm-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--plk-smoke);font-family:var(--font-body);font-size:12px;color:var(--plk-dark);}
-.rm-row span:nth-child(1){flex:1.2;font-weight:600;}
-.rm-row span:nth-child(2),.rm-row span:nth-child(3){flex:.4;color:var(--plk-muted);font-family:var(--font-mono);font-size:11px;}
-.rmix{flex:2.5;display:flex;flex-direction:column;gap:4px;}
-.rmix-bar{display:flex;height:10px;border-radius:5px;overflow:hidden;cursor:pointer;}
-.rms{transition:all .15s;}
-.rms:hover{opacity:0.82;filter:brightness(1.08);}
-.rmix-pills{display:flex;gap:5px;flex-wrap:wrap;}
-.rmp{font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:50px;cursor:pointer;border:1px solid;transition:all .15s;}
-.rmp:hover{filter:brightness(.95);transform:scale(1.04);}
-.rmp-low{background:#DCFCE7;color:#16A34A;border-color:#16A34A;}
-.rmp-med{background:#FEF3C7;color:#D97706;border-color:#F59E0B;}
-.rmp-high{background:#FEE2E2;color:#DC2626;border-color:#EF4444;}
-
-/* div waterfall cards in panel 3 */
-.div-wf-card { background:#fafafa;border-radius:8px;padding:8px 10px;border:1px solid #ececec;display:flex;flex-direction:column;gap:4px;min-height:140px; }
-.div-wf-title { font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-slate);display:flex;align-items:center;justify-content:space-between; }
-.div-wf-exp-btn { background:var(--plk-orange);color:white;border:none;border-radius:4px;padding:2px 7px;font-family:var(--font-body);font-size:9px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap; }
-.div-wf-exp-btn:hover { background:var(--plk-red); }
-.div-wf-exp-btn:disabled { background:#ccc;cursor:not-allowed; }
-
-/* Live area */
-.live-area { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; min-height: 0; }
-.live-links-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-content: start; }
-.live-link { background: white; border: 1.5px solid #E8DED8; border-radius: 10px; padding: 14px 16px; text-decoration: none; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--plk-dark); transition: all .2s; display: flex; align-items: center; gap: 8px; }
-.live-link:hover { border-color: var(--plk-orange); background: rgba(232,82,26,.04); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(232,82,26,.1); }
-.live-link-main { grid-column: 1 / -1; background: var(--plk-dark); color: white; border-color: var(--plk-dark); font-size: 15px; justify-content: center; }
-.live-link-main:hover { background: var(--plk-orange); border-color: var(--plk-orange); }
-.live-stats-col { display: flex; flex-direction: column; gap: 10px; }
-.live-stat-card { background: white; border-radius: 10px; padding: 14px 18px; border: 1px solid #E8DED8; }
-.lsc-val { font-family: var(--font-display); font-size: 28px; color: var(--plk-dark); }
-.lsc-lbl { font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted); }
-.live-note { background: rgba(232,82,26,.06); border-left: 3px solid var(--plk-orange); border-radius: 6px; padding: 10px 12px; font-family: var(--font-body); font-size: 12px; color: var(--plk-slate); line-height: 1.5; }
-
-/* tour bottom cta */
-.tour-cta-row { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: 6px; flex-shrink: 0; }
-.tour-hint-txt { font-family: var(--font-mono); font-size: 12px; color: var(--plk-muted); }
-.tour-next-btn { background: var(--plk-orange); color: white; border: none; border-radius: 8px; padding: 9px 20px; font-family: var(--font-body); font-size: 13px; font-weight: 700; cursor: pointer; transition: all .2s; }
-.tour-next-btn:hover { background: var(--plk-red); transform: scale(1.03); }
-
-#kbd-hint { position: fixed; top: 16px; left: 50%; transform: translateX(-50%); font-family: var(--font-mono); font-size: 11px; color: var(--plk-muted); background: white; border: 1px solid #E8DED8; border-radius: 50px; padding: 5px 14px; z-index: 9999; opacity: 1; transition: opacity 1s; }
 </style>
 </head>
 <body>
 <div id="progress-bar"></div>
-<div id="claude-badge"><div class="ai-dot"></div>Built by Claude AI ✦</div>
 <div id="kbd-hint">← → arrow keys or click nav below</div>
 <div id="nav">
   <button class="nav-btn" id="prev-btn" disabled onclick="prevSlide()">←</button>
@@ -460,13 +447,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
         <div style="width:36px;height:36px;border:3px solid #e5e7eb;border-top-color:#E8521A;border-radius:50%;animation:spin 0.8s linear infinite"></div>
         <div style="font-family:'DM Mono',monospace;font-size:11px;color:#9B7D6E;margin-top:8px">Loading dashboard…</div>
       </div>
-      <iframe id="s4-iframe"
-        src=""
-        scrolling="no"
-        allowfullscreen
-        allow="fullscreen; autoplay; payment; scripts"
-        style="position:absolute;top:0;left:0;width:1440px;height:900px;border:none;transform-origin:top left;pointer-events:none;opacity:0;transition:opacity .4s;"
-      ></iframe>
+      <iframe id="s4-iframe" src="" scrolling="no" allowfullscreen allow="fullscreen; autoplay; payment; scripts"
+        style="position:absolute;top:0;left:0;width:1440px;height:900px;border:none;transform-origin:top left;pointer-events:none;opacity:0;transition:opacity .4s;">
+      </iframe>
       <div id="s4-blocked">
         <div style="text-align:center;padding:32px">
           <div style="font-size:48px;margin-bottom:16px">🍗</div>
@@ -506,45 +489,96 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   <div class="tour-shell">
     <div class="tour-nav">
       <div class="tour-nav-label">FEATURE TOUR</div>
-      <div class="tour-step-btn active" id="tnav-0" onclick="tourGo(0)"><div class="tnav-num">01</div><div class="tnav-text"><div class="tnav-title">Drill-Down</div><div class="tnav-sub">Click any bar</div></div><div class="tnav-arrow">›</div></div>
-      <div class="tour-step-btn" id="tnav-1" onclick="tourGo(1)"><div class="tnav-num">02</div><div class="tnav-text"><div class="tnav-title">Risk Mix</div><div class="tnav-sub">Color filters</div></div><div class="tnav-arrow">›</div></div>
-      <div class="tour-step-btn" id="tnav-2" onclick="tourGo(2)"><div class="tnav-num">03</div><div class="tnav-text"><div class="tnav-title">Waterfall</div><div class="tnav-sub">Budget vs. LE</div></div><div class="tnav-arrow">›</div></div>
-      <div class="tour-step-btn" id="tnav-3" onclick="tourGo(3)"><div class="tnav-num">04</div><div class="tnav-text"><div class="tnav-title">Export</div><div class="tnav-sub">1-click Excel</div></div><div class="tnav-arrow">›</div></div>
-      <div class="tour-step-btn" id="tnav-4" onclick="tourGo(4)"><div class="tnav-num">05</div><div class="tnav-text"><div class="tnav-title">Try It Live</div><div class="tnav-sub">Open on your device</div></div><div class="tnav-arrow">›</div></div>
+      <!-- All nav items now use identical structure & font treatment -->
+      <div class="tour-step-btn active" id="tnav-0" onclick="tourGo(0)">
+        <div class="tnav-num">01</div>
+        <div class="tnav-text"><div class="tnav-title">Pipeline Table</div><div class="tnav-sub">Click any number</div></div>
+        <div class="tnav-arrow">›</div>
+      </div>
+      <div class="tour-step-btn" id="tnav-1" onclick="tourGo(1)">
+        <div class="tnav-num">02</div>
+        <div class="tnav-text"><div class="tnav-title">Risk Mix</div><div class="tnav-sub">Color filters</div></div>
+        <div class="tnav-arrow">›</div>
+      </div>
+      <div class="tour-step-btn" id="tnav-2" onclick="tourGo(2)">
+        <div class="tnav-num">03</div>
+        <div class="tnav-text"><div class="tnav-title">Waterfall</div><div class="tnav-sub">Budget vs. LE</div></div>
+        <div class="tnav-arrow">›</div>
+      </div>
+      <div class="tour-step-btn" id="tnav-3" onclick="tourGo(3)">
+        <div class="tnav-num">04</div>
+        <div class="tnav-text"><div class="tnav-title">Export</div><div class="tnav-sub">1-click Excel</div></div>
+        <div class="tnav-arrow">›</div>
+      </div>
+      <div class="tour-step-btn" id="tnav-4" onclick="tourGo(4)">
+        <div class="tnav-num">05</div>
+        <div class="tnav-text"><div class="tnav-title">Try It Live</div><div class="tnav-sub">Open on your device</div></div>
+        <div class="tnav-arrow">›</div>
+      </div>
       <a href="https://plk-dev-dash.vercel.app" target="_blank" class="tour-open-link">🍗 Open Live Dashboard ↗</a>
     </div>
 
     <div class="tour-stage">
 
-      <!-- ══ PANEL 0: DRILL-DOWN ══ -->
+      <!-- ══ PANEL 0: PIPELINE TABLE (rebuilt to match dev-execution screenshot) ══ -->
       <div class="tour-panel active" id="tp-0" style="padding:16px 24px 60px;gap:10px">
         <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
-          <span class="tph-tag" style="background:rgba(232,82,26,.1);color:var(--plk-orange);white-space:nowrap">FEATURE 01 · DRILL-DOWN</span>
+          <span class="tph-tag" style="background:rgba(232,82,26,.1);color:var(--plk-orange);white-space:nowrap">FEATURE 01 · PIPELINE TABLE</span>
           <div>
-            <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">Click any number → instant site list</div>
-            <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">Real live 2026 Pipeline from Smartsheet — click any number and a modal pops up inside the dashboard window</div>
+            <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">2026 Pipeline vs. Budget — click any number for a site list</div>
+            <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">Live data from Smartsheet. Every number is clickable — opens a filterable modal with full site detail.</div>
           </div>
         </div>
         <div style="flex:1;display:flex;flex-direction:column;min-height:0">
           <div class="mock-browser" style="display:flex;flex-direction:column;flex:1;min-height:0;position:relative">
-            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
-            <div style="padding:4px 6px;overflow:auto;flex:1;min-height:0">
+            <div class="mock-topbar">
+              <div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
+              <div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution → 2026 Pipeline vs. Budget</div>
+            </div>
+            <div style="padding:6px 8px;overflow:auto;flex:1;min-height:0">
               <div id="pdt-status" style="font-family:var(--font-mono);font-size:10px;color:var(--plk-muted);padding:6px 4px;display:flex;align-items:center;gap:8px">
                 <span id="pdt-spinner" style="display:inline-block;width:12px;height:12px;border:2px solid var(--plk-orange);border-top-color:transparent;border-radius:50%;animation:spin 0.8s linear infinite;flex-shrink:0"></span>
                 Loading live data from Smartsheet…
               </div>
               <div id="pdt-error" style="display:none;font-family:var(--font-body);font-size:12px;color:var(--plk-red);padding:8px;background:#FEE2E2;border-radius:6px;margin:4px 0"></div>
-              <table class="pdt-table" id="pdt-table" style="display:none">
-                <thead><tr>
-                  <th class="th-left" style="padding-left:10px;width:26px"></th>
-                  <th class="th-left">Division</th>
-                  <th class="th-left">DDL</th>
-                  <th>Prospect</th><th>SA</th><th>PC</th><th>Permitting</th><th>UC</th><th>Open</th>
-                  <th>Total</th><th>Budget</th><th>Gap</th><th>Achievement</th>
-                </tr></thead>
-                <tbody id="pdt-tbody"></tbody>
-              </table>
+
+              <!-- Table (hidden until data loads) -->
+              <div id="pdt-table-wrap" style="display:none">
+                <table class="pdt-table" id="pdt-table">
+                  <thead><tr>
+                    <th class="th-left" style="width:20px;"></th>
+                    <th class="th-left">Division</th>
+                    <th class="th-left">DDL</th>
+                    <th>Prospect</th><th>SA</th><th>PC</th><th>Permitting</th><th>UC</th><th>Open</th>
+                    <th style="font-weight:700;">Total 2026</th>
+                    <th>Budget</th>
+                    <th>Gap</th>
+                    <th class="th-curr" style="max-width:72px;white-space:normal;line-height:1.2;">Current Achievement<br><span style="font-size:7px;font-weight:400;">(Opened / Budget)</span></th>
+                    <th class="th-proj" style="max-width:72px;white-space:normal;line-height:1.2;">Projected Achievement<br><span style="font-size:7px;font-weight:400;">(Bottom-Up / Budget)</span></th>
+                  </tr></thead>
+                  <tbody id="pdt-tbody"></tbody>
+                </table>
+
+                <!-- Legend matching dev-execution -->
+                <div class="pdt-legend" style="margin-top:6px;">
+                  <span style="font-family:var(--font-mono);font-size:9px;color:var(--plk-muted);font-weight:600;">Overall Rank:</span>
+                  <div class="pdt-legend-item"><div class="pdt-legend-dot" style="background:#059669;"></div>#1 Best</div>
+                  <div class="pdt-legend-item"><div class="pdt-legend-dot" style="background:#34d399;"></div>#2</div>
+                  <div class="pdt-legend-item"><div class="pdt-legend-dot" style="background:#fbbf24;"></div>#3</div>
+                  <div class="pdt-legend-item"><div class="pdt-legend-dot" style="background:#fb923c;"></div>#4</div>
+                  <div class="pdt-legend-item"><div class="pdt-legend-dot" style="background:#f87171;"></div>#5</div>
+                  <div class="pdt-legend-item"><div class="pdt-legend-dot" style="background:#DC2626;"></div>#6 Lowest</div>
+                  <span style="display:inline-block;width:1px;height:12px;background:#e5e7eb;margin:0 4px;"></span>
+                  <span style="font-family:var(--font-mono);font-size:9px;color:var(--plk-muted);font-weight:600;">Achievement:</span>
+                  <div class="pdt-legend-item"><div class="pdt-legend-dot" style="background:#D1FAE5;border:1px solid #059669;"></div>≥90%</div>
+                  <div class="pdt-legend-item"><div class="pdt-legend-dot" style="background:#FEF3C7;border:1px solid #F59E0B;"></div>≥70%</div>
+                  <div class="pdt-legend-item"><div class="pdt-legend-dot" style="background:#FEE2E2;border:1px solid #EF4444;"></div>&lt;70%</div>
+                </div>
+                <div class="pdt-footnote">* Pipeline figures reflect bottom-up submissions only. Row rank is a weighted score: 40% Current Achievement + 60% Projected Achievement, ranked relative to other divisions. Click any number to view those sites.</div>
+              </div>
             </div>
+
+            <!-- Drill-down modal (same as before) -->
             <div id="drill-modal" onclick="if(event.target===this)closeDrill()"
               style="display:none;position:absolute;inset:0;background:rgba(15,15,15,0.6);z-index:50;align-items:flex-start;justify-content:center;padding:16px;overflow-y:auto;border-radius:0 0 12px 12px">
               <div style="background:white;border-radius:14px;width:100%;max-width:900px;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.35);animation:modalPop .28s cubic-bezier(.34,1.4,.64,1);margin-top:8px">
@@ -566,10 +600,13 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
             </div>
           </div>
         </div>
-        <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 Click any <strong>number</strong> — a modal pops inside the window</span><button class="tour-next-btn" onclick="tourGo(1)">Next feature →</button></div>
+        <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0">
+          <span class="tour-hint-txt">👆 Click any <strong>number</strong> — a modal pops with full site detail</span>
+          <button class="tour-next-btn" onclick="tourGo(1)">Next feature →</button>
+        </div>
       </div>
 
-      <!-- ══ PANEL 1: RISK MIX ══ -->
+      <!-- ══ PANEL 1: RISK MIX (abbreviations fixed) ══ -->
       <div class="tour-panel" id="tp-1" style="padding:16px 24px 60px;gap:10px">
         <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
           <span class="tph-tag" style="background:rgba(109,40,217,.1);color:#6D28D9;white-space:nowrap">FEATURE 02 · RISK MIX</span>
@@ -580,7 +617,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
         </div>
         <div style="flex:1;display:flex;flex-direction:column;min-height:0">
           <div class="mock-browser" style="display:flex;flex-direction:column;flex:1;min-height:0;position:relative">
-            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div></div>
+            <div class="mock-topbar">
+              <div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
+              <div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution</div>
+            </div>
             <div style="padding:8px 10px;overflow-y:auto;flex:1;min-height:0">
               <div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-slate);margin-bottom:8px">2026 Pipeline — Risk Mix by Division <span style="font-weight:400;font-size:10px;color:var(--plk-muted)">← click any segment or pill</span></div>
               <div id="rm2-table-wrap">
@@ -609,7 +649,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
             </div>
           </div>
         </div>
-        <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 Click any <strong>color segment or pill</strong> to see filtered sites</span><button class="tour-next-btn" onclick="tourGo(2)">Next feature →</button></div>
+        <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0">
+          <span class="tour-hint-txt">👆 Click any <strong>color segment or pill</strong> to see filtered sites</span>
+          <button class="tour-next-btn" onclick="tourGo(2)">Next feature →</button>
+        </div>
       </div>
 
       <!-- ══ PANEL 2: WATERFALL ══ -->
@@ -623,7 +666,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
         </div>
         <div style="flex:1;display:flex;flex-direction:column;min-height:0">
           <div class="mock-browser" style="display:flex;flex-direction:column;flex:1;min-height:0;position:relative">
-            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution → Waterfall Analysis</div></div>
+            <div class="mock-topbar">
+              <div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
+              <div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution → Waterfall Analysis</div>
+            </div>
             <div style="padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:6px;overflow:hidden;min-height:0">
               <div style="flex-shrink:0">
                 <div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-slate)">US&amp;C Consolidated — 2026 Pipeline</div>
@@ -669,12 +715,15 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
           <span class="tph-tag" style="background:rgba(22,163,74,.1);color:#16A34A;white-space:nowrap">FEATURE 04 · EXPORT</span>
           <div>
             <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">Per-division waterfall — click bars, export Excel</div>
-            <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">Each division has its own waterfall chart matching dev-execution. Click bars to drill down. Export sends the same Excel file as the live dashboard.</div>
+            <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">Each division has its own waterfall chart. Click bars to drill down. Export sends the same Excel file as the live dashboard.</div>
           </div>
         </div>
         <div style="flex:1;display:flex;flex-direction:column;min-height:0">
           <div class="mock-browser" style="display:flex;flex-direction:column;flex:1;min-height:0;position:relative">
-            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution → Division Waterfall Charts</div></div>
+            <div class="mock-topbar">
+              <div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
+              <div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution → Division Waterfall Charts</div>
+            </div>
             <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;overflow-y:auto;flex:1;min-height:0">
               <div id="div-wf-ne" class="div-wf-card"></div>
               <div id="div-wf-se" class="div-wf-card"></div>
@@ -708,12 +757,19 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
             </div>
           </div>
         </div>
-        <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 Click any <strong>bar</strong> to drill down · Click <strong>Export</strong> to download the matching Excel</span><button class="tour-next-btn" onclick="tourGo(4)">Next feature →</button></div>
+        <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0">
+          <span class="tour-hint-txt">👆 Click any <strong>bar</strong> to drill down · Click <strong>Export</strong> to download the matching Excel</span>
+          <button class="tour-next-btn" onclick="tourGo(4)">Next feature →</button>
+        </div>
       </div>
 
       <!-- PANEL 4: LIVE -->
       <div class="tour-panel" id="tp-4">
-        <div class="tph"><span class="tph-tag" style="background:rgba(232,82,26,.12);color:var(--plk-orange)">FEATURE 05 · LIVE NOW</span><h2 class="tph-title">Open it on your device right now 📱</h2><p class="tph-desc">Everything you just saw is pulling live from Smartsheet. Bookmark it — it's always current, always shareable, no login required.</p></div>
+        <div class="tph">
+          <span class="tph-tag" style="background:rgba(232,82,26,.12);color:var(--plk-orange)">FEATURE 05 · LIVE NOW</span>
+          <h2 class="tph-title">Open it on your device right now 📱</h2>
+          <p class="tph-desc">Everything you just saw is pulling live from Smartsheet. Bookmark it — it's always current, always shareable, no login required.</p>
+        </div>
         <div class="live-area">
           <div class="live-links-grid">
             <a href="https://plk-dev-dash.vercel.app" target="_blank" class="live-link live-link-main">🏠 Hub / Landing Page</a>
@@ -759,7 +815,6 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
       <a href="https://plk-dev-dash.vercel.app" target="_blank" class="s7-btn s7-btn-primary">🍗 Open the Dashboard</a>
       <a href="https://claude.ai" target="_blank" class="s7-btn s7-btn-outline">Try Claude →</a>
     </div>
-    <div class="s7-claude-note">This presentation — slides, layout, animations, and dashboard embed — was entirely generated by Claude AI. 🤖</div>
   </div>
 </div>
 
@@ -791,40 +846,32 @@ function s4Switch(idx) {
   document.getElementById('s4t-' + s4Current).classList.remove('active');
   s4Current = idx;
   document.getElementById('s4t-' + idx).classList.add('active');
-
   const d   = S4_DASHBOARDS[idx];
   const url = d.slug ? 'https://plk-dev-dash.vercel.app/' + d.slug : 'https://plk-dev-dash.vercel.app/';
-
   const pill = document.getElementById('s4-url-pill');
   const link = document.getElementById('s4-open-link');
   if (pill) pill.textContent = d.slug ? 'plk-dev-dash.vercel.app/' + d.slug : 'plk-dev-dash.vercel.app';
   if (link) link.href = url;
-
   const iframe  = document.getElementById('s4-iframe');
   const loading = document.getElementById('s4-loading');
   const blocked = document.getElementById('s4-blocked');
-
   const bt = document.getElementById('s4-blocked-title');
   const bl = document.getElementById('s4-blocked-link');
   const bd = document.getElementById('s4-blocked-desc');
   if (bt) bt.textContent = d.label;
   if (bl) bl.href = url;
   if (bd) bd.textContent = S4_DESCRIPTIONS[idx] || '';
-
   if (!iframe) return;
-
   iframe.classList.remove('loaded');
   iframe.onload = null; iframe.onerror = null;
   if (loading) loading.style.display = 'flex';
   if (blocked) blocked.style.display = 'none';
-
   let done = false;
   const t = setTimeout(() => {
     if (done) return; done = true;
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'flex';
   }, 18000);
-
   iframe.onload = () => {
     if (done) return; done = true;
     clearTimeout(t);
@@ -839,7 +886,6 @@ function s4Switch(idx) {
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'flex';
   };
-
   setTimeout(() => { iframe.src = url; }, 30);
 }
 
@@ -849,10 +895,8 @@ function scaleIframe() {
   if (!iframe || !wrap) return;
   const scale = wrap.offsetHeight / 900;
   iframe.style.transform = `scale(${scale})`;
-  // width at this scale that fills the wrap
   iframe.style.width = (wrap.offsetWidth / scale) + 'px';
 }
-
 window.addEventListener('resize', scaleIframe);
 window.addEventListener('load', () => { s4Switch(1); });
 
@@ -872,11 +916,8 @@ function goTo(n) {
   document.getElementById('next-btn').disabled  = current === TOTAL;
   document.getElementById('progress-bar').style.width = (current / TOTAL * 100) + '%';
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current - 1));
-
   const overlay = document.getElementById('s4-overlay');
   if (overlay) overlay.classList.toggle('visible', current === 4);
-
-  // Position browser shell exactly below the overlay by measuring it
   if (current === 4) {
     requestAnimationFrame(() => {
       const ov = document.getElementById('s4-overlay');
@@ -888,10 +929,6 @@ function goTo(n) {
       scaleIframe();
     });
   }
-
-  const badge = document.getElementById('claude-badge');
-  if (badge) badge.style.display = current === 4 ? 'none' : '';
-
   const nav = document.getElementById('nav');
   if (current === 4) {
     nav.style.bottom = '16px'; nav.style.right = '20px';
@@ -900,7 +937,6 @@ function goTo(n) {
     nav.style.bottom = ''; nav.style.right = '';
     nav.style.left = '';   nav.style.transform = '';
   }
-
   if (current === 5) { loadPipelineData(); buildWf3Chart(); buildDivisionWaterfallCharts(); }
 }
 
@@ -953,7 +989,7 @@ const DDL_MAP = {
   Canada:'Kevin Fitzgerald',  'Non-Trad':'Sean Davis'
 };
 const RANK_COLORS_P = ['#059669','#34d399','#fbbf24','#fb923c','#f87171','#DC2626'];
-const RANK_BG_P     = ['rgba(209,250,229,.25)','rgba(187,247,208,.18)','rgba(254,249,195,.25)','rgba(254,215,170,.18)','rgba(254,202,202,.18)','rgba(254,226,226,.25)'];
+const RANK_BG_P     = ['rgba(209,250,229,.3)','rgba(187,247,208,.2)','rgba(254,249,195,.3)','rgba(254,215,170,.2)','rgba(254,202,202,.2)','rgba(254,226,226,.3)'];
 const RM2_RISK_MAP  = { low:'#16A34A', medium:'#F59E0B', high:'#EF4444' };
 const RISK_COLORS_DETAIL = {
   low:   { bg:'#D1FAE5', color:'#065F46' },
@@ -969,10 +1005,17 @@ function countByStatusLive(rows) {
   rows.forEach(r => { if (r.status && c.hasOwnProperty(r.status)) c[r.status]++; });
   return c;
 }
-function achieveBadge(pct) {
-  if (pct >= 90) return `<span class="pdt-badge" style="background:#D1FAE5;color:#065F46">${Math.round(pct)}%</span>`;
-  if (pct >= 70) return `<span class="pdt-badge" style="background:#FEF3C7;color:#92400E">${Math.round(pct)}%</span>`;
-  return `<span class="pdt-badge" style="background:#FEE2E2;color:#991B1B">${Math.round(pct)}%</span>`;
+
+// Achievement badge matching dev-execution colors exactly
+function achieveBadgeCurr(pct) {
+  if (pct >= 90) return `<span class="pdt-badge pdt-badge-low">${Math.round(pct)}%</span>`;
+  if (pct >= 70) return `<span class="pdt-badge pdt-badge-med">${Math.round(pct)}%</span>`;
+  return `<span class="pdt-badge pdt-badge-hi">${Math.round(pct)}%</span>`;
+}
+function achieveBadgeProj(pct) {
+  // Projected uses blue/green badges matching screenshot
+  const cls = pct >= 90 ? 'pdt-badge-low' : pct >= 70 ? 'pdt-badge-med' : 'pdt-badge-hi';
+  return `<span class="pdt-badge ${cls}">${Math.round(pct)}%</span>`;
 }
 
 function buildPipelineTable() {
@@ -981,49 +1024,93 @@ function buildPipelineTable() {
     const counts = countByStatusLive(rows);
     const total  = STATUSES_2026.reduce((a, s) => a + counts[s], 0);
     const budget = LIVE_BUDGETS[div] || 0;
-    return { div, counts, total, opened: counts['Open'], budget, gap: total - budget, projPct: budget > 0 ? (total / budget * 100) : 0 };
+    const opened = counts['Open'];
+    const gap    = total - budget;
+    const currPct = budget > 0 ? (opened / budget * 100) : 0;
+    const projPct = budget > 0 ? (total  / budget * 100) : 0;
+    return { div, counts, total, opened, budget, gap, currPct, projPct };
   });
 
-  const ranked = [...divStats].sort((a, b) => b.projPct - a.projPct);
-  const rankMap = {}; ranked.forEach((d, i) => rankMap[d.div] = i);
-  const totals = { s: {}, total: 0, budget: 0, opened: 0 };
+  // Rank by weighted score: 40% curr + 60% proj (higher = better)
+  const byProj = [...divStats].sort((a,b) => b.projPct - a.projPct);
+  const byCurr = [...divStats].sort((a,b) => b.currPct - a.currPct);
+  const projRank = {}, currRank = {};
+  byProj.forEach((d,i) => projRank[d.div] = i);
+  byCurr.forEach((d,i) => currRank[d.div] = i);
+  divStats.forEach(d => { d.wScore = 0.4 * currRank[d.div] + 0.6 * projRank[d.div]; });
+  const rankMap = {};
+  [...divStats].sort((a,b) => a.wScore - b.wScore).forEach((d,i) => rankMap[d.div] = i);
+
+  const totals = { s:{}, total:0, budget:0, opened:0 };
   STATUSES_2026.forEach(s => totals.s[s] = 0);
 
   let html = '';
-  divStats.forEach(({ div, counts, total, budget, gap, projPct }) => {
-    const rank = rankMap[div], rColor = RANK_COLORS_P[Math.min(rank, 5)], rBg = RANK_BG_P[Math.min(rank, 5)];
-    const divE = div.replace(/'/g, "\\'");
+  divStats.forEach(({ div, counts, total, opened, budget, gap, currPct, projPct }) => {
+    const rank   = rankMap[div];
+    const rn     = rank + 1;
+    const rColor = RANK_COLORS_P[Math.min(rank,5)];
+    const rBg    = RANK_BG_P[Math.min(rank,5)];
+    const divE   = div.replace(/'/g, "\\'");
+
     const statusCells = STATUSES_2026.map(s => {
       const n = counts[s];
-      return n > 0 ? `<td class="pdt-click" onclick="drillLive('${divE}','${s}')">${n}</td>` : `<td style="color:#ccc">0</td>`;
+      return n > 0
+        ? `<td class="pdt-click" onclick="drillLive('${divE}','${s}')">${n}</td>`
+        : `<td style="color:#ccc;">0</td>`;
     }).join('');
-    const totalCell = total > 0 ? `<td class="pdt-bold pdt-click" onclick="drillLive('${divE}','Total')">${total}</td>` : `<td class="pdt-bold">0</td>`;
+
+    const totalCell = total > 0
+      ? `<td class="pdt-bold pdt-click" onclick="drillLive('${divE}','Total')">${total}</td>`
+      : `<td class="pdt-bold">0</td>`;
+
+    const gapStr  = budget ? (gap >= 0 ? '+' : '') + gap : '—';
+    const gapCls  = gap > 0 ? 'pdt-gap-pos' : gap < 0 ? 'pdt-gap-neg' : '';
+
     html += `<tr style="border-left:3px solid ${rColor};background:${rBg}">
-      <td class="td-left" style="padding-left:8px"><span class="pdt-pill" style="background:${rColor}">${rank+1}</span></td>
+      <td class="td-left" style="padding-left:6px">
+        <span class="pdt-pill" style="background:${rColor}">${rn}</span>
+      </td>
       <td class="td-left pdt-bold">${div}</td>
       <td class="td-left pdt-ddl">${DDL_MAP[div]||'—'}</td>
-      ${statusCells}${totalCell}
+      ${statusCells}
+      ${totalCell}
       <td>${budget||'—'}</td>
-      <td class="pdt-gap" style="color:${gap>=0?'#059669':'#DC2626'}">${budget?(gap>=0?'+':'')+gap:'—'}</td>
-      <td>${budget?achieveBadge(projPct):'—'}</td>
+      <td class="${gapCls}">${gapStr}</td>
+      <td style="background:rgba(239,246,255,.5)">${budget ? achieveBadgeCurr(currPct) : '—'}</td>
+      <td style="background:rgba(240,253,244,.5)">${budget ? achieveBadgeProj(projPct) : '—'}</td>
     </tr>`;
+
     STATUSES_2026.forEach(s => totals.s[s] += counts[s]);
-    totals.total += total; totals.budget += budget; totals.opened += counts['Open'];
+    totals.total += total; totals.budget += budget; totals.opened += opened;
   });
 
-  const tGap = totals.total - totals.budget;
-  const tProj = totals.budget > 0 ? (totals.total / totals.budget * 100) : 0;
-  html += `<tr class="pdt-total"><td></td><td class="td-left pdt-bold">US&C Total</td><td class="td-left pdt-ddl">—</td>
-    ${STATUSES_2026.map(s => { const n = totals.s[s]; return n > 0 ? `<td class="pdt-click" onclick="drillLive('USC','${s}')">${n}</td>` : `<td style="color:#ccc">0</td>`; }).join('')}
+  // Totals row
+  const tGap  = totals.total - totals.budget;
+  const tCurr = totals.budget > 0 ? (totals.opened / totals.budget * 100) : 0;
+  const tProj = totals.budget > 0 ? (totals.total  / totals.budget * 100) : 0;
+  const tGapStr = (tGap >= 0 ? '+' : '') + tGap;
+  const tGapCls = tGap > 0 ? 'pdt-gap-pos' : tGap < 0 ? 'pdt-gap-neg' : '';
+
+  html += `<tr class="pdt-total">
+    <td></td>
+    <td class="td-left">US&amp;C Total</td>
+    <td class="td-left pdt-ddl">—</td>
+    ${STATUSES_2026.map(s => {
+      const n = totals.s[s];
+      return n > 0
+        ? `<td class="pdt-click" onclick="drillLive('USC','${s}')">${n}</td>`
+        : `<td style="color:#ccc;">0</td>`;
+    }).join('')}
     <td class="pdt-bold pdt-click" onclick="drillLive('USC','Total')">${totals.total}</td>
     <td>${totals.budget}</td>
-    <td class="pdt-gap" style="color:${tGap>=0?'#059669':'#DC2626'}">${(tGap>=0?'+':'')+tGap}</td>
-    <td>${achieveBadge(tProj)}</td>
+    <td class="${tGapCls}">${tGapStr}</td>
+    <td style="background:rgba(239,246,255,.5)">${achieveBadgeCurr(tCurr)}</td>
+    <td style="background:rgba(240,253,244,.5)">${achieveBadgeProj(tProj)}</td>
   </tr>`;
 
   document.getElementById('pdt-tbody').innerHTML = html;
-  document.getElementById('pdt-status').style.display = 'none';
-  document.getElementById('pdt-table').style.display  = '';
+  document.getElementById('pdt-status').style.display   = 'none';
+  document.getElementById('pdt-table-wrap').style.display = '';
 }
 
 function drillLive(div, status) {
@@ -1073,19 +1160,31 @@ function loadPipelineData() {
     });
 }
 
-// ── Risk Mix ──────────────────────────────────────────────────────────────────
+// ── Risk Mix table (Feature 02) — abbreviations fixed ─────────────────────
 function buildRiskMixTable() {
   const wrap = document.getElementById('rm2-table-wrap');
-  if (!wrap || !LIVE_ROWS.length) { if (wrap) wrap.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted);padding:20px 10px">Waiting for live data…</div>'; return; }
-  let html = '<div class="rm-table"><div class="rm-thead"><span>Division</span><span>Bud</span><span>BU</span><span style="flex:2.5">Risk Mix ← click any segment or pill</span></div>';
+  if (!wrap || !LIVE_ROWS.length) {
+    if (wrap) wrap.innerHTML = '<div style="font-family:var(--font-mono);font-size:11px;color:var(--plk-muted);padding:20px 10px">Waiting for live data…</div>';
+    return;
+  }
+  // Header: "Budget" and "Bottoms Up" (no abbreviations)
+  let html = `<div class="rm-table">
+    <div class="rm-thead">
+      <span>Division</span>
+      <span>Budget</span>
+      <span>Bottoms Up</span>
+      <span style="flex:2.5">Risk Mix ← click any segment or pill</span>
+    </div>`;
+
   DIVISIONS_ORDER.forEach(div => {
     const rows   = LIVE_ROWS.filter(r => r.division === div && is2026Live(r));
-    const budget = LIVE_BUDGETS[div] || 0, total = rows.length;
+    const budget = LIVE_BUDGETS[div] || 0;
+    const total  = rows.length;
     const byRisk = { low:[], medium:[], high:[] };
     rows.forEach(r => { const rl = (r.riskLevel||'').trim().toLowerCase(); if (byRisk[rl]) byRisk[rl].push(r); });
     const barSegs = ['low','medium','high'].map(rk => {
       const cnt = byRisk[rk].length; if (!cnt || !total) return '';
-      const pct  = Math.max(4, Math.round(cnt / total * 100));
+      const pct = Math.max(4, Math.round(cnt / total * 100));
       const divE = div.replace(/'/g, "\\'"), lbl = rk.charAt(0).toUpperCase() + rk.slice(1);
       return `<div style="width:${pct}%;background:${RM2_RISK_MAP[rk]};height:100%;cursor:pointer;transition:filter .15s;" onclick="rfilt2('${divE}','${lbl}')" title="${lbl}: ${cnt} sites" onmouseover="this.style.filter='brightness(1.12)'" onmouseout="this.style.filter=''"></div>`;
     }).join('');
@@ -1096,7 +1195,15 @@ function buildRiskMixTable() {
       const divE = div.replace(/'/g, "\\'"), lbl = rk.charAt(0).toUpperCase() + rk.slice(1);
       return `<span style="background:${bgMap[rk]};color:${txMap[rk]};border:1px solid ${RM2_RISK_MAP[rk]};font-family:var(--font-mono);font-size:10px;padding:2px 8px;border-radius:50px;cursor:pointer;" onclick="rfilt2('${divE}','${lbl}')">${lbl} ${cnt}</span>`;
     }).join('');
-    html += `<div class="rm-row"><span>${div}</span><span>${budget||'—'}</span><span>${total}</span><div class="rmix"><div class="rmix-bar" style="display:flex;height:10px;border-radius:5px;overflow:hidden;">${barSegs}</div><div class="rmix-pills" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;">${pills}</div></div></div>`;
+    html += `<div class="rm-row">
+      <span>${div}</span>
+      <span>${budget||'—'}</span>
+      <span>${total}</span>
+      <div class="rmix">
+        <div class="rmix-bar" style="display:flex;height:10px;border-radius:5px;overflow:hidden;">${barSegs}</div>
+        <div class="rmix-pills" style="display:flex;gap:5px;flex-wrap:wrap;margin-top:4px;">${pills}</div>
+      </div>
+    </div>`;
   });
   wrap.innerHTML = html + '</div>';
 }
@@ -1145,7 +1252,6 @@ function buildWaterfallChart(canvasId, divisionName, data, budget, onBarClick) {
   if (!ctx) return;
   const existing = Chart.getChart(ctx);
   if (existing) existing.destroy();
-
   const STATUSES = ['Prospect','SA','PC','Permitting','UC','Open'];
   const values   = STATUSES.map(s => data[s] || 0);
   const fyBU     = values.reduce((a, b) => a + b, 0);
@@ -1154,7 +1260,6 @@ function buildWaterfallChart(canvasId, divisionName, data, budget, onBarClick) {
     : LIVE_ROWS.filter(r => r.division === divisionName && (r.riskLevel||'').trim().toLowerCase() === 'upside').length;
   const fyBUPlusUpside = fyBU + upsideCount;
   const gapToBudget    = budget - fyBUPlusUpside;
-
   const labels        = [...STATUSES, 'FY BU', 'Upside', 'FY BU + Upside', 'Gap to Budget', 'Budget'];
   const displayValues = [...values, fyBU, upsideCount, fyBUPlusUpside, gapToBudget, budget];
   const baseData = [], barData = [], barColors = [];
@@ -1165,7 +1270,6 @@ function buildWaterfallChart(canvasId, divisionName, data, budget, onBarClick) {
   baseData.push(0);              barData.push(fyBUPlusUpside);  barColors.push(PLK_COLORS.purple);
   baseData.push(fyBUPlusUpside); barData.push(Math.abs(gapToBudget)); barColors.push(PLK_COLORS.red);
   baseData.push(0);              barData.push(budget);          barColors.push(PLK_COLORS.teal);
-
   new Chart(ctx, {
     type: 'bar',
     data: { labels, datasets: [
@@ -1219,7 +1323,6 @@ function buildWaterfallChart(canvasId, divisionName, data, budget, onBarClick) {
       }
     }]
   });
-
   if (ctx._wfClick) ctx.removeEventListener('click', ctx._wfClick);
   ctx._wfClick = function(e) {
     const ch = Chart.getChart(ctx); if (!ch) return;
@@ -1232,7 +1335,6 @@ function buildWaterfallChart(canvasId, divisionName, data, budget, onBarClick) {
   };
   ctx.addEventListener('click', ctx._wfClick);
   ctx.style.cursor = 'pointer';
-
   return { labels, displayValues, budget, fyBU, upsideCount, fyBUPlusUpside, gapToBudget, gap: fyBU - budget };
 }
 
