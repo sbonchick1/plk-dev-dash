@@ -30,6 +30,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   transition: opacity 0.5s cubic-bezier(.4,0,.2,1), transform 0.5s cubic-bezier(.4,0,.2,1);
   transform: translateX(60px); overflow: hidden;
 }
+#s4.slide { overflow: visible; }
+#s4.slide .s4-browser { overflow: hidden; }
 .slide.active { opacity: 1; pointer-events: all; transform: translateX(0); }
 .slide.exit   { opacity: 0; transform: translateX(-60px); }
 
@@ -348,7 +350,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .s4-browser-wrap { flex:1; min-height:0; display:flex; flex-direction:column; }
 .s4-browser { display:flex; flex-direction:column; flex:1; min-height:0; box-shadow:0 8px 40px rgba(0,0,0,.15); }
 .s4-iframe-wrap { flex:1; min-height:0; position:relative; overflow:hidden; background:#f9fafb; border-radius:0 0 10px 10px; }
-.s4-iframe { width:100%; height:100%; border:none; display:block; }
+.s4-iframe { width:100%; height:100%; border:none; display:block; pointer-events:all; overflow:auto; }
 .s4-iframe-blocked {
   position:absolute; inset:0; display:flex; align-items:center; justify-content:center;
   background: linear-gradient(135deg,#fafafa 0%,#f0f0f0 100%);
@@ -454,21 +456,22 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
   </div>
   <div class="s4-dash-layout">
     <div class="s4-tab-nav" id="s4-tabs">
-      <button class="s4-tab active" onclick="s4Switch(0)" id="s4t-0"><span class="s4t-icon">📈</span><span class="s4t-label">NRO Performance</span></button>
-      <button class="s4-tab" onclick="s4Switch(1)" id="s4t-1"><span class="s4t-icon">🏗️</span><span class="s4t-label">Dev Execution</span></button>
-      <button class="s4-tab" onclick="s4Switch(2)" id="s4t-2"><span class="s4t-icon">🔒</span><span class="s4t-label">Closures</span></button>
-      <button class="s4-tab" onclick="s4Switch(3)" id="s4t-3"><span class="s4t-icon">🗺️</span><span class="s4t-label">REM Pipeline</span></button>
-      <button class="s4-tab" onclick="s4Switch(4)" id="s4t-4"><span class="s4t-icon">✅</span><span class="s4t-label">YTD Openings</span></button>
+      <button class="s4-tab active" onclick="s4Switch(0)" id="s4t-0"><span class="s4t-icon">🏠</span><span class="s4t-label">Home</span></button>
+      <button class="s4-tab" onclick="s4Switch(1)" id="s4t-1"><span class="s4t-icon">📈</span><span class="s4t-label">NRO Performance</span></button>
+      <button class="s4-tab" onclick="s4Switch(2)" id="s4t-2"><span class="s4t-icon">🏗️</span><span class="s4t-label">Dev Execution</span></button>
+      <button class="s4-tab" onclick="s4Switch(3)" id="s4t-3"><span class="s4t-icon">🔒</span><span class="s4t-label">Closures</span></button>
+      <button class="s4-tab" onclick="s4Switch(4)" id="s4t-4"><span class="s4t-icon">🗺️</span><span class="s4t-label">REM Pipeline</span></button>
+      <button class="s4-tab" onclick="s4Switch(5)" id="s4t-5"><span class="s4t-icon">✅</span><span class="s4t-label">YTD Openings</span></button>
     </div>
     <div class="s4-browser-wrap">
       <div class="s4-browser mock-browser">
         <div class="mock-topbar">
           <div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div>
-          <div class="mock-url-pill" id="s4-url-pill">plk-dev-dash.vercel.app/dashboard</div>
-          <a class="s4-open-link" id="s4-open-link" href="https://plk-dev-dash.vercel.app/dashboard" target="_blank">↗ Open</a>
+          <div class="mock-url-pill" id="s4-url-pill">plk-dev-dash.vercel.app</div>
+          <a class="s4-open-link" id="s4-open-link" href="https://plk-dev-dash.vercel.app/" target="_blank">↗ Open</a>
         </div>
         <div class="s4-iframe-wrap">
-          <iframe id="s4-iframe" src="https://plk-dev-dash.vercel.app/dashboard" class="s4-iframe" title="PLK Dashboard" loading="lazy"></iframe>
+          <iframe id="s4-iframe" src="https://plk-dev-dash.vercel.app/" class="s4-iframe" title="PLK Dashboard" loading="lazy"></iframe>
           <div class="s4-iframe-blocked" id="s4-blocked" style="display:none">
             <div class="s4-blocked-inner">
               <div style="font-size:40px;margin-bottom:12px">🔗</div>
@@ -728,8 +731,8 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 
 <!-- SLIDE 6 -->
 <div class="slide" id="s6">
-  <div class="s8-header"><div class="slide-eyebrow">Key takeaways</div><div class="slide-title">What this means for our team</div></div>
-  <div class="s8-grid">
+  <div class="s6-header"><div class="slide-eyebrow">Key takeaways</div><div class="slide-title">What this means for our team</div></div>
+  <div class="s6-grid">
     <div class="takeaway-card ta-orange" style="animation-delay:.15s"><div class="ta-icon">🚀</div><div class="ta-title">Speed that changes the game</div><div class="ta-body">What would've taken a developer weeks took days. The first working dashboard was live within a single conversation session.</div></div>
     <div class="takeaway-card ta-gold" style="animation-delay:.25s"><div class="ta-icon">🗣️</div><div class="ta-title">No code background needed</div><div class="ta-body">Describe it in plain English. Claude handles the HTML, JavaScript, CSS, APIs, and deployment config — you just review and redirect.</div></div>
     <div class="takeaway-card ta-dark" style="animation-delay:.35s"><div class="ta-icon">🔁</div><div class="ta-title">Iteration IS the superpower</div><div class="ta-body">Each conversation built on the last. Small fast feedback loops meant the product got better quickly with no wasted effort or restarts.</div></div>
@@ -739,16 +742,16 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 
 <!-- SLIDE 7 -->
 <div class="slide" id="s7">
-  <div class="s9-bg"></div>
-  <div class="s9-content">
-    <div class="s9-eyebrow">Thank you · Questions · Let's talk</div>
-    <div class="s9-title">What will<br><span>YOU build?</span></div>
-    <div class="s9-sub">Every repetitive report, every manual data pull, every "I wish I could see this live" — all of it is a conversation away.</div>
-    <div class="s9-actions">
-      <a href="https://plk-dev-dash.vercel.app" target="_blank" class="s9-btn s9-btn-primary">🍗 Open the Dashboard</a>
-      <a href="https://claude.ai" target="_blank" class="s9-btn s9-btn-outline">Try Claude →</a>
+  <div class="s7-bg"></div>
+  <div class="s7-content">
+    <div class="s7-eyebrow">Thank you · Questions · Let's talk</div>
+    <div class="s7-title">What will<br><span>YOU build?</span></div>
+    <div class="s7-sub">Every repetitive report, every manual data pull, every "I wish I could see this live" — all of it is a conversation away.</div>
+    <div class="s7-actions">
+      <a href="https://plk-dev-dash.vercel.app" target="_blank" class="s7-btn s7-btn-primary">🍗 Open the Dashboard</a>
+      <a href="https://claude.ai" target="_blank" class="s7-btn s7-btn-outline">Try Claude →</a>
     </div>
-    <div class="s9-claude-note">This presentation — slides, layout, animations, poll, and dashboard embed — was entirely generated by Claude AI. 🤖</div>
+    <div class="s7-claude-note">This presentation — slides, layout, animations, poll, and dashboard embed — was entirely generated by Claude AI. 🤖</div>
   </div>
 </div>
 
@@ -759,11 +762,12 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 
 // ── SLIDE 4: DASHBOARD SWITCHER ─────────────────────────────────────────────
 const S4_DASHBOARDS = [
-  { label: 'NRO Performance',    slug: 'dashboard' },
-  { label: 'Dev Execution',      slug: 'development-execution' },
-  { label: 'Closures',           slug: 'closures' },
-  { label: 'REM Pipeline',       slug: 'rem-pipeline' },
-  { label: 'YTD Openings',       slug: 'ytd-openings' },
+  { label: 'Home',               slug: '',                      icon: '🏠' },
+  { label: 'NRO Performance',    slug: 'dashboard',             icon: '📈' },
+  { label: 'Dev Execution',      slug: 'development-execution', icon: '🏗️' },
+  { label: 'Closures',           slug: 'closures',              icon: '🔒' },
+  { label: 'REM Pipeline',       slug: 'rem-pipeline',          icon: '🗺️' },
+  { label: 'YTD Openings',       slug: 'ytd-openings',          icon: '✅' },
 ];
 let s4Current = 0;
 function s4Switch(idx) {
@@ -771,11 +775,11 @@ function s4Switch(idx) {
   s4Current = idx;
   document.getElementById('s4t-' + idx).classList.add('active');
   const d = S4_DASHBOARDS[idx];
-  const url = 'https://plk-dev-dash.vercel.app/' + d.slug;
+  const url = d.slug ? 'https://plk-dev-dash.vercel.app/' + d.slug : 'https://plk-dev-dash.vercel.app/';
   const pill = document.getElementById('s4-url-pill');
   const link = document.getElementById('s4-open-link');
   const blocked = document.getElementById('s4-blocked');
-  if (pill) pill.textContent = 'plk-dev-dash.vercel.app/' + d.slug;
+  if (pill) pill.textContent = d.slug ? 'plk-dev-dash.vercel.app/' + d.slug : 'plk-dev-dash.vercel.app';
   if (link) link.href = url;
   if (blocked) {
     document.getElementById('s4-blocked-title').textContent = d.label;
