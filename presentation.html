@@ -201,13 +201,15 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 }
 .s4-open-link:hover { background: #E8521A; color: #fff; }
 #s4-scroll {
-  flex: 1; position: relative; overflow-y: auto; overflow-x: hidden; background: #f9fafb;
+  flex: 1; position: relative; overflow-y: scroll; overflow-x: hidden; background: #f9fafb;
+  -webkit-overflow-scrolling: touch; scroll-behavior: smooth;
 }
 #s4-iframe {
   position: absolute; top: 0; left: 0; width: 100%; height: 4500px;
   border: none; opacity: 0; transition: opacity .3s;
+  pointer-events: none;
 }
-#s4-iframe.loaded { opacity: 1; }
+#s4-iframe.loaded { opacity: 1; pointer-events: all; }
 #s4-loading {
   position: absolute; inset: 0; display: flex; align-items: center;
   justify-content: center; flex-direction: column; gap: 12px;
@@ -899,6 +901,7 @@ function goTo(n) {
 function nextSlide() { if (current < TOTAL) goTo(current + 1); }
 function prevSlide() { if (current > 1) goTo(current - 1); }
 document.addEventListener('keydown', e => {
+  if (current === 4) return; // on slide 4, let arrow keys scroll the iframe naturally
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); nextSlide(); }
   if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')  { e.preventDefault(); prevSlide(); }
 });
