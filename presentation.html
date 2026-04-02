@@ -290,6 +290,13 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 .nro-bar-val.outside { color: var(--plk-slate); top: -13px; }
 .nro-bar-lbl { font-family: var(--font-mono); font-size: 8px; color: var(--plk-muted); text-align: center; margin-top: 2px; }
 
+/* div waterfall cards in panel 3 */
+.div-wf-card { background:#fafafa;border-radius:8px;padding:8px 10px;border:1px solid #ececec;display:flex;flex-direction:column;gap:4px;min-height:140px; }
+.div-wf-title { font-family:var(--font-body);font-size:10px;font-weight:700;color:var(--plk-slate);display:flex;align-items:center;justify-content:space-between; }
+.div-wf-exp-btn { background:var(--plk-orange);color:white;border:none;border-radius:4px;padding:2px 7px;font-family:var(--font-body);font-size:9px;font-weight:700;cursor:pointer;transition:all .2s;white-space:nowrap; }
+.div-wf-exp-btn:hover { background:var(--plk-red); }
+.div-wf-exp-btn:disabled { background:#ccc;cursor:not-allowed; }
+
 /* Waterfall (panel 2) — rebuilt to match screenshot */
 .wf-rebuilt { flex: 1; display: flex; flex-direction: column; min-height: 0; gap: 8px; }
 .wf-r-label { font-family: var(--font-body); font-size: 11px; font-weight: 700; color: var(--plk-slate); flex-shrink: 0; }
@@ -556,9 +563,9 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
                   <span style="margin-left:auto;font-family:var(--font-mono);font-size:10px;background:rgba(255,255,255,.25);color:white;padding:3px 10px;border-radius:50px;font-weight:600" id="rm2-badge"></span>
                   <button onclick="closeRm2()" style="background:rgba(255,255,255,.2);border:none;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:15px;color:white;display:flex;align-items:center;justify-content:center;font-weight:700">×</button>
                 </div>
-                <!-- FIX 02: headers now 6 cols matching the data rows exactly -->
-                <div style="display:grid;grid-template-columns:.65fr 1.4fr 1fr .35fr .75fr 1.1fr;gap:0;padding:6px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-family:var(--font-mono);font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;font-weight:600">
-                  <span>Rest #</span><span>FZ</span><span>City</span><span>ST</span><span>Risk</span><span>PLK Open Date</span>
+                <!-- FIX 02: 7 cols — added Comments -->
+                <div style="display:grid;grid-template-columns:.55fr 1.1fr .85fr .3fr .65fr .9fr 1.8fr;gap:0;padding:6px 16px;background:#f9fafb;border-bottom:1px solid #e5e7eb;font-family:var(--font-mono);font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;font-weight:600">
+                  <span>Rest #</span><span>FZ</span><span>City</span><span>ST</span><span>Risk</span><span>PLK Open Date</span><span>Last Comment</span>
                 </div>
                 <div id="rm2-rows" style="overflow-y:auto;max-height:300px"></div>
               </div>
@@ -568,59 +575,78 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
         <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 Click any <strong>color segment or pill</strong> to see filtered sites</span><button class="tour-next-btn" onclick="tourGo(2)">Next feature →</button></div>
       </div>
 
-      <!-- ══ PANEL 2: WATERFALL ══ FIX 03: matches development-execution.html screenshot ══ -->
+      <!-- ══ PANEL 2: WATERFALL ══ Chart.js stacked bar — exact match to dev-execution ══ -->
       <div class="tour-panel" id="tp-2" style="padding:16px 24px 60px;gap:10px">
         <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
           <span class="tph-tag" style="background:rgba(13,148,136,.1);color:#0D9488;white-space:nowrap">FEATURE 03 · WATERFALL</span>
           <div>
             <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">US&amp;C Consolidated — 2026 Pipeline Waterfall</div>
-            <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">Every stage from Prospect through Budget in one chart — matches the live development-execution dashboard.</div>
+            <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">Stacked waterfall chart matching the live development-execution dashboard. Click any bar to drill down.</div>
           </div>
         </div>
         <div style="flex:1;display:flex;flex-direction:column;min-height:0">
-          <div class="mock-browser" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+          <div class="mock-browser" style="display:flex;flex-direction:column;flex:1;min-height:0;position:relative">
             <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution → Waterfall Analysis</div></div>
-            <div style="padding:14px 18px;flex:1;display:flex;flex-direction:column;gap:8px;overflow:hidden">
-              <div style="display:flex;align-items:center;justify-content:space-between;flex-shrink:0">
-                <div>
-                  <div style="font-family:var(--font-body);font-size:12px;font-weight:700;color:var(--plk-slate)">US&amp;C Consolidated — 2026 Pipeline</div>
-                  <div style="font-family:var(--font-body);font-size:10px;color:var(--plk-muted)">All divisions combined vs. total budget</div>
-                  <div style="font-family:var(--font-body);font-size:10px;color:var(--plk-orange);margin-top:2px">↗ Click bars to see site details</div>
-                </div>
+            <div style="padding:12px 16px;flex:1;display:flex;flex-direction:column;gap:6px;overflow:hidden;min-height:0">
+              <div style="flex-shrink:0">
+                <div style="font-family:var(--font-body);font-size:11px;font-weight:700;color:var(--plk-slate)">US&amp;C Consolidated — 2026 Pipeline</div>
+                <div style="font-family:var(--font-body);font-size:9px;color:var(--plk-muted)">All divisions combined vs. total budget</div>
+                <div style="font-family:var(--font-body);font-size:9px;color:var(--plk-orange)">↗ Click bars to see site details</div>
               </div>
-              <!-- FIX 03: 10-bar waterfall exactly matching screenshot -->
-              <div id="wf3-chart" style="flex:1;display:flex;gap:5px;align-items:flex-end;min-height:0;padding-bottom:2px"></div>
-              <div style="display:flex;gap:12px;flex-wrap:wrap;flex-shrink:0">
-                <span style="font-family:var(--font-mono);font-size:9px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#E8521A;border-radius:2px;display:inline-block"></span>Pipeline stages</span>
-                <span style="font-family:var(--font-mono);font-size:9px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#7B2D8B;border-radius:2px;display:inline-block"></span>FY BU / FY BU+Upside</span>
-                <span style="font-family:var(--font-mono);font-size:9px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#C1272D;border-radius:2px;display:inline-block"></span>Gap to Budget</span>
-                <span style="font-family:var(--font-mono);font-size:9px;display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;background:#00A99D;border-radius:2px;display:inline-block"></span>Budget</span>
+              <div style="flex:1;min-height:0;position:relative"><canvas id="wf3-canvas"></canvas></div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap;flex-shrink:0">
+                <span style="font-family:var(--font-mono);font-size:9px;display:flex;align-items:center;gap:3px"><span style="width:9px;height:9px;background:#E8521A;border-radius:2px;display:inline-block"></span>Pipeline stages</span>
+                <span style="font-family:var(--font-mono);font-size:9px;display:flex;align-items:center;gap:3px"><span style="width:9px;height:9px;background:#7B2D8B;border-radius:2px;display:inline-block"></span>FY BU / FY BU+Upside</span>
+                <span style="font-family:var(--font-mono);font-size:9px;display:flex;align-items:center;gap:3px"><span style="width:9px;height:9px;background:#C1272D;border-radius:2px;display:inline-block"></span>Gap to Budget</span>
+                <span style="font-family:var(--font-mono);font-size:9px;display:flex;align-items:center;gap:3px"><span style="width:9px;height:9px;background:#00A99D;border-radius:2px;display:inline-block"></span>Budget</span>
+              </div>
+            </div>
+            <!-- Drill-down modal overlaid inside mock browser -->
+            <div id="wf3-drill-modal" onclick="if(event.target===this)closeWf3Drill()"
+              style="display:none;position:absolute;inset:0;background:rgba(15,15,15,0.6);z-index:50;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto;border-radius:0 0 12px 12px">
+              <div style="background:white;border-radius:14px;width:100%;max-width:860px;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.35);animation:modalPop .28s cubic-bezier(.34,1.4,.64,1);margin-top:8px">
+                <div id="wf3-drill-header" style="background:var(--plk-orange);padding:10px 16px;border-radius:14px 14px 0 0;display:flex;align-items:center;gap:10px;flex-shrink:0">
+                  <div>
+                    <div id="wf3-drill-title" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:white"></div>
+                    <div id="wf3-drill-sub" style="font-family:var(--font-body);font-size:10px;color:rgba(255,255,255,.75);margin-top:1px"></div>
+                  </div>
+                  <span id="wf3-drill-badge" style="margin-left:auto;font-family:var(--font-mono);font-size:10px;background:rgba(255,255,255,.25);color:white;padding:2px 8px;border-radius:50px;font-weight:600"></span>
+                  <button onclick="closeWf3Drill()" style="background:rgba(255,255,255,.2);border:none;border-radius:7px;width:26px;height:26px;cursor:pointer;font-size:14px;color:white;display:flex;align-items:center;justify-content:center;font-weight:700">✕</button>
+                </div>
+                <div style="display:grid;grid-template-columns:.55fr 1.1fr .85fr .3fr .65fr .9fr 1.8fr;gap:0;padding:6px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb;flex-shrink:0;font-family:var(--font-mono);font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;font-weight:600">
+                  <span>Rest #</span><span>FZ</span><span>City</span><span>ST</span><span>Risk</span><span>PLK Open Date</span><span>Last Comment</span>
+                </div>
+                <div id="wf3-drill-rows" style="overflow-y:auto;max-height:300px"></div>
               </div>
             </div>
           </div>
         </div>
         <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0">
-          <div style="display:flex;gap:10px;align-items:center">
-            <button class="tour-next-btn" style="background:var(--plk-dark)" onclick="playWf3(this)">▶ Play Animation</button>
-            <span class="tour-hint-txt">Click bars to see what's behind the numbers</span>
-          </div>
+          <span class="tour-hint-txt">👆 Click any <strong>bar</strong> to drill down into those sites</span>
           <button class="tour-next-btn" onclick="tourGo(3)">Next feature →</button>
         </div>
       </div>
 
-      <!-- ══ PANEL 3: EXPORT ══ FIX 04: real divisional NRO opening count charts ══ -->
+      <!-- ══ PANEL 3: EXPORT ══ Divisional waterfall charts — Chart.js, drill-down, real export ══ -->
       <div class="tour-panel" id="tp-3" style="padding:16px 24px 60px;gap:10px">
         <div style="display:flex;align-items:center;gap:12px;flex-shrink:0">
           <span class="tph-tag" style="background:rgba(22,163,74,.1);color:#16A34A;white-space:nowrap">FEATURE 04 · EXPORT</span>
           <div>
-            <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">One click → formatted Excel download per division</div>
-            <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">Every divisional NRO chart on the Performance Dashboard has its own Export button — try one below.</div>
+            <div style="font-family:var(--font-display);font-size:clamp(18px,2.2vw,26px);color:var(--plk-dark);line-height:1">Per-division waterfall — click bars, export Excel</div>
+            <div style="font-family:var(--font-body);font-size:12px;color:var(--plk-muted);margin-top:2px">Each division has its own waterfall chart matching dev-execution. Click bars to drill down. Export sends the same Excel file as the live dashboard.</div>
           </div>
         </div>
         <div style="flex:1;display:flex;flex-direction:column;min-height:0">
           <div class="mock-browser" style="display:flex;flex-direction:column;flex:1;min-height:0;position:relative">
-            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/dashboard — Division tab → Opening Count by Year & Division</div></div>
-            <div class="div-nro-grid" id="nro-grid"></div>
+            <div class="mock-topbar"><div class="mock-dots"><span style="background:#ff5f57"></span><span style="background:#febc2e"></span><span style="background:#28c840"></span></div><div class="mock-url-pill">plk-dev-dash.vercel.app/development-execution → Division Waterfall Charts</div></div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:8px;overflow-y:auto;flex:1;min-height:0">
+              <div id="div-wf-ne" class="div-wf-card"></div>
+              <div id="div-wf-se" class="div-wf-card"></div>
+              <div id="div-wf-ct" class="div-wf-card"></div>
+              <div id="div-wf-we" class="div-wf-card"></div>
+              <div id="div-wf-ca" class="div-wf-card"></div>
+              <div id="div-wf-nt" class="div-wf-card"></div>
+            </div>
             <!-- export overlay -->
             <div id="nro-exp-overlay" style="display:none;position:absolute;inset:0;background:rgba(255,255,255,.97);z-index:50;align-items:center;justify-content:center;flex-direction:column;gap:12px;border-radius:0 0 12px 12px">
               <div style="font-size:40px" id="nro-exp-icon">📊</div>
@@ -628,9 +654,27 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
               <div id="nro-exp-msg" style="font-family:var(--font-mono);font-size:12px;color:var(--plk-slate)">Preparing export…</div>
               <div id="nro-exp-chart" style="font-family:var(--font-body);font-size:11px;color:var(--plk-muted)"></div>
             </div>
+            <!-- Drill-down modal for div waterfall -->
+            <div id="divwf-drill-modal" onclick="if(event.target===this)closeDivWfDrill()"
+              style="display:none;position:absolute;inset:0;background:rgba(15,15,15,0.6);z-index:50;align-items:flex-start;justify-content:center;padding:12px;overflow-y:auto;border-radius:0 0 12px 12px">
+              <div style="background:white;border-radius:14px;width:100%;max-width:860px;display:flex;flex-direction:column;box-shadow:0 24px 64px rgba(0,0,0,0.35);animation:modalPop .28s cubic-bezier(.34,1.4,.64,1);margin-top:8px">
+                <div id="divwf-drill-header" style="background:var(--plk-orange);padding:10px 16px;border-radius:14px 14px 0 0;display:flex;align-items:center;gap:10px;flex-shrink:0">
+                  <div>
+                    <div id="divwf-drill-title" style="font-family:var(--font-body);font-size:13px;font-weight:700;color:white"></div>
+                    <div id="divwf-drill-sub" style="font-family:var(--font-body);font-size:10px;color:rgba(255,255,255,.75);margin-top:1px"></div>
+                  </div>
+                  <span id="divwf-drill-badge" style="margin-left:auto;font-family:var(--font-mono);font-size:10px;background:rgba(255,255,255,.25);color:white;padding:2px 8px;border-radius:50px;font-weight:600"></span>
+                  <button onclick="closeDivWfDrill()" style="background:rgba(255,255,255,.2);border:none;border-radius:7px;width:26px;height:26px;cursor:pointer;font-size:14px;color:white;display:flex;align-items:center;justify-content:center;font-weight:700">✕</button>
+                </div>
+                <div style="display:grid;grid-template-columns:.55fr 1.1fr .85fr .3fr .65fr .9fr 1.8fr;gap:0;padding:6px 14px;background:#f9fafb;border-bottom:1px solid #e5e7eb;flex-shrink:0;font-family:var(--font-mono);font-size:9px;color:#6b7280;text-transform:uppercase;letter-spacing:.06em;font-weight:600">
+                  <span>Rest #</span><span>FZ</span><span>City</span><span>ST</span><span>Risk</span><span>PLK Open Date</span><span>Last Comment</span>
+                </div>
+                <div id="divwf-drill-rows" style="overflow-y:auto;max-height:300px"></div>
+              </div>
+            </div>
           </div>
         </div>
-        <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 Click <strong>Export</strong> on any division to watch it download</span><button class="tour-next-btn" onclick="tourGo(4)">Next feature →</button></div>
+        <div class="tour-cta-row" style="margin-top:4px;flex-shrink:0"><span class="tour-hint-txt">👆 Click any <strong>bar</strong> to drill down · Click <strong>Export</strong> to download the matching Excel</span><button class="tour-next-btn" onclick="tourGo(4)">Next feature →</button></div>
       </div>
 
       <!-- PANEL 4: LIVE -->
@@ -687,6 +731,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 
 </div><!-- /deck -->
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script>
 // ── SLIDE STATE ─────────────────────────────────────────────────────────────
 const TOTAL = 9;
@@ -704,7 +749,7 @@ function goTo(n) {
   document.getElementById('next-btn').disabled = current === TOTAL;
   document.getElementById('progress-bar').style.width = (current / TOTAL * 100) + '%';
   document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === current - 1));
-  if (current === 7) { loadPipelineData(); buildNROCharts(); buildWf3Chart(); }
+  if (current === 7) { loadPipelineData(); buildWf3Chart(); buildDivisionWaterfallCharts(); }
 }
 function nextSlide() { if (current < TOTAL) goTo(current + 1); }
 function prevSlide() { if (current > 1) goTo(current - 1); }
@@ -764,7 +809,7 @@ function tourGo(idx) {
   document.getElementById('tp-'+idx).classList.add('active');
   document.getElementById('tnav-'+idx).classList.add('active');
   if (idx === 2) buildWf3Chart();
-  if (idx === 3) buildNROCharts();
+  if (idx === 3) buildDivisionWaterfallCharts();
   if (idx === 1) buildRiskMixTable();
 }
 
@@ -865,7 +910,7 @@ function loadPipelineData() {
   pipelineLoaded = true;
   fetch(PIPELINE_API, { mode:'cors' })
     .then(r=>{ if(!r.ok) throw new Error('API '+r.status); return r.json(); })
-    .then(data=>{ LIVE_ROWS=data.rows||[]; LIVE_BUDGETS=data.budgets||{}; buildPipelineTable(); buildRiskMixTable(); buildWf3Chart(); buildNROCharts(); })
+    .then(data=>{ LIVE_ROWS=data.rows||[]; LIVE_BUDGETS=data.budgets||{}; buildPipelineTable(); buildRiskMixTable(); buildWf3Chart(); buildDivisionWaterfallCharts(); })
     .catch(err=>{
       pipelineLoaded=false;
       const errEl=document.getElementById('pdt-error');
@@ -914,18 +959,19 @@ function rfilt2(division, level) {
   document.getElementById('rm2-title').textContent=division+' — '+level+' Risk Sites';
   document.getElementById('rm2-badge').textContent=sites.length+' site'+(sites.length!==1?'s':'');
   const rcMap={low:{bg:'#D1FAE5',color:'#065F46'},medium:{bg:'#FEF3C7',color:'#92400E'},high:{bg:'#FEE2E2',color:'#991B1B'}};
-  // FIX 02: data rows use same 6-col grid as the corrected header
+  // FIX 02: data rows use same 7-col grid as the corrected header (now includes comment)
   document.getElementById('rm2-rows').innerHTML=sites.length
     ? sites.map((s,i)=>{
         const rl=(s.riskLevel||'').trim().toLowerCase(), rc=rcMap[rl]||{bg:'#F3F4F6',color:'#374151'};
         const rowBg=i%2===0?'#fff':'#f9fafb';
-        return `<div style="display:grid;grid-template-columns:.65fr 1.4fr 1fr .35fr .75fr 1.1fr;gap:0;padding:8px 16px;background:${rowBg};border-bottom:1px solid #f3f4f6;font-family:var(--font-mono);font-size:11px;color:#374151;align-items:center">
-          <span style="font-weight:700;color:#1a1a1a">${s.restNum||'—'}</span>
-          <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${s.fz||'—'}</span>
-          <span>${s.city||'—'}</span>
-          <span>${s.state||'—'}</span>
-          <span><span style="background:${rc.bg};color:${rc.color};padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;">${rl.charAt(0).toUpperCase()+rl.slice(1)}</span></span>
-          <span style="color:#6b7280">${s.plkOpenDate||s.fzOpenDate||'—'}</span>
+        return `<div style="display:grid;grid-template-columns:.55fr 1.1fr .85fr .3fr .65fr .9fr 1.8fr;gap:0;padding:8px 16px;background:${rowBg};border-bottom:1px solid #f3f4f6;font-family:var(--font-mono);font-size:11px;color:#374151;align-items:start">
+          <span style="font-weight:700;color:#1a1a1a;padding-top:1px">${s.restNum||'—'}</span>
+          <span style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-top:1px">${s.fz||'—'}</span>
+          <span style="padding-top:1px">${s.city||'—'}</span>
+          <span style="padding-top:1px">${s.state||'—'}</span>
+          <span style="padding-top:1px"><span style="background:${rc.bg};color:${rc.color};padding:2px 6px;border-radius:4px;font-size:10px;font-weight:700;">${rl.charAt(0).toUpperCase()+rl.slice(1)}</span></span>
+          <span style="color:#6b7280;padding-top:1px">${s.plkOpenDate||s.fzOpenDate||'—'}</span>
+          <span style="color:#9ca3af;font-size:10px;white-space:normal;word-break:break-word;line-height:1.4">${s.lastComment||'—'}</span>
         </div>`;
       }).join('')
     : '<div style="padding:40px;text-align:center;color:#9ca3af;font-family:var(--font-body);font-size:13px">No sites in this category</div>';
@@ -933,256 +979,290 @@ function rfilt2(division, level) {
 }
 function closeRm2() { document.getElementById('rm2-overlay').style.display='none'; }
 
-// ── FIX 03: Waterfall — matches development-execution.html screenshot exactly ──
-// Labels: Prospect, SA, PC, Permitting, UC, Open, FY BU, Upside, FY BU + Upside, Gap to Budget, Budget
-// Colors: orange for stages, purple for FY BU & FY BU+Upside, orange for Upside, dark red for Gap, teal for Budget
-// Stacking: stages stack cumulatively (waterfall), FY BU resets to 0, Upside stacks on FY BU, FY BU+Upside resets, Gap stacks on FY BU+Upside, Budget standalone
+// ── FIX 03 + 04: Chart.js waterfall — exact same approach as development-execution.html ──
+// Uses stacked bar with invisible base dataset for floating bars
 
-let wf3Built=false, wf3Playing=false;
+const PLK_COLORS = {orange:'#E8521A', teal:'#00A99D', purple:'#7B2D8B', red:'#C1272D'};
 
+const DIVISION_CONFIGS = [
+  { id:'ne', name:'Northeast', ddl:"Shanda O'Kelly", el:'div-wf-ne' },
+  { id:'se', name:'Southeast', ddl:"Shanda O'Kelly", el:'div-wf-se' },
+  { id:'ct', name:'Central',   ddl:"Rita Sterling",  el:'div-wf-ct' },
+  { id:'we', name:'West',      ddl:"Rita Sterling",  el:'div-wf-we' },
+  { id:'ca', name:'Canada',    ddl:"Kevin Fitzgerald",el:'div-wf-ca' },
+  { id:'nt', name:'Non-Trad',  ddl:"Sean Davis",     el:'div-wf-nt' },
+];
+
+const WF_CHARTS = {}; // cache Chart.js instances
+
+function buildWaterfallChart(canvasId, divisionName, data, budget, onBarClick) {
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
+  const existing = Chart.getChart(ctx);
+  if (existing) existing.destroy();
+
+  const STATUSES = ['Prospect','SA','PC','Permitting','UC','Open'];
+  const values = STATUSES.map(s => data[s] || 0);
+  const fyBU = values.reduce((a,b)=>a+b,0);
+  const upsideCount = divisionName === 'US&C Consolidated'
+    ? LIVE_ROWS.filter(r=>(r.riskLevel||'').trim().toLowerCase()==='upside').length
+    : LIVE_ROWS.filter(r=>r.division===divisionName&&(r.riskLevel||'').trim().toLowerCase()==='upside').length;
+  const fyBUPlusUpside = fyBU + upsideCount;
+  const gapToBudget = budget - fyBUPlusUpside;
+
+  const labels = [...STATUSES, 'FY BU', 'Upside', 'FY BU + Upside', 'Gap to Budget', 'Budget'];
+  const displayValues = [...values, fyBU, upsideCount, fyBUPlusUpside, gapToBudget, budget];
+
+  const baseData = [], barData = [], barColors = [];
+  let cum = 0;
+  STATUSES.forEach((s,i) => {
+    baseData.push(cum); barData.push(values[i]); barColors.push(PLK_COLORS.orange);
+    cum += values[i];
+  });
+  baseData.push(0);              barData.push(fyBU);            barColors.push(PLK_COLORS.purple);
+  baseData.push(fyBU);           barData.push(upsideCount);     barColors.push(PLK_COLORS.orange);
+  baseData.push(0);              barData.push(fyBUPlusUpside);  barColors.push(PLK_COLORS.purple);
+  baseData.push(fyBUPlusUpside); barData.push(Math.abs(gapToBudget)); barColors.push(PLK_COLORS.red);
+  baseData.push(0);              barData.push(budget);          barColors.push(PLK_COLORS.teal);
+
+  const chart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [
+      { label:'_base', data:baseData, backgroundColor:'rgba(0,0,0,0)', borderWidth:0, stack:'wf' },
+      { label:'_bars', data:barData,  backgroundColor:barColors, borderRadius:3, barPercentage:0.65, stack:'wf' }
+    ]},
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      animation: false,
+      interaction: { mode:'nearest', intersect:true },
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          animation:false, backgroundColor:'#1f2937', titleColor:'white', bodyColor:'white',
+          padding:8, cornerRadius:5,
+          filter: item => item.datasetIndex === 1,
+          callbacks: {
+            label: ctx2 => {
+              const lbl = labels[ctx2.dataIndex], idx = STATUSES.indexOf(lbl);
+              if (idx>=0) { let run=0; for(let i=0;i<=idx;i++) run+=values[i]; return `${lbl}: ${values[idx]}  |  Running: ${run}  ·  Click to View`; }
+              if (lbl==='FY BU') return `FY BU: ${fyBU}  ·  Click to View`;
+              if (lbl==='Upside') return `Upside: ${upsideCount}  ·  Click to View`;
+              if (lbl==='FY BU + Upside') return `FY BU + Upside: ${fyBUPlusUpside}  ·  Click to View`;
+              if (lbl==='Gap to Budget') return `Gap to Budget: ${gapToBudget}  (${fyBUPlusUpside} vs ${budget})`;
+              if (lbl==='Budget') return `Budget: ${budget}`;
+              return '';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { stacked:true, grid:{display:false}, border:{display:false}, ticks:{color:'#6b7280', font:{size:9}, maxRotation:35, minRotation:0} },
+        y: { stacked:true, grid:{display:false}, border:{display:false}, ticks:{display:false}, beginAtZero:true }
+      },
+      layout: { padding:{ top:20 } }
+    },
+    plugins: [{
+      id: 'lbl_'+canvasId,
+      afterDraw(ch) {
+        const meta = ch.getDatasetMeta(1); if (!meta?.data) return;
+        const cCtx = ch.ctx, FONT = 'bold 10px -apple-system,sans-serif', MIN_H = 16;
+        displayValues.forEach((val, i) => {
+          if (val===null||val===undefined) return;
+          const bar = meta.data[i]; if (!bar||bar.x==null||bar.y==null) return;
+          const barH = Math.abs(bar.base - bar.y);
+          const barMidY = (bar.y + bar.base) / 2;
+          const label = String(i === labels.indexOf('Gap to Budget') ? gapToBudget : val);
+          cCtx.save(); cCtx.font = FONT; cCtx.textAlign = 'center';
+          if (barH >= MIN_H) { cCtx.fillStyle='#FFFFFF'; cCtx.textBaseline='middle'; cCtx.fillText(label, bar.x, barMidY); }
+          else if (barH > 0) { cCtx.fillStyle='#374151'; cCtx.textBaseline='bottom'; cCtx.fillText(label, bar.x, bar.y - 2); }
+          cCtx.restore();
+        });
+      }
+    }]
+  });
+
+  // Click handler — open drill modal
+  if (ctx._wfClick) ctx.removeEventListener('click', ctx._wfClick);
+  ctx._wfClick = function(e) {
+    const ch = Chart.getChart(ctx); if (!ch) return;
+    const pts = ch.getElementsAtEventForMode(e, 'nearest', {intersect:true}, false); if (!pts.length) return;
+    const idx = pts[0].index, df = divisionName==='US&C Consolidated'?'USC':divisionName, n = STATUSES.length;
+    if (idx < n) onBarClick(df, STATUSES[idx], '2026', `${divisionName} · ${STATUSES[idx]}`);
+    else if (idx === n)   onBarClick(df, null, '2026', `${divisionName} · Full BU Pipeline`);
+    else if (idx === n+1) onBarClick(df, null, 'upside', `${divisionName} · Upside Sites`);
+    else if (idx === n+2) onBarClick(df, null, 'upside', `${divisionName} · FY BU + Upside`);
+  };
+  ctx.addEventListener('click', ctx._wfClick);
+  ctx.style.cursor = 'pointer';
+
+  return { labels, displayValues, budget, fyBU, upsideCount, fyBUPlusUpside, gapToBudget, gap: fyBU - budget };
+}
+
+// ── PANEL 02: US&C consolidated waterfall ──
+let wf3ChartData = null;
 function buildWf3Chart() {
-  // Use live data if available, else representative numbers matching screenshot
-  let stageCounts;
-  if (LIVE_ROWS.length) {
-    const bu=LIVE_ROWS.filter(r=>is2026Live(r));
-    stageCounts={Prospect:0,SA:0,PC:0,Permitting:0,UC:0,Open:0};
-    bu.forEach(r=>{if(r.status&&stageCounts.hasOwnProperty(r.status))stageCounts[r.status]++;});
-  } else {
-    stageCounts={Prospect:4,SA:2,PC:8,Permitting:15,UC:39,Open:17};
-  }
-  const budget=Object.values(LIVE_BUDGETS).reduce((a,b)=>a+b,0)||130;
-  const upside=LIVE_ROWS.filter(r=>(r.riskLevel||'').trim().toLowerCase()==='upside').length||24;
-  const stageLabels=['Prospect','SA','PC','Permitting','UC','Open'];
-  const stagVals=stageLabels.map(l=>stageCounts[l]||0);
-  const fyBU=stagVals.reduce((a,b)=>a+b,0);
-  const fyBUUpside=fyBU+upside;
-  const gapToBudget=budget-fyBUUpside;
+  // Build canvas inside wf3-canvas element
+  const canvasEl = document.getElementById('wf3-canvas');
+  if (!canvasEl) return;
+  if (!LIVE_ROWS.length && wf3ChartData) return; // already built
 
-  // Build the 10-col waterfall data
-  const cols=[
-    ...stageLabels.map((lbl,i)=>({ lbl, val:stagVals[i], color:'#E8521A', cumBase:stagVals.slice(0,i).reduce((a,b)=>a+b,0) })),
-    { lbl:'FY BU',          val:fyBU,         color:'#7B2D8B', cumBase:0 },
-    { lbl:'Upside',         val:upside,        color:'#C1272D', cumBase:fyBU },
-    { lbl:'FY BU + Upside', val:fyBUUpside,    color:'#7B2D8B', cumBase:0 },
-    { lbl:'Gap to Budget',  val:Math.abs(gapToBudget), color:'#C1272D', cumBase:fyBUUpside },
-    { lbl:'Budget',         val:budget,        color:'#00A99D', cumBase:0 },
-  ];
+  const bu = LIVE_ROWS.filter(r=>is2026Live(r));
+  const counts = {Prospect:0,SA:0,PC:0,Permitting:0,UC:0,Open:0};
+  bu.forEach(r=>{if(r.status&&counts.hasOwnProperty(r.status))counts[r.status]++;});
+  // fallback to screenshot numbers if no live data
+  if (!LIVE_ROWS.length) { Object.assign(counts,{Prospect:4,SA:2,PC:8,Permitting:15,UC:39,Open:17}); }
+  const budget = Object.values(LIVE_BUDGETS).reduce((a,b)=>a+b,0)||130;
 
-  const maxVal=Math.max(...cols.map(c=>c.cumBase+c.val));
-  const container=document.getElementById('wf3-chart');
+  wf3ChartData = buildWaterfallChart('wf3-canvas', 'US&C Consolidated', counts, budget, openWf3Drill);
+}
+
+function openWf3Drill(divisionName, status, riskFilter, title) {
+  let sites;
+  if (riskFilter==='2026') sites=LIVE_ROWS.filter(r=>(divisionName==='USC'||r.division===divisionName)&&is2026Live(r)&&(status===null||r.status===status));
+  else if (riskFilter==='upside') sites=LIVE_ROWS.filter(r=>(divisionName==='USC'||r.division===divisionName)&&(r.riskLevel||'').trim().toLowerCase()==='upside');
+  else sites=LIVE_ROWS.filter(r=>(divisionName==='USC'||r.division===divisionName)&&(status===null||r.status===status));
+
+  showWaterfallDrillModal('wf3-drill-modal','wf3-drill-header','wf3-drill-title','wf3-drill-sub','wf3-drill-badge','wf3-drill-rows',
+    PLK_COLORS.orange, title, `US&C · 2026 Pipeline`, sites);
+}
+function closeWf3Drill() { document.getElementById('wf3-drill-modal').style.display='none'; }
+
+// ── PANEL 03: Divisional waterfall charts ──
+let divWfBuilt = false;
+function buildDivisionWaterfallCharts() {
+  if (divWfBuilt) return;
+  divWfBuilt = true;
+  DIVISION_CONFIGS.forEach(cfg => { buildDivWfCard(cfg); });
+}
+
+const DIV_WF_DATA = {};
+function buildDivWfCard(cfg) {
+  const container = document.getElementById(cfg.el);
   if (!container) return;
 
-  // Reset heights for animation
-  container.innerHTML=cols.map((col,ci)=>{
-    const shortLbls={'FY BU + Upside':'FY BU+Up','Gap to Budget':'Gap','Budget':'Budget','FY BU':'FY BU','Upside':'Upside','Prospect':'Prospect','SA':'SA','PC':'PC','Permitting':'Permitting','UC':'UC','Open':'Open'};
-    const displayLbl=shortLbls[col.lbl]||col.lbl;
-    const isSmallVal=col.val<=5;
-    return `<div class="wf-r-col" id="wf3col-${ci}" onclick="wf3Drill(${ci})">
-      <div class="wf-r-spacer" id="wf3sp-${ci}" style="flex:1"></div>
-      <div class="wf-r-seg" id="wf3seg-${ci}" style="background:${col.color};width:80%;height:0%;min-height:0;cursor:pointer" title="${col.lbl}: ${col.val}">
-        <span class="wf-r-seg-val${isSmallVal?' sm':''}" id="wf3val-${ci}" style="opacity:0">${col.val}</span>
-      </div>
-      <div class="wf-r-col-lbl">${displayLbl}</div>
-    </div>`;
-  }).join('');
+  const bu = LIVE_ROWS.filter(r=>r.division===cfg.name&&is2026Live(r));
+  const counts = {Prospect:0,SA:0,PC:0,Permitting:0,UC:0,Open:0};
+  bu.forEach(r=>{if(r.status&&counts.hasOwnProperty(r.status))counts[r.status]++;});
+  const budget = LIVE_BUDGETS[cfg.name]||0;
+  const safeId = 'divwf-canvas-'+cfg.id;
 
-  wf3Built=true;
-  // Auto-play after short delay
-  setTimeout(()=>playWf3(null, cols, maxVal), 400);
-}
+  container.innerHTML = `
+    <div class="div-wf-title">
+      <span style="color:var(--plk-orange)">${cfg.name}</span>
+      <button class="div-wf-exp-btn" id="divwf-exp-${cfg.id}" onclick="exportDivWaterfall('${cfg.name}','${cfg.id}')">⬇ Export</button>
+    </div>
+    <div style="font-family:var(--font-mono);font-size:8px;color:var(--plk-muted);margin-bottom:4px">${cfg.ddl} · Budget: ${budget||'—'}</div>
+    <div style="flex:1;min-height:80px;position:relative"><canvas id="${safeId}" style="max-height:100px"></canvas></div>`;
 
-function playWf3(btnEl, colsArg, maxValArg) {
-  if (wf3Playing) return;
-  wf3Playing=true;
-  if (btnEl) { btnEl.textContent='Playing…'; btnEl.disabled=true; }
-
-  // Recalculate if not passed
-  let cols=colsArg, maxVal=maxValArg;
-  if (!cols) {
-    const stageCounts={Prospect:4,SA:2,PC:8,Permitting:15,UC:39,Open:17};
-    if (LIVE_ROWS.length) {
-      const bu=LIVE_ROWS.filter(r=>is2026Live(r));
-      Object.keys(stageCounts).forEach(k=>stageCounts[k]=0);
-      bu.forEach(r=>{if(r.status&&stageCounts.hasOwnProperty(r.status))stageCounts[r.status]++;});
-    }
-    const budget=Object.values(LIVE_BUDGETS).reduce((a,b)=>a+b,0)||130;
-    const upside=LIVE_ROWS.filter(r=>(r.riskLevel||'').trim().toLowerCase()==='upside').length||24;
-    const stageLabels=['Prospect','SA','PC','Permitting','UC','Open'];
-    const stagVals=stageLabels.map(l=>stageCounts[l]);
-    const fyBU=stagVals.reduce((a,b)=>a+b,0), fyBUUpside=fyBU+upside, gapToBudget=budget-fyBUUpside;
-    cols=[
-      ...stageLabels.map((lbl,i)=>({lbl,val:stagVals[i],color:'#E8521A',cumBase:stagVals.slice(0,i).reduce((a,b)=>a+b,0)})),
-      {lbl:'FY BU',val:fyBU,color:'#7B2D8B',cumBase:0},
-      {lbl:'Upside',val:upside,color:'#C1272D',cumBase:fyBU},
-      {lbl:'FY BU + Upside',val:fyBUUpside,color:'#7B2D8B',cumBase:0},
-      {lbl:'Gap to Budget',val:Math.abs(gapToBudget),color:'#C1272D',cumBase:fyBUUpside},
-      {lbl:'Budget',val:budget,color:'#00A99D',cumBase:0},
-    ];
-    maxVal=Math.max(...cols.map(c=>c.cumBase+c.val));
-  }
-
-  cols.forEach((col,ci)=>{
-    setTimeout(()=>{
-      const seg=document.getElementById('wf3seg-'+ci);
-      const sp=document.getElementById('wf3sp-'+ci);
-      const valEl=document.getElementById('wf3val-'+ci);
-      if (!seg||!sp) return;
-      const barPct=(col.val/maxVal)*88;
-      const spacerPct=((col.cumBase)/maxVal)*88;
-      // Use flex approach: spacer grows proportionally, bar has fixed height %
-      seg.style.height=barPct+'%';
-      seg.style.minHeight=col.val>0?'14px':'0';
-      sp.style.height=spacerPct+'%';
-      if (valEl) { setTimeout(()=>{ valEl.style.opacity='1'; },200); }
-    }, ci*160+100);
-  });
-
+  // Build chart after DOM is ready
   setTimeout(()=>{
-    wf3Playing=false;
-    if (btnEl) { btnEl.textContent='↺ Replay'; btnEl.disabled=false; btnEl.onclick=()=>{ resetWf3(); setTimeout(()=>playWf3(btnEl),100); }; }
-  }, cols.length*160+500);
+    const data = buildWaterfallChart(safeId, cfg.name, counts, budget, (div, status, riskFilter, title) => {
+      openDivWfDrill(div, status, riskFilter, title, cfg.name);
+    });
+    DIV_WF_DATA[cfg.id] = { ...data, divisionName:cfg.name, counts, budget };
+  }, 50);
 }
 
-function resetWf3() {
-  for(let i=0;i<11;i++){
-    const seg=document.getElementById('wf3seg-'+i);
-    const valEl=document.getElementById('wf3val-'+i);
-    if(seg){seg.style.height='0%';seg.style.minHeight='0';}
-    if(valEl) valEl.style.opacity='0';
-  }
-  wf3Playing=false;
+function openDivWfDrill(divisionName, status, riskFilter, title, divLabel) {
+  let sites;
+  if (riskFilter==='2026') sites=LIVE_ROWS.filter(r=>r.division===divisionName&&is2026Live(r)&&(status===null||r.status===status));
+  else if (riskFilter==='upside') sites=LIVE_ROWS.filter(r=>r.division===divisionName&&(r.riskLevel||'').trim().toLowerCase()==='upside');
+  else sites=LIVE_ROWS.filter(r=>r.division===divisionName&&(status===null||r.status===status));
+
+  showWaterfallDrillModal('divwf-drill-modal','divwf-drill-header','divwf-drill-title','divwf-drill-sub','divwf-drill-badge','divwf-drill-rows',
+    PLK_COLORS.orange, title, divLabel+' · 2026 Pipeline', sites);
+}
+function closeDivWfDrill() { document.getElementById('divwf-drill-modal').style.display='none'; }
+
+// Shared drill modal renderer for both waterfall panels
+function showWaterfallDrillModal(modalId, headerId, titleId, subId, badgeId, rowsId, bgColor, title, subtitle, sites) {
+  document.getElementById(headerId).style.background = bgColor;
+  document.getElementById(titleId).textContent = title;
+  document.getElementById(subId).textContent = subtitle;
+  document.getElementById(badgeId).textContent = sites.length+' site'+(sites.length!==1?'s':'');
+
+  const rcMap = {low:{bg:'#D1FAE5',color:'#065F46'},medium:{bg:'#FEF3C7',color:'#92400E'},high:{bg:'#FEE2E2',color:'#991B1B'},upside:{bg:'#EDE9FE',color:'#5B21B6'}};
+  document.getElementById(rowsId).innerHTML = sites.length
+    ? sites.map((s,i) => {
+        const rk=(s.riskLevel||'').trim().toLowerCase();
+        const rc=rcMap[rk]||{bg:'#F3F4F6',color:'#374151'};
+        const bg=i%2===0?'#fff':'#f9fafb';
+        return `<div style="display:grid;grid-template-columns:.55fr 1.1fr .85fr .3fr .65fr .9fr 1.8fr;gap:0;padding:7px 14px;background:${bg};border-bottom:1px solid #f3f4f6;font-family:var(--font-mono);font-size:11px;color:#374151;align-items:start">
+          <span style="font-weight:700;color:#1a1a1a;padding-top:1px">${s.restNum||'—'}</span>
+          <span style="padding-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${s.fz||'—'}</span>
+          <span style="padding-top:1px">${s.city||'—'}</span>
+          <span style="padding-top:1px">${s.state||'—'}</span>
+          <span style="padding-top:1px"><span style="background:${rc.bg};color:${rc.color};padding:2px 5px;border-radius:4px;font-size:10px;font-weight:700;white-space:nowrap">${rk.charAt(0).toUpperCase()+rk.slice(1)||'—'}</span></span>
+          <span style="color:#6b7280;padding-top:1px">${s.plkOpenDate||s.fzOpenDate||'—'}</span>
+          <span style="color:#9ca3af;font-size:10px;white-space:normal;word-break:break-word;line-height:1.4">${s.lastComment||'—'}</span>
+        </div>`;
+      }).join('')
+    : '<div style="padding:30px;text-align:center;color:#9ca3af;font-family:var(--font-body);font-size:13px">No sites in this category</div>';
+
+  document.getElementById(modalId).style.display = 'flex';
 }
 
-const wf3Info=[
-  'Prospect sites — earliest pipeline stage, awaiting site approval.',
-  'SA (Site Approval) sites — approved and moving through due diligence.',
-  'PC (Project Coordination) sites — site approved, coordinating construction.',
-  'Permitting sites — actively in permitting process.',
-  'UC (Under Construction) sites — construction underway.',
-  'Open sites — already opened in 2026 year to date.',
-  'FY BU (Full Year Bottom-Up) — total of all 2026 low/medium/high pipeline sites.',
-  'Upside sites — additional pipeline with potential to open if conditions align.',
-  'FY BU + Upside — combined bottom-up plus upside pipeline count.',
-  'Gap to Budget — shortfall between FY BU + Upside and the full year opening budget.',
-  'Budget — the full year 2026 opening target across all US&C divisions.',
-];
-function wf3Drill(idx) {
-  alert('📊 ' + (['Prospect','SA','PC','Permitting','UC','Open','FY BU','Upside','FY BU + Upside','Gap to Budget','Budget'][idx]||'') + '\n\n' + (wf3Info[idx]||''));
-}
-
-// ── FIX 04: Divisional NRO Opening Count Charts ───────────────────────────────
-// Representative 2020-2025 NRO opening counts per division
-// These represent real-looking data from the NRO Performance dashboard
-
-const NRO_DIV_DATA = {
-  Northeast: { years:[2020,2021,2022,2023,2024,2025], counts:[8,12,15,18,14,10], color:'#E8521A' },
-  Southeast: { years:[2020,2021,2022,2023,2024,2025], counts:[10,14,18,22,19,12], color:'#00A99D' },
-  Central:   { years:[2020,2021,2022,2023,2024,2025], counts:[6,9,11,14,12,8],  color:'#7B2D8B' },
-  West:      { years:[2020,2021,2022,2023,2024,2025], counts:[5,7,10,12,11,7],  color:'#F5A623' },
-  Canada:    { years:[2020,2021,2022,2023,2024,2025], counts:[3,4,6,7,5,4],     color:'#1d4ed8' },
-  'Non-Trad':{ years:[2020,2021,2022,2023,2024,2025], counts:[2,3,4,3,5,3],     color:'#C1272D' },
-};
-
-// If live data is available, compute real counts
-function computeNROFromLive() {
-  if (!LIVE_ROWS.length) return null;
-  // The pipeline API has "Open" status rows which represent opened restaurants
-  // We can group by division and by plkOpenDate year
-  const result = {};
-  DIVISIONS_ORDER.forEach(div => {
-    const opened = LIVE_ROWS.filter(r => r.division===div && r.status==='Open');
-    const bySta = {};
-    // We won't have year breakdown from pipeline alone, use representative
-    result[div] = null; // fallback to static
-  });
-  return null; // use static data for cleaner display
-}
-
-let nroChartsBuilt = false;
+// ── EXPORT: calls the same /api/export_chart endpoint as dev-execution ──
 let nroExporting = false;
-
-function buildNROCharts() {
-  if (nroChartsBuilt) return;
-  nroChartsBuilt = true;
-  const grid = document.getElementById('nro-grid');
-  if (!grid) return;
-
-  const divNames = Object.keys(NRO_DIV_DATA);
-  grid.innerHTML = divNames.map(div => {
-    const d = NRO_DIV_DATA[div];
-    const safeDiv = div.replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
-    return `<div class="div-nro-card">
-      <div class="div-nro-hdr">
-        <div class="div-nro-name" style="color:${d.color}">📊 ${div}</div>
-        <button class="exp-btn-sm" id="nro-exp-${safeDiv}" onclick="exportNRODiv('${div}','${safeDiv}')">⬇ Export</button>
-      </div>
-      <div class="div-nro-bars" id="nro-bars-${safeDiv}"></div>
-      <div style="display:flex;justify-content:space-between;padding-top:4px">
-        ${d.years.map(y=>`<span style="font-family:var(--font-mono);font-size:8px;color:var(--plk-muted);flex:1;text-align:center">${y}</span>`).join('')}
-      </div>
-    </div>`;
-  }).join('');
-
-  // Render bars for each division
-  divNames.forEach(div => {
-    const d = NRO_DIV_DATA[div];
-    const safeDiv = div.replace(/\s/g,'_').replace(/[^a-zA-Z0-9_]/g,'');
-    const barsEl = document.getElementById('nro-bars-'+safeDiv);
-    if (!barsEl) return;
-    const maxCount = Math.max(...d.counts);
-    barsEl.innerHTML = d.years.map((yr,i) => {
-      const cnt = d.counts[i];
-      const heightPct = cnt > 0 ? Math.max(8, Math.round((cnt/maxCount)*100)) : 4;
-      const showInside = heightPct > 25;
-      return `<div class="nro-bar-col">
-        <div class="nro-bar" style="height:${heightPct}%;background:${d.color};border-radius:3px 3px 0 0;min-height:6px;position:relative;cursor:default;width:100%;transition:height .6s cubic-bezier(.4,0,.2,1)">
-          ${showInside
-            ? `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:white;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);line-height:1">${cnt}</span>`
-            : `<span style="font-family:var(--font-mono);font-size:9px;font-weight:700;color:${d.color};position:absolute;top:-14px;left:50%;transform:translateX(-50%);line-height:1">${cnt}</span>`
-          }
-        </div>
-      </div>`;
-    }).join('');
-  });
-}
-
-function exportNRODiv(divName, safeDiv) {
+async function exportDivWaterfall(divisionName, divId) {
   if (nroExporting) return;
   nroExporting = true;
-  const btn = document.getElementById('nro-exp-'+safeDiv);
+
+  const btn = document.getElementById('divwf-exp-'+divId);
   if (btn) btn.disabled = true;
+
+  // Build payload matching what dev-execution sends to /api/export_chart
+  const d = DIV_WF_DATA[divId];
+  const sites = LIVE_ROWS.filter(r=>r.division===divisionName&&(is2026Live(r)||(r.riskLevel||'').trim().toLowerCase()==='upside'))
+    .map(s=>({sipId:s.sipId||'',restNum:s.restNum||'',fz:s.fz||'',address:s.address||'',city:s.city||'',state:s.state||'',status:s.status||'',fzOpenDate:s.fzOpenDate||'',plkOpenDate:s.plkOpenDate||'',riskLevel:s.riskLevel||'',lastComment:s.lastComment||''}));
+
+  const payload = d ? {
+    divisionName, labels:d.labels, displayValues:d.displayValues,
+    budget:d.budget, fyBU:d.fyBU, upsideCount:d.upsideCount,
+    gap:d.gap, sites
+  } : { divisionName, labels:[], displayValues:[], budget:0, fyBU:0, upsideCount:0, gap:0, sites };
+
+  // Show progress overlay
   const overlay = document.getElementById('nro-exp-overlay');
   const fill = document.getElementById('nro-exp-fill');
-  const msg = document.getElementById('nro-exp-msg');
+  const msg  = document.getElementById('nro-exp-msg');
   const icon = document.getElementById('nro-exp-icon');
-  document.getElementById('nro-exp-chart').textContent = divName + ' — Opening Count by Year (2020–2025)';
-  overlay.style.display = 'flex';
-  icon.textContent = '📊';
+  document.getElementById('nro-exp-chart').textContent = divisionName + ' — Waterfall Pipeline Export';
+  overlay.style.display = 'flex'; icon.textContent = '📊';
 
-  const steps = [
-    [0,   'Reading opening data…'],
-    [20,  'Building year table…'],
-    [45,  'Formatting cells…'],
-    [70,  'Applying division colors…'],
-    [90,  'Generating .xlsx file…'],
-    [100, '✅ Download complete!'],
-  ];
-  steps.forEach(([pct, text], i) => {
-    setTimeout(() => {
-      fill.style.width = pct + '%';
-      msg.textContent = text;
-      if (pct === 100) {
-        icon.textContent = '📥';
-        setTimeout(() => {
-          overlay.style.display = 'none';
-          if (btn) { btn.disabled=false; btn.textContent='✅ Done!'; }
-          nroExporting = false;
-          setTimeout(() => { if(btn) btn.textContent='⬇ Export'; }, 2500);
-        }, 1200);
-      }
-    }, i * 400);
-  });
+  const steps = [[0,'Building waterfall data…'],[25,'Formatting stages…'],[50,'Applying colors…'],[75,'Generating chart…'],[90,'Writing .xlsx…']];
+  let stepIdx = 0;
+  const stepTimer = setInterval(()=>{
+    if (stepIdx < steps.length) { fill.style.width=steps[stepIdx][0]+'%'; msg.textContent=steps[stepIdx][1]; stepIdx++; }
+  }, 300);
+
+  try {
+    const exportUrl = 'https://plk-dev-dash.vercel.app/api/export_chart';
+    const res = await fetch(exportUrl, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload) });
+    clearInterval(stepTimer);
+    if (!res.ok) throw new Error('Export API returned '+res.status);
+    const blob = await res.blob();
+    fill.style.width='100%'; msg.textContent='✅ Download complete!'; icon.textContent='📥';
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href=url; a.download=`Waterfall_${divisionName.replace(/[^a-zA-Z0-9 ]/g,'_')}.xlsx`;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+    setTimeout(()=>{ overlay.style.display='none'; if(btn){btn.disabled=false;btn.textContent='✅ Done!';} nroExporting=false; setTimeout(()=>{if(btn)btn.textContent='⬇ Export';},2500); },1400);
+  } catch(err) {
+    clearInterval(stepTimer);
+    fill.style.width='100%'; msg.textContent='⚠️ Using animated demo (API offline)'; icon.textContent='📊';
+    // Fallback: show success animation anyway
+    setTimeout(()=>{ overlay.style.display='none'; if(btn){btn.disabled=false;btn.textContent='⬇ Export';} nroExporting=false; }, 2000);
+  }
 }
+
+// Kept for compatibility — no longer used but referenced by old tourGo
+function buildNROCharts() { buildDivisionWaterfallCharts(); }
+// Old CSS-based waterfall stubs — replaced by Chart.js
+function buildWf3Chart_OLD() {} // noop
+function playWf3() {} // noop
+function resetWf3() {} // noop
+function wf3Drill() {} // noop
 </script>
 </body>
 </html>
