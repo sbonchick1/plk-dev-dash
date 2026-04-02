@@ -817,38 +817,38 @@ function s4Switch(idx) {
   if (pill) pill.textContent = d.slug ? 'plk-dev-dash.vercel.app/' + d.slug : 'plk-dev-dash.vercel.app';
   if (link) link.href = url;
 
-  // scroll back to top when switching tabs
-  const scroll = document.getElementById('s4-scroll');
-  if (scroll) scroll.scrollTop = 0;
-
   const iframe  = document.getElementById('s4-iframe');
   const loading = document.getElementById('s4-loading');
   const blocked = document.getElementById('s4-blocked');
 
-  if (blocked) {
-    const bt = document.getElementById('s4-blocked-title');
-    const bl = document.getElementById('s4-blocked-link');
-    const bd = document.getElementById('s4-blocked-desc');
-    if (bt) bt.textContent = d.label;
-    if (bl) bl.href = url;
-    if (bd) bd.textContent = S4_DESCRIPTIONS[idx] || '';
-  }
+  // Update fallback text
+  const bt = document.getElementById('s4-blocked-title');
+  const bl = document.getElementById('s4-blocked-link');
+  const bd = document.getElementById('s4-blocked-desc');
+  if (bt) bt.textContent = d.label;
+  if (bl) bl.href = url;
+  if (bd) bd.textContent = S4_DESCRIPTIONS[idx] || '';
 
   if (!iframe) return;
 
+  // Reset iframe state
   iframe.classList.remove('loaded');
+  iframe.style.pointerEvents = 'none';
   iframe.onload  = null;
   iframe.onerror = null;
+  iframe.src = '';
+
   if (loading) loading.style.display = 'flex';
   if (blocked) blocked.style.display = 'none';
 
   let done = false;
+  // Give 18s — some dashboards fetch live data and are slow
   const t = setTimeout(() => {
     if (done) return;
     done = true;
     if (loading) loading.style.display = 'none';
-    if (blocked) { blocked.style.display = 'flex'; }
-  }, 12000);
+    if (blocked) blocked.style.display = 'flex';
+  }, 18000);
 
   iframe.onload = () => {
     if (done) return;
@@ -857,6 +857,8 @@ function s4Switch(idx) {
     if (loading) loading.style.display = 'none';
     if (blocked) blocked.style.display = 'none';
     iframe.classList.add('loaded');
+    // Enable pointer events so mouse/touch/scroll work inside the iframe
+    iframe.style.pointerEvents = 'all';
   };
 
   iframe.onerror = () => {
@@ -867,7 +869,8 @@ function s4Switch(idx) {
     if (blocked) blocked.style.display = 'flex';
   };
 
-  iframe.src = url;
+  // Small delay before setting src to ensure clean reset
+  setTimeout(() => { iframe.src = url; }, 50);
 }
 
 // Start on NRO Performance when page loads (slide 4 overlay will show when navigated to)
