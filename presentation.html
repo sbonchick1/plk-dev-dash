@@ -1137,10 +1137,23 @@ function buildWaterfallChart(canvasId, divisionName, data, budget, onBarClick) {
         }
       },
       scales: {
-        x: { stacked:true, grid:{display:false}, border:{display:false}, ticks:{color:'#6b7280', font:{size:9}, maxRotation:35, minRotation:0} },
+        x: { stacked:true, grid:{display:false}, border:{display:false}, ticks:{
+          color:'#6b7280', font:{size:7.5},
+          maxRotation:0, minRotation:0, autoSkip:false,
+          callback: function(value, index) {
+            const abbrev = {
+              'Prospect':'Prospect','SA':'SA','PC':'PC',
+              'Permitting':'Permit','UC':'UC','Open':'Open',
+              'FY BU':'FY BU','Upside':'Upside',
+              'FY BU + Upside':'BU+Up',
+              'Gap to Budget':'Gap','Budget':'Budget'
+            };
+            return abbrev[this.getLabelForValue(value)] ?? this.getLabelForValue(value);
+          }
+        }},
         y: { stacked:true, grid:{display:false}, border:{display:false}, ticks:{display:false}, beginAtZero:true }
       },
-      layout: { padding:{ top:20 } }
+      layout: { padding:{ top:20, bottom:2 } }
     },
     plugins: [{
       id: 'lbl_'+canvasId,
@@ -1247,7 +1260,7 @@ function buildDivWfCard(cfg) {
       <button class="div-wf-exp-btn" id="divwf-exp-${cfg.id}" onclick="exportDivWaterfall('${cfg.name}','${cfg.id}')">⬇ Export</button>
     </div>
     <div style="font-family:var(--font-mono);font-size:8px;color:var(--plk-muted);margin-bottom:4px">${cfg.ddl} · Budget: ${budget||'—'}</div>
-    <div style="flex:1;min-height:80px;position:relative"><canvas id="${safeId}" style="max-height:100px"></canvas></div>`;
+    <div style="flex:1;min-height:100px;position:relative"><canvas id="${safeId}" style="max-height:120px"></canvas></div>`;
 
   // Build chart after DOM is ready
   setTimeout(()=>{
