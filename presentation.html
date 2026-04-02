@@ -190,29 +190,26 @@ html, body { width: 100%; height: 100%; overflow: hidden; background: var(--plk-
 }
 #s4-open-link:hover { background: var(--plk-orange); color: #fff; }
 
-/* Frame wrap — the iframe is taller than this box so this div scrolls */
+/* Frame wrap — iframe fills this completely, handles its own scroll */
 #s4-frame-wrap {
   flex: 1;
   position: relative;
-  overflow-y: scroll;
-  overflow-x: hidden;
+  overflow: hidden;
   background: #f9fafb;
-  -webkit-overflow-scrolling: touch;
 }
 
-/* iframe: fixed tall height, interactive once loaded */
+/* iframe fills 100% — pointer-events always on so it's fully interactive */
 #s4-frame-wrap iframe {
   position: absolute; top: 0; left: 0;
   width: 100%;
-  height: 5500px;
+  height: 100%;
   border: none;
   opacity: 0;
   transition: opacity .4s;
-  pointer-events: none;
+  pointer-events: all;
 }
 #s4-frame-wrap iframe.loaded {
   opacity: 1;
-  pointer-events: all;
 }
 
 #s4-loading {
@@ -811,9 +808,6 @@ function s4Switch(idx) {
   const link = document.getElementById('s4-open-link');
   if (pill) pill.textContent = d.slug ? 'plk-dev-dash.vercel.app/' + d.slug : 'plk-dev-dash.vercel.app';
   if (link) link.href = url;
-
-  const wrap = document.getElementById('s4-frame-wrap');
-  if (wrap) wrap.scrollTop = 0;
 
   const iframe  = document.getElementById('s4-iframe');
   const loading = document.getElementById('s4-loading');
