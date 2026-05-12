@@ -7,7 +7,8 @@
     { "source": "/development-execution", "destination": "/development-execution.html" },
     { "source": "/closures",              "destination": "/closures.html" },
     { "source": "/ytd-openings",          "destination": "/ytd-openings.html" },
-    { "source": "/rem-pipeline",          "destination": "/rem-pipeline.html" }
+    { "source": "/rem-pipeline",          "destination": "/rem-pipeline.html" },
+    { "source": "/renovations",           "destination": "/renovations.html" }
   ],
   "headers": [
     {
