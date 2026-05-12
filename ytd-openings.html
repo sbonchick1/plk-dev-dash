@@ -93,7 +93,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
     <span>YTD New Opening Performance</span>
   </div>
   <h1 class="page-title">YTD New Opening Performance</h1>
-  <p class="page-subtitle">2026 restaurant openings · sales calculated from TTM ARS ÷ actual days open · oldest openings first</p>
+  <p class="page-subtitle">2026 restaurant openings · sales calculated from TTM ARS ÷ actual days open · oldest openings first &nbsp;<span id="last-updated" style="color:#9ca3af;"></span></p>
 
   <div class="kpi-banner" id="kpis"></div>
 
@@ -334,6 +334,7 @@ async function fetchData(){
     ALL=data.rows;
     document.getElementById("ov").style.display="none";
     document.getElementById("app").style.display="block";
+    if(data.lastUpdated) document.getElementById("last-updated").textContent="· Last updated "+new Date(data.lastUpdated).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
     populateDivisions();
     renderKPIs(ALL);
     renderTable(ALL);

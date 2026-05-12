@@ -685,7 +685,7 @@ async function init() {
     document.getElementById('loading-overlay').style.display = 'none';
     document.getElementById('app').style.display = 'block';
     document.getElementById('last-updated').textContent =
-      'Last updated: ' + new Date(data.lastUpdated).toLocaleString();
+      '· Last updated ' + new Date(data.lastUpdated).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
 
     populateBUDropdown();
     renderKPIBanner(ALL_ROWS);

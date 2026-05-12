@@ -203,7 +203,7 @@ tbody td{padding:12px 12px;color:#374151;}
       <span>REM Pipeline Dashboard</span>
     </div>
     <h1 class="page-title">Prospect &amp; Site Approval Pipeline</h1>
-    <p class="page-subtitle">Early-stage pipeline tracking — Prospects &amp; Site Approvals by REM and division · SA target vs. actual performance</p>
+    <p class="page-subtitle">Early-stage pipeline tracking — Prospects &amp; Site Approvals by REM and division · SA target vs. actual performance &nbsp;<span id="last-updated" style="color:#9ca3af;"></span></p>
 
     <div class="kpi-banner" id="kpi-banner"></div>
 
@@ -573,6 +573,7 @@ async function fetchData(){
     ALL_DATA=data.rows;SA_TARGETS=data.saTargets||{};
     document.getElementById("loading-overlay").style.display="none";
     document.getElementById("app").style.display="block";
+    if(data.lastUpdated) document.getElementById("last-updated").textContent="· Last updated "+new Date(data.lastUpdated).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
     renderKPIBanner();renderREMCards();renderTable();renderDivisionCharts();
   }catch(e){
     document.getElementById("loading-overlay").style.display="none";

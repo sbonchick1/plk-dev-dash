@@ -204,7 +204,7 @@ tbody td{padding:13px 14px;color:#374151;}
       <span>Development Execution Performance</span>
     </div>
     <h1 class="page-title">Development Execution Performance</h1>
-    <p class="page-subtitle">New restaurant pipeline analysis by division with budget tracking and accountability</p>
+    <p class="page-subtitle">New restaurant pipeline analysis by division with budget tracking and accountability &nbsp;<span id="last-updated" style="color:#9ca3af;"></span></p>
     <div class="kpi-banner" id="kpi-banner"></div>
     <div class="section">
       <div class="section-header">
@@ -668,6 +668,7 @@ async function fetchData(){
     ALL_DATA=data.rows;BUDGETS=data.budgets;
     document.getElementById("loading-overlay").style.display="none";
     document.getElementById("app").style.display="block";
+    if(data.lastUpdated) document.getElementById("last-updated").textContent="· Last updated "+new Date(data.lastUpdated).toLocaleString('en-US',{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'});
     renderKPIBanner();renderVelocity();renderTable2026();renderTable2027();renderWaterfallCharts();
   }catch(e){
     document.getElementById("loading-overlay").style.display="none";
