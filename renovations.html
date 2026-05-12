@@ -530,7 +530,7 @@ function renderModalTable() {
       '<td><strong>' + (r.plk || '—') + '</strong></td>' +
       '<td>' + (r.division || '—') + '</td>' +
       '<td>' + (r.bu ? 'BU ' + r.bu : '—') + '</td>' +
-      '<td><span class="stage-badge" style="background:' + color + '">' + (r.stage || '—') + '</span></td>' +
+      '<td>' + (r.stage || '—') + '</td>' +
       '<td style="color:#6b7280;font-size:11px;">' + (r.rawStatus || '—') + '</td>' +
     '</tr>';
   }).join('');
