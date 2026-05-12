@@ -42,11 +42,55 @@ module.exports = async function(req, res) {
     if (!data.columns || !data.rows)
       return res.status(500).json({ error: "Unexpected Smartsheet response", detail: data });
 
-    // Debug: return all column names so we can verify exact titles
+    // Debug: column names
     if (req.query && req.query.debug === "1") {
       return res.status(200).json({
         columns: data.columns.map(function(c, i) { return { index: i, id: c.id, title: c.title }; }),
         rowCount: data.rows.length
+      });
+    }
+
+    // Debug: show exactly what BU 1-12 rows are being dropped and why
+    if (req.query && req.query.debug === "2") {
+      const colMap2 = {};
+      data.columns.forEach(function(col, i) { colMap2[col.title] = i; });
+      function get2(row, title) {
+        const idx = colMap2[title];
+        if (idx === undefined) return null;
+        const cell = row.cells[idx];
+        if (!cell) return null;
+        if (cell.displayValue !== undefined) return cell.displayValue;
+        if (cell.value !== undefined) return cell.value;
+        return null;
+      }
+      const bu112 = data.rows.filter(function(row) {
+        const buNum = parseFloat(get2(row, "BU"));
+        return !isNaN(buNum) && buNum >= 1 && buNum <= 12;
+      });
+      const dropped = bu112.filter(function(row) {
+        const div = get2(row, "Division");
+        const raw = get2(row, "Renovation Status");
+        const stage = raw ? (STAGE_MAP[raw.trim()] || null) : null;
+        return !div || !stage;
+      }).map(function(row) {
+        return {
+          store:  get2(row, "Store Number"),
+          bu:     get2(row, "BU"),
+          div:    get2(row, "Division"),
+          status: get2(row, "Renovation Status"),
+          stage:  get2(row, "Renovation Status") ? (STAGE_MAP[(get2(row, "Renovation Status") || "").trim()] || "NO MATCH") : "NULL"
+        };
+      });
+      const statusCounts = {};
+      bu112.forEach(function(row) {
+        const s = get2(row, "Renovation Status") || "(blank)";
+        statusCounts[s] = (statusCounts[s] || 0) + 1;
+      });
+      return res.status(200).json({
+        totalBU112Rows: bu112.length,
+        droppedCount: dropped.length,
+        dropped: dropped,
+        allStatusValues: statusCounts
       });
     }
 
