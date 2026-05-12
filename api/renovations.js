@@ -10,6 +10,7 @@ const STAGE_MAP = {
   "360° Survey Scheduled":         "360 Phase",
   "RSCF / Scope Finalization":          "360 Phase",
   "Pending Design Submittal":           "In Design",
+  "Design Review":                      "In Design",
   "Permitting":                         "Permitting",
   "Under Construction":                 "Under Construction",
   "Punch List - FZ Action":             "Punch List",
