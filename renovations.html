@@ -5,249 +5,276 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Renovation Dashboard — Popeyes</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;background:#f9fafb;min-height:100vh;color:#1a1a1a;}
 .container{max-width:1700px;margin:0 auto;padding:40px;}
 .breadcrumb{display:flex;align-items:center;gap:8px;margin-bottom:20px;font-size:14px;color:#9b9b9b;}
-.breadcrumb a{color:#9b9b9b;text-decoration:none;transition:color .2s;}
-.breadcrumb a:hover{color:#E8521A;}
-.breadcrumb-sep{color:#d1d5db;}
-.page-header{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:32px;}
-.page-title{font-size:36px;font-weight:700;color:#1a1a1a;letter-spacing:-1px;line-height:1.1;}
-.page-subtitle{font-size:15px;color:#6b6b6b;line-height:1.6;margin-top:8px;}
-.last-updated{font-size:12px;color:#9ca3af;margin-top:6px;}
-.live-badge{display:inline-flex;align-items:center;gap:6px;background:#fff5f0;color:#E8521A;padding:5px 12px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid #fdd5c5;}
-.live-dot{width:7px;height:7px;background:#E8521A;border-radius:50%;animation:pulse 2s ease-in-out infinite;}
-@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
-
-/* KPI banner */
-.kpi-banner{display:flex;gap:12px;margin-bottom:28px;flex-wrap:nowrap;}
-.kpi-banner>.kpi{flex:1 1 0;min-width:0;}
-.kpi{background:#fff;border-radius:12px;padding:18px 16px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.05);position:relative;overflow:hidden;}
-.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--c,#E8521A);}
-.kpi-lbl{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.8px;font-weight:600;margin-bottom:6px;}
-.kpi-val{font-size:28px;font-weight:800;color:#1a1a1a;line-height:1;margin-bottom:4px;}
+.breadcrumb a{color:#9b9b9b;text-decoration:none;}.breadcrumb a:hover{color:#E8521A;}
+.page-title{font-size:36px;font-weight:700;color:#1a1a1a;margin-bottom:12px;letter-spacing:-1px;}
+.page-subtitle{font-size:16px;color:#6b6b6b;line-height:1.6;margin-bottom:32px;}
+/* KPI */
+.kpi-banner{display:flex;flex-wrap:nowrap;gap:12px;margin-bottom:32px;}
+.kpi-banner>.kpi-card{flex:1 1 0;min-width:0;}
+.kpi-banner .kpi-value{font-size:clamp(15px,1.8vw,26px);}
+.kpi-banner .kpi-label{font-size:clamp(7px,.65vw,10px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.kpi-banner .kpi-sub{font-size:clamp(7px,.62vw,11px);}
+.kpi-card{background:white;border-radius:12px;padding:16px 12px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.05);position:relative;overflow:hidden;}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:var(--kpi-color,#E8521A);}
+.kpi-label{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;font-weight:600;}
+.kpi-value{font-size:26px;font-weight:800;color:#1a1a1a;line-height:1;margin-bottom:4px;}
 .kpi-sub{font-size:11px;color:#9ca3af;}
-
+.kpi-good .kpi-value{color:#059669;}
+/* Section */
+.section{background:white;border-radius:16px;padding:32px;margin-bottom:32px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.05);}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:2px solid #f0f0f0;flex-wrap:wrap;gap:12px;}
+.section-title{font-size:20px;font-weight:700;color:#1a1a1a;display:flex;align-items:center;gap:10px;}
 /* Controls */
-.controls{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:16px 20px;margin-bottom:28px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.ctrl-lbl{font-size:12px;font-weight:600;color:#374151;white-space:nowrap;}
-.ctrl-select{font-size:13px;padding:7px 12px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#1a1a1a;font-family:inherit;cursor:pointer;min-width:130px;}
-.ctrl-select:focus{outline:none;border-color:#E8521A;box-shadow:0 0 0 3px rgba(232,82,26,.1);}
-.ctrl-sep{width:1px;height:24px;background:#e5e7eb;}
-
-/* Division grid */
-.div-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
-@media(max-width:1100px){.div-grid{grid-template-columns:1fr;}}
-
-.div-card{background:#fff;border-radius:16px;padding:28px 28px 24px;border:1px solid #e5e7eb;box-shadow:0 1px 3px rgba(0,0,0,.05);}
-.div-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;}
-.div-name{font-size:20px;font-weight:700;color:#1a1a1a;letter-spacing:-.4px;}
-.div-kpis{display:flex;gap:20px;margin-top:4px;flex-wrap:wrap;}
-.div-kpi{text-align:right;}
-.div-kpi-val{font-size:22px;font-weight:800;color:#1a1a1a;line-height:1;}
-.div-kpi-lbl{font-size:10px;color:#9ca3af;text-transform:uppercase;letter-spacing:.6px;margin-top:2px;}
-.div-kpi-val.green{color:#059669;}
-
-.chart-wrap{position:relative;height:300px;}
-
+.ctrl-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.ctrl-lbl{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.ctrl-select{padding:6px 10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;color:#1a1a1a;background:white;cursor:pointer;font-family:inherit;}
+.ctrl-select:focus{outline:none;border-color:#E8521A;}
+/* Export */
+.export-btn{display:inline-flex;align-items:center;gap:6px;background:#f0fdf4;color:#16a34a;border:1px solid #86efac;border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.export-btn:hover{background:#dcfce7;border-color:#4ade80;}
+.export-btn:disabled{opacity:.5;cursor:default;}
+.export-btn svg{width:15px;height:15px;}
+/* Chart cards */
+.division-charts-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(500px,1fr));gap:24px;margin-top:4px;}
+.chart-card{background:white;border-radius:12px;padding:24px;border:1px solid #e5e7eb;}
+.chart-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:12px;}
+.chart-header-left{flex:1;}
+.chart-title{font-size:16px;font-weight:700;color:#1a1a1a;margin-bottom:2px;}
+.chart-subtitle{font-size:13px;color:#6b7280;margin-bottom:2px;}
+.chart-hint{font-size:11px;color:#E8521A;margin-bottom:14px;display:flex;align-items:center;gap:4px;font-weight:500;}
+.chart-canvas{max-height:320px;}
 /* Legend */
-.legend{display:flex;flex-wrap:wrap;gap:8px 14px;margin-top:16px;padding-top:14px;border-top:1px solid #f3f4f6;}
-.legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280;font-weight:500;}
+.legend-bar{display:flex;align-items:center;gap:16px;margin-top:20px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:#6b7280;}
 .legend-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0;}
-
-/* Loading / error */
-.state-card{background:#fff;border-radius:16px;padding:60px 40px;border:1px solid #e5e7eb;text-align:center;}
-.state-icon{font-size:40px;margin-bottom:16px;}
-.state-title{font-size:18px;font-weight:700;color:#1a1a1a;margin-bottom:8px;}
-.state-msg{font-size:14px;color:#6b7280;line-height:1.6;}
-.spinner{display:inline-block;width:36px;height:36px;border:3px solid #f3f4f6;border-top-color:#E8521A;border-radius:50%;animation:spin .7s linear infinite;margin-bottom:16px;}
+/* Loading overlay */
+.overlay{position:fixed;inset:0;background:#f9fafb;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:999;}
+.spinner{width:48px;height:48px;border:4px solid #E8521A;border-top:4px solid transparent;border-radius:50%;animation:spin 1s linear infinite;margin-bottom:20px;}
 @keyframes spin{to{transform:rotate(360deg);}}
-
-/* BU pills inside chart tooltip area */
-.bu-pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:16px;}
-.bu-pill{font-size:11px;padding:3px 9px;border-radius:6px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s;}
-.bu-pill.active{background:#E8521A;color:#fff;border-color:#E8521A;}
-.bu-pill.inactive{background:#f9fafb;color:#6b7280;border-color:#e5e7eb;}
-.bu-pill.inactive:hover{border-color:#E8521A;color:#E8521A;}
+.overlay-title{font-size:18px;font-weight:600;color:#374151;}
+.overlay-sub{font-size:14px;color:#9ca3af;margin-top:8px;}
+/* Drill-down modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .2s;}
+.modal-overlay.open{opacity:1;pointer-events:auto;}
+.modal{background:white;border-radius:16px;width:100%;max-width:1100px;max-height:90vh;display:flex;flex-direction:column;box-shadow:0 24px 80px rgba(0,0,0,.2);transform:translateY(20px);transition:transform .2s;}
+.modal-overlay.open .modal{transform:translateY(0);}
+.modal-header{padding:20px 24px 16px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-shrink:0;}
+.modal-title{font-size:17px;font-weight:700;color:#1a1a1a;}
+.modal-subtitle{font-size:13px;color:#6b7280;margin-top:2px;}
+.modal-actions{display:flex;gap:8px;align-items:center;}
+.modal-close{background:#f3f4f6;border:none;border-radius:8px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:#6b7280;}
+.modal-close:hover{background:#fee2e2;color:#dc2626;}
+.modal-filterbar{display:flex;gap:10px;align-items:center;padding:12px 24px;background:#f9fafb;border-bottom:1px solid #e5e7eb;flex-wrap:wrap;flex-shrink:0;}
+.modal-filter-label{font-size:11px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:.5px;white-space:nowrap;}
+.modal-select{padding:5px 10px;border:1px solid #e5e7eb;border-radius:6px;font-size:12px;color:#374151;background:white;cursor:pointer;outline:none;}
+.modal-select:focus{border-color:#E8521A;}
+.modal-count{margin-left:auto;font-size:12px;color:#9ca3af;white-space:nowrap;}
+.modal-reset{background:none;border:1px solid #e5e7eb;border-radius:6px;padding:5px 10px;font-size:12px;color:#6b7280;cursor:pointer;}
+.modal-reset:hover{border-color:#E8521A;color:#E8521A;}
+.modal-body{overflow-y:auto;padding:0 24px 20px;}
+.modal-table{width:100%;border-collapse:collapse;font-size:12px;}
+.modal-table thead th{background:#f9fafb;padding:9px 12px;text-align:left;font-weight:600;color:#6b7280;text-transform:uppercase;font-size:10px;letter-spacing:.4px;border-bottom:2px solid #e5e7eb;white-space:nowrap;position:sticky;top:0;z-index:1;cursor:pointer;user-select:none;}
+.modal-table thead th:hover{color:#E8521A;}
+.modal-table thead th .sort-arrow{margin-left:4px;opacity:.4;font-size:9px;}
+.modal-table thead th.sort-asc .sort-arrow::after{content:'▲';opacity:1;}
+.modal-table thead th.sort-desc .sort-arrow::after{content:'▼';opacity:1;}
+.modal-table thead th:not(.sort-asc):not(.sort-desc) .sort-arrow::after{content:'⇅';}
+.modal-table tbody tr{border-bottom:1px solid #f3f4f6;}
+.modal-table tbody tr:hover{background:#fef3ee;}
+.modal-table tbody td{padding:10px 12px;color:#374151;}
+.modal-empty{text-align:center;padding:40px;color:#9ca3af;font-size:14px;}
+.stage-badge{display:inline-block;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;color:white;}
+@media(max-width:768px){.container{padding:24px;}.page-title{font-size:28px;}.division-charts-grid{grid-template-columns:1fr;}.kpi-banner{flex-wrap:wrap!important;}}
 </style>
 </head>
 <body>
+
+<div id="loading-overlay" class="overlay">
+  <div class="spinner"></div>
+  <div class="overlay-title">Loading renovation data…</div>
+  <div class="overlay-sub">Fetching live data from Smartsheet</div>
+</div>
+
+<!-- Drill-down modal -->
+<div class="modal-overlay" id="drill-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modal-title">Restaurants</div>
+        <div class="modal-subtitle" id="modal-subtitle"></div>
+      </div>
+      <div class="modal-actions">
+        <button class="export-btn" onclick="exportModalToExcel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export to Excel
+        </button>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-filterbar">
+      <span class="modal-filter-label">Filter:</span>
+      <select class="modal-select" id="modal-filter-stage" onchange="renderModalTable()">
+        <option value="">All Stages</option>
+      </select>
+      <select class="modal-select" id="modal-filter-bu" onchange="renderModalTable()">
+        <option value="">All BUs</option>
+      </select>
+      <button class="modal-reset" onclick="resetModalFilters()">Reset</button>
+      <span class="modal-count" id="modal-count"></span>
+    </div>
+    <div class="modal-body">
+      <table class="modal-table">
+        <thead>
+          <tr id="modal-thead-row">
+            <th onclick="sortModal(0)">Store #<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(1)">Division<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(2)">BU<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(3)">Stage<span class="sort-arrow"></span></th>
+            <th onclick="sortModal(4)">Raw Status<span class="sort-arrow"></span></th>
+          </tr>
+        </thead>
+        <tbody id="modal-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
 <div class="container">
 
   <div class="breadcrumb">
-    <a href="/">Popeyes Analytics</a>
-    <span class="breadcrumb-sep">›</span>
+    <a href="/">Home</a>
+    <span style="color:#d0d0d0">/</span>
     <span>Renovation Dashboard</span>
   </div>
 
-  <div class="page-header">
-    <div>
-      <div class="page-title">Renovation Dashboard</div>
-      <div class="page-subtitle">Waterfall by division and stage — sourced live from the Renovation Tracker</div>
-      <div class="last-updated" id="last-updated">Loading…</div>
-    </div>
-    <div class="live-badge"><div class="live-dot"></div>Smartsheet Live</div>
-  </div>
+  <h1 class="page-title">Renovation Dashboard</h1>
+  <p class="page-subtitle">Stage waterfall by division — live from the Renovation Tracker &nbsp;·&nbsp; <span id="last-updated" style="color:#9ca3af;"></span></p>
 
-  <!-- KPI banner -->
-  <div class="kpi-banner">
-    <div class="kpi" style="--c:#1e293b"><div class="kpi-lbl">Total LE</div><div class="kpi-val" id="kpi-total">—</div><div class="kpi-sub">active renovation projects</div></div>
-    <div class="kpi" style="--c:#10b981"><div class="kpi-lbl">Complete</div><div class="kpi-val" id="kpi-complete">—</div><div class="kpi-sub">finished this cycle</div></div>
-    <div class="kpi" style="--c:#f97316"><div class="kpi-lbl">Under Construction</div><div class="kpi-val" id="kpi-uc">—</div><div class="kpi-sub">currently in progress</div></div>
-    <div class="kpi" style="--c:#94a3b8"><div class="kpi-lbl">Not Started</div><div class="kpi-val" id="kpi-ns">—</div><div class="kpi-sub">yet to begin</div></div>
-    <div class="kpi" style="--c:#3b82f6"><div class="kpi-lbl">360 Phase</div><div class="kpi-val" id="kpi-360">—</div><div class="kpi-sub">survey / scope</div></div>
-  </div>
+  <div class="kpi-banner" id="kpi-banner"></div>
 
-  <!-- Controls -->
-  <div class="controls">
-    <span class="ctrl-lbl">Filter by BU</span>
-    <select class="ctrl-select" id="bu-filter">
-      <option value="">All BUs</option>
-    </select>
-    <div class="ctrl-sep"></div>
-    <span style="font-size:12px;color:#9ca3af;" id="filter-count"></span>
-  </div>
-
-  <!-- Loading state -->
-  <div id="loading-state" class="state-card">
-    <div class="spinner"></div>
-    <div class="state-title">Loading renovation data…</div>
-    <div class="state-msg">Fetching live data from Smartsheet</div>
-  </div>
-
-  <!-- Error state -->
-  <div id="error-state" class="state-card" style="display:none;">
-    <div class="state-icon">⚠️</div>
-    <div class="state-title">Could not load data</div>
-    <div class="state-msg" id="error-msg"></div>
-  </div>
-
-  <!-- Division grid -->
-  <div class="div-grid" id="div-grid" style="display:none;">
-    <div class="div-card" id="card-northeast">
-      <div class="div-header">
-        <div>
-          <div class="div-name">Northeast</div>
-          <div class="bu-pills" id="bu-pills-northeast"></div>
-        </div>
-        <div class="div-kpis">
-          <div class="div-kpi"><div class="div-kpi-val" id="ne-total">—</div><div class="div-kpi-lbl">Total LE</div></div>
-          <div class="div-kpi"><div class="div-kpi-val green" id="ne-complete">—</div><div class="div-kpi-lbl">Complete</div></div>
-        </div>
+  <div class="section">
+    <div class="section-header">
+      <div class="section-title"><span>🔨</span>Renovation Stage Waterfall by Division</div>
+      <div class="ctrl-row">
+        <span class="ctrl-lbl">BU Filter</span>
+        <select class="ctrl-select" id="bu-filter" onchange="onBUChange()">
+          <option value="">All BUs</option>
+        </select>
+        <button class="export-btn" onclick="exportAllToExcel()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          Export All to Excel
+        </button>
       </div>
-      <div class="chart-wrap"><canvas id="chart-northeast"></canvas></div>
-      <div class="legend" id="legend"></div>
     </div>
 
-    <div class="div-card" id="card-southeast">
-      <div class="div-header">
-        <div>
-          <div class="div-name">Southeast</div>
-          <div class="bu-pills" id="bu-pills-southeast"></div>
-        </div>
-        <div class="div-kpis">
-          <div class="div-kpi"><div class="div-kpi-val" id="se-total">—</div><div class="div-kpi-lbl">Total LE</div></div>
-          <div class="div-kpi"><div class="div-kpi-val green" id="se-complete">—</div><div class="div-kpi-lbl">Complete</div></div>
-        </div>
-      </div>
-      <div class="chart-wrap"><canvas id="chart-southeast"></canvas></div>
-    </div>
+    <div class="division-charts-grid" id="division-charts"></div>
 
-    <div class="div-card" id="card-central">
-      <div class="div-header">
-        <div>
-          <div class="div-name">Central</div>
-          <div class="bu-pills" id="bu-pills-central"></div>
-        </div>
-        <div class="div-kpis">
-          <div class="div-kpi"><div class="div-kpi-val" id="c-total">—</div><div class="div-kpi-lbl">Total LE</div></div>
-          <div class="div-kpi"><div class="div-kpi-val green" id="c-complete">—</div><div class="div-kpi-lbl">Complete</div></div>
-        </div>
-      </div>
-      <div class="chart-wrap"><canvas id="chart-central"></canvas></div>
-    </div>
-
-    <div class="div-card" id="card-west">
-      <div class="div-header">
-        <div>
-          <div class="div-name">West</div>
-          <div class="bu-pills" id="bu-pills-west"></div>
-        </div>
-        <div class="div-kpis">
-          <div class="div-kpi"><div class="div-kpi-val" id="w-total">—</div><div class="div-kpi-lbl">Total LE</div></div>
-          <div class="div-kpi"><div class="div-kpi-val green" id="w-complete">—</div><div class="div-kpi-lbl">Complete</div></div>
-        </div>
-      </div>
-      <div class="chart-wrap"><canvas id="chart-west"></canvas></div>
-    </div>
+    <div class="legend-bar" id="legend-bar"></div>
   </div>
 
 </div>
+</div>
 
 <script>
-// ── Config ──────────────────────────────────────────────────────────────────
-const STAGES    = ['Not Started','360 Phase','In Design','Permitting','Under Construction','Punch List','Complete','Total LE'];
+// ── Brand colors ─────────────────────────────────────────────────────────────
+const PLK = { orange:"#E8521A", purple:"#7B2D8B", teal:"#00A99D", red:"#C1272D" };
+
+const STAGES = ['Not Started','360 Phase','In Design','Permitting','Under Construction','Punch List','Complete','Total LE'];
 const STAGE_COLORS = {
-  'Not Started':       '#94a3b8',
-  '360 Phase':         '#3b82f6',
-  'In Design':         '#8b5cf6',
-  'Permitting':        '#f59e0b',
-  'Under Construction':'#f97316',
-  'Punch List':        '#ef4444',
-  'Complete':          '#10b981',
-  'Total LE':          '#1e293b',
+  'Not Started':        '#9ca3af',
+  '360 Phase':          '#3b82f6',
+  'In Design':          PLK.purple,
+  'Permitting':         '#F7941D',
+  'Under Construction': PLK.orange,
+  'Punch List':         PLK.red,
+  'Complete':           '#059669',
+  'Total LE':           PLK.teal,
 };
 
 const DIVISIONS = [
-  { key:'northeast', label:'Northeast', totalEl:'ne-total',  completeEl:'ne-complete',  chartId:'chart-northeast',  buPillsId:'bu-pills-northeast'  },
-  { key:'southeast', label:'Southeast', totalEl:'se-total',  completeEl:'se-complete',  chartId:'chart-southeast',  buPillsId:'bu-pills-southeast'  },
-  { key:'central',   label:'Central',   totalEl:'c-total',   completeEl:'c-complete',   chartId:'chart-central',    buPillsId:'bu-pills-central'    },
-  { key:'west',      label:'West',      totalEl:'w-total',   completeEl:'w-complete',   chartId:'chart-west',       buPillsId:'bu-pills-west'       },
+  { key:'northeast', label:'Northeast' },
+  { key:'southeast', label:'Southeast' },
+  { key:'central',   label:'Central'   },
+  { key:'west',      label:'West'      },
 ];
 
-// ── State ────────────────────────────────────────────────────────────────────
 let ALL_ROWS = [];
-const CHARTS  = {};
+const CHARTS = {};
 
 // ── Waterfall math ───────────────────────────────────────────────────────────
-function buildWaterfall(counts, total) {
-  const spacers = [], bars = [], colors = [];
-  let cumulative = 0;
+function buildWaterfall(stageCounts, total) {
+  const bases = [], bars = [], colors = [], displayVals = [];
+  let cum = 0;
   STAGES.forEach(function(stage) {
     if (stage === 'Total LE') {
-      spacers.push(0);
-      bars.push(total);
+      bases.push(0); bars.push(total); displayVals.push(total);
     } else {
-      spacers.push(cumulative);
-      bars.push(counts[stage] || 0);
-      cumulative += (counts[stage] || 0);
+      const v = stageCounts[stage] || 0;
+      bases.push(cum); bars.push(v); displayVals.push(v);
+      cum += v;
     }
     colors.push(STAGE_COLORS[stage]);
   });
-  return { spacers, bars, colors };
+  return { bases, bars, colors, displayVals };
 }
 
-// ── Render / update one division chart ──────────────────────────────────────
-function renderDivision(div, rows) {
+// ── KPI banner ───────────────────────────────────────────────────────────────
+function renderKPIBanner(rows) {
   const counts = {};
   STAGES.forEach(function(s) { if (s !== 'Total LE') counts[s] = 0; });
   rows.forEach(function(r) { if (r.stage && counts[r.stage] !== undefined) counts[r.stage]++; });
   const total = rows.length;
-  const wf    = buildWaterfall(counts, total);
+  const pctComplete = total > 0 ? Math.round(counts['Complete'] / total * 100) : 0;
 
-  // Update header KPIs
-  document.getElementById(div.totalEl).textContent   = total;
-  document.getElementById(div.completeEl).textContent = counts['Complete'] || 0;
+  const cards = [
+    { label:'Total LE',           value: total,                      sub:'BU 1–12 renovation projects',     color: PLK.teal   },
+    { label:'Complete',           value: counts['Complete'],         sub: pctComplete + '% of total LE',    color:'#059669',  cls: pctComplete >= 75 ? 'kpi-good' : '' },
+    { label:'Under Construction', value: counts['Under Construction'],sub:'actively under construction',    color: PLK.orange },
+    { label:'Punch List',         value: counts['Punch List'],       sub:'awaiting closeout items',         color: PLK.red    },
+    { label:'Permitting',         value: counts['Permitting'],       sub:'in permitting / CGBR',            color:'#F7941D'   },
+    { label:'In Design',          value: counts['In Design'],        sub:'pending design submittal',        color: PLK.purple },
+    { label:'360 Phase',          value: counts['360 Phase'],        sub:'survey / scope / on hold',        color:'#3b82f6'   },
+    { label:'Not Started',        value: counts['Not Started'],      sub:'yet to begin',                    color:'#9ca3af'   },
+  ];
 
-  const ctx = document.getElementById(div.chartId).getContext('2d');
+  document.getElementById('kpi-banner').innerHTML = cards.map(function(c) {
+    return '<div class="kpi-card ' + (c.cls || '') + '" style="--kpi-color:' + c.color + '">' +
+      '<div class="kpi-label">' + c.label + '</div>' +
+      '<div class="kpi-value">' + c.value + '</div>' +
+      '<div class="kpi-sub">' + c.sub + '</div>' +
+      '</div>';
+  }).join('');
+}
+
+// ── Render one division chart ────────────────────────────────────────────────
+function renderDivisionChart(div, rows) {
+  const counts = {};
+  STAGES.forEach(function(s) { if (s !== 'Total LE') counts[s] = 0; });
+  rows.forEach(function(r) { if (r.stage && counts[r.stage] !== undefined) counts[r.stage]++; });
+  const total = rows.length;
+  const wf = buildWaterfall(counts, total);
+
+  const canvasId = 'chart-' + div.key;
+  const ctx = document.getElementById(canvasId);
+  if (!ctx) return;
 
   if (CHARTS[div.key]) {
-    // Update existing chart
-    CHARTS[div.key].data.datasets[0].data = wf.spacers;
+    CHARTS[div.key].data.datasets[0].data = wf.bases;
     CHARTS[div.key].data.datasets[1].data = wf.bars;
+    CHARTS[div.key].data.datasets[1].backgroundColor = wf.colors;
+    CHARTS[div.key]._displayVals = wf.displayVals;
     CHARTS[div.key].update('active');
+
+    // Update subtitle count
+    const sub = document.getElementById('sub-' + div.key);
+    if (sub) sub.textContent = total + ' total · ' + (counts['Complete'] || 0) + ' complete';
     return;
   }
 
@@ -257,174 +284,362 @@ function renderDivision(div, rows) {
       labels: STAGES,
       datasets: [
         {
-          // transparent spacer — lifts each bar to its running total baseline
-          label: '__spacer__',
-          data: wf.spacers,
-          backgroundColor: 'transparent',
-          borderColor: 'transparent',
+          label: '_base',
+          data: wf.bases,
+          backgroundColor: 'rgba(0,0,0,0)',
+          borderColor: 'rgba(0,0,0,0)',
+          borderWidth: 0,
           stack: 'wf',
-          hoverBackgroundColor: 'transparent',
         },
         {
-          label: 'Count',
+          label: '_bars',
           data: wf.bars,
           backgroundColor: wf.colors,
-          borderColor: wf.colors.map(function(c) { return c; }),
-          borderWidth: 0,
           borderRadius: 4,
-          borderSkipped: 'bottom',
+          barPercentage: 0.6,
           stack: 'wf',
         }
       ]
     },
     options: {
       responsive: true,
-      maintainAspectRatio: false,
+      maintainAspectRatio: true,
+      animation: false,
+      interaction: { mode: 'nearest', intersect: true },
       plugins: {
         legend: { display: false },
         tooltip: {
+          animation: false,
+          backgroundColor: '#1f2937',
+          titleColor: 'white',
+          bodyColor: 'white',
+          padding: 10,
+          cornerRadius: 6,
+          filter: function(item) { return item.datasetIndex === 1; },
           callbacks: {
             label: function(ctx) {
-              if (ctx.datasetIndex === 0) return null;
-              return ' ' + ctx.parsed.y + ' restaurants';
-            },
-            title: function(items) { return items[0].label; }
-          },
-          filter: function(item) { return item.datasetIndex !== 0; }
+              const stage = STAGES[ctx.dataIndex];
+              const val = ctx.raw;
+              if (stage === 'Total LE') return ' Total LE: ' + val + '  ·  Click to view all';
+              let running = 0;
+              for (let i = 0; i <= ctx.dataIndex; i++) {
+                if (STAGES[i] !== 'Total LE') running += (counts[STAGES[i]] || 0);
+              }
+              return ' ' + stage + ': ' + val + '  |  Running: ' + running + '  ·  Click to view';
+            }
+          }
         }
       },
       scales: {
         x: {
           stacked: true,
           grid: { display: false },
-          ticks: {
-            font: { size: 11, weight: '600' },
-            color: '#6b7280',
-            maxRotation: 35,
-            minRotation: 35,
-          }
+          border: { display: false },
+          ticks: { color: '#6b7280', font: { size: 11 } }
         },
         y: {
           stacked: true,
           beginAtZero: true,
-          grid: { color: '#f3f4f6' },
-          ticks: {
-            font: { size: 11 },
-            color: '#9ca3af',
-            stepSize: 1,
-            precision: 0,
-          },
-          title: {
-            display: true,
-            text: 'Restaurant Count',
-            font: { size: 11 },
-            color: '#9ca3af',
-          }
+          grid: { display: false },
+          border: { display: false },
+          ticks: { display: false }
         }
+      },
+      layout: { padding: { top: 28 } }
+    },
+    plugins: [{
+      id: 'lbl_' + div.key,
+      afterDraw: function(chart) {
+        const meta = chart.getDatasetMeta(1);
+        if (!meta || !meta.data) return;
+        const dv = chart._displayVals || wf.displayVals;
+        const cCtx = chart.ctx;
+        const FONT = 'bold 11px -apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif';
+        const MIN_H = 18;
+        dv.forEach(function(val, i) {
+          if (val === 0) return;
+          const bar = meta.data[i];
+          if (!bar) return;
+          const barH = Math.abs(bar.base - bar.y);
+          const barTop = Math.min(bar.y, bar.base);
+          const barMidY = (bar.y + bar.base) / 2;
+          cCtx.save();
+          cCtx.font = FONT;
+          cCtx.textAlign = 'center';
+          if (barH >= MIN_H) {
+            cCtx.fillStyle = '#FFFFFF';
+            cCtx.textBaseline = 'middle';
+            cCtx.fillText(String(val), bar.x, barMidY);
+          } else {
+            cCtx.fillStyle = '#374151';
+            cCtx.textBaseline = 'bottom';
+            cCtx.fillText(String(val), bar.x, barTop - 3);
+          }
+          cCtx.restore();
+        });
       }
-    }
+    }]
+  });
+
+  // Store display vals on chart instance for updates
+  CHARTS[div.key]._displayVals = wf.displayVals;
+
+  // Click to drill down
+  ctx.style.cursor = 'pointer';
+  ctx.addEventListener('click', function(e) {
+    const chart = Chart.getChart(ctx);
+    if (!chart) return;
+    const pts = chart.getElementsAtEventForMode(e, 'nearest', { intersect: true }, false);
+    if (!pts.length) return;
+    const idx = pts[0].index;
+    const stage = STAGES[idx];
+    const buFilter = document.getElementById('bu-filter').value;
+    let sites = ALL_ROWS.filter(function(r) { return r.division === div.label; });
+    if (buFilter) sites = sites.filter(function(r) { return String(r.bu) === buFilter; });
+    if (stage !== 'Total LE') sites = sites.filter(function(r) { return r.stage === stage; });
+    openModal(div.label + ' — ' + stage, div.label, sites);
   });
 }
 
-// ── Build BU pill selectors per division ────────────────────────────────────
-function buildBUPills(div, allDivRows) {
-  const container = document.getElementById(div.buPillsId);
-  if (!container) return;
-
-  const buSet = new Set();
-  allDivRows.forEach(function(r) { if (r.bu) buSet.add(String(r.bu)); });
-  const bus = Array.from(buSet).sort(function(a, b) {
-    return parseFloat(a) - parseFloat(b) || a.localeCompare(b);
+// ── Build division chart card HTML ───────────────────────────────────────────
+function buildChartCards(filteredRows) {
+  let html = '';
+  DIVISIONS.forEach(function(div) {
+    const divRows = filteredRows.filter(function(r) { return r.division === div.label; });
+    const total   = divRows.length;
+    const complete = divRows.filter(function(r) { return r.stage === 'Complete'; }).length;
+    html += '<div class="chart-card">' +
+      '<div class="chart-header">' +
+        '<div class="chart-header-left">' +
+          '<div class="chart-title">' + div.label + '</div>' +
+          '<div class="chart-subtitle" id="sub-' + div.key + '">' + total + ' total · ' + complete + ' complete</div>' +
+          '<div class="chart-hint">↖ Click bars to see restaurant details</div>' +
+        '</div>' +
+        '<button class="export-btn" onclick="exportDivisionToExcel(\'' + div.label + '\',this)">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>' +
+          'Export' +
+        '</button>' +
+      '</div>' +
+      '<canvas id="chart-' + div.key + '" class="chart-canvas"></canvas>' +
+    '</div>';
   });
-
-  if (bus.length === 0) { container.style.display = 'none'; return; }
-
-  let html = '<span class="bu-pill active" data-div="' + div.key + '" data-bu="">All</span>';
-  bus.forEach(function(bu) {
-    html += '<span class="bu-pill inactive" data-div="' + div.key + '" data-bu="' + bu + '">BU ' + bu + '</span>';
-  });
-  container.innerHTML = html;
-
-  container.addEventListener('click', function(e) {
-    const pill = e.target.closest('.bu-pill');
-    if (!pill) return;
-    container.querySelectorAll('.bu-pill').forEach(function(p) {
-      p.classList.replace('active', 'inactive');
-    });
-    pill.classList.replace('inactive', 'active');
-    filterAndRender();
-  });
+  document.getElementById('division-charts').innerHTML = html;
 }
 
-// ── Global BU dropdown ───────────────────────────────────────────────────────
-function populateBUDropdown(rows) {
+// ── Legend ───────────────────────────────────────────────────────────────────
+function buildLegend() {
+  const el = document.getElementById('legend-bar');
+  el.innerHTML = STAGES.map(function(s) {
+    return '<div class="legend-item"><div class="legend-dot" style="background:' + STAGE_COLORS[s] + '"></div>' + s + '</div>';
+  }).join('');
+}
+
+// ── BU dropdown ──────────────────────────────────────────────────────────────
+function populateBUDropdown() {
   const buSet = new Set();
-  rows.forEach(function(r) { if (r.bu) buSet.add(String(r.bu)); });
+  ALL_ROWS.forEach(function(r) { if (r.bu) buSet.add(String(r.bu)); });
   const bus = Array.from(buSet).sort(function(a, b) {
     return parseFloat(a) - parseFloat(b) || a.localeCompare(b);
   });
   const sel = document.getElementById('bu-filter');
   bus.forEach(function(bu) {
     const opt = document.createElement('option');
-    opt.value = bu;
-    opt.textContent = 'BU ' + bu;
+    opt.value = bu; opt.textContent = 'BU ' + bu;
     sel.appendChild(opt);
   });
 }
 
-// ── Global KPIs ──────────────────────────────────────────────────────────────
-function updateGlobalKPIs(rows) {
-  const counts = {};
-  STAGES.forEach(function(s) { counts[s] = 0; });
-  rows.forEach(function(r) { if (r.stage) counts[r.stage]++; });
-  document.getElementById('kpi-total').textContent    = rows.length;
-  document.getElementById('kpi-complete').textContent = counts['Complete'];
-  document.getElementById('kpi-uc').textContent       = counts['Under Construction'];
-  document.getElementById('kpi-ns').textContent       = counts['Not Started'];
-  document.getElementById('kpi-360').textContent      = counts['360 Phase'];
-  document.getElementById('filter-count').textContent =
-    rows.length + ' project' + (rows.length !== 1 ? 's' : '') + ' shown';
+function onBUChange() {
+  const buFilter = document.getElementById('bu-filter').value;
+  const filtered = buFilter ? ALL_ROWS.filter(function(r) { return String(r.bu) === buFilter; }) : ALL_ROWS;
+  renderKPIBanner(filtered);
+  DIVISIONS.forEach(function(div) {
+    const divRows = filtered.filter(function(r) { return r.division === div.label; });
+    renderDivisionChart(div, divRows);
+    const sub = document.getElementById('sub-' + div.key);
+    if (sub) {
+      const c = divRows.filter(function(r) { return r.stage === 'Complete'; }).length;
+      sub.textContent = divRows.length + ' total · ' + c + ' complete';
+    }
+  });
 }
 
-// ── Filter + render all divisions ────────────────────────────────────────────
-function filterAndRender() {
-  const globalBU = document.getElementById('bu-filter').value;
+// ── Modal ────────────────────────────────────────────────────────────────────
+let MODAL_ROWS = [], MODAL_TITLE_TEXT = '';
+let modalSortCol = -1, modalSortDir = 1;
 
-  let filtered = ALL_ROWS;
-  if (globalBU) filtered = filtered.filter(function(r) { return String(r.bu) === globalBU; });
+function openModal(title, divisionLabel, rows) {
+  MODAL_ROWS = rows;
+  MODAL_TITLE_TEXT = title;
 
-  updateGlobalKPIs(filtered);
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-subtitle').textContent = rows.length + ' restaurant' + (rows.length !== 1 ? 's' : '');
+
+  // Populate stage filter
+  const stages = Array.from(new Set(rows.map(function(r) { return r.stage; }))).sort();
+  const stageSelect = document.getElementById('modal-filter-stage');
+  stageSelect.innerHTML = '<option value="">All Stages</option>';
+  stages.forEach(function(s) {
+    const opt = document.createElement('option');
+    opt.value = s; opt.textContent = s;
+    stageSelect.appendChild(opt);
+  });
+
+  // Populate BU filter
+  const bus = Array.from(new Set(rows.map(function(r) { return r.bu; }).filter(Boolean))).sort(function(a,b){ return parseFloat(a)-parseFloat(b)||String(a).localeCompare(String(b)); });
+  const buSelect = document.getElementById('modal-filter-bu');
+  buSelect.innerHTML = '<option value="">All BUs</option>';
+  bus.forEach(function(bu) {
+    const opt = document.createElement('option');
+    opt.value = bu; opt.textContent = 'BU ' + bu;
+    buSelect.appendChild(opt);
+  });
+
+  modalSortCol = -1; modalSortDir = 1;
+  document.querySelectorAll('#modal-thead-row th').forEach(function(th) { th.classList.remove('sort-asc','sort-desc'); });
+  renderModalTable();
+  document.getElementById('drill-modal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('drill-modal').classList.remove('open'); }
+document.getElementById('drill-modal').addEventListener('click', function(e) { if (e.target === this) closeModal(); });
+
+function getModalRow(r) { return [r.plk || '', r.division || '', String(r.bu || ''), r.stage || '', r.rawStatus || '']; }
+
+function renderModalTable() {
+  const stageF = document.getElementById('modal-filter-stage').value;
+  const buF    = document.getElementById('modal-filter-bu').value;
+  let rows = MODAL_ROWS.filter(function(r) {
+    return (!stageF || r.stage === stageF) && (!buF || String(r.bu) === buF);
+  });
+  if (modalSortCol >= 0) {
+    rows = rows.slice().sort(function(a, b) {
+      const av = getModalRow(a)[modalSortCol], bv = getModalRow(b)[modalSortCol];
+      return av.localeCompare(bv, undefined, { sensitivity:'base', numeric:true }) * modalSortDir;
+    });
+  }
+  document.getElementById('modal-count').textContent = rows.length + ' restaurant' + (rows.length !== 1 ? 's' : '');
+  const tbody = document.getElementById('modal-tbody');
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5" class="modal-empty">No restaurants match the current filters.</td></tr>';
+    return;
+  }
+  tbody.innerHTML = rows.map(function(r) {
+    const color = STAGE_COLORS[r.stage] || '#9ca3af';
+    return '<tr>' +
+      '<td><strong>' + (r.plk || '—') + '</strong></td>' +
+      '<td>' + (r.division || '—') + '</td>' +
+      '<td>' + (r.bu ? 'BU ' + r.bu : '—') + '</td>' +
+      '<td><span class="stage-badge" style="background:' + color + '">' + (r.stage || '—') + '</span></td>' +
+      '<td style="color:#6b7280;font-size:11px;">' + (r.rawStatus || '—') + '</td>' +
+    '</tr>';
+  }).join('');
+}
+
+function sortModal(col) {
+  const ths = document.querySelectorAll('#modal-thead-row th');
+  modalSortDir = (modalSortCol === col) ? modalSortDir * -1 : 1;
+  modalSortCol = col;
+  ths.forEach(function(th, i) {
+    th.classList.remove('sort-asc','sort-desc');
+    if (i === col) th.classList.add(modalSortDir === 1 ? 'sort-asc' : 'sort-desc');
+  });
+  renderModalTable();
+}
+function resetModalFilters() {
+  document.getElementById('modal-filter-stage').value = '';
+  document.getElementById('modal-filter-bu').value = '';
+  modalSortCol = -1; modalSortDir = 1;
+  document.querySelectorAll('#modal-thead-row th').forEach(function(th) { th.classList.remove('sort-asc','sort-desc'); });
+  renderModalTable();
+}
+
+// ── Exports ──────────────────────────────────────────────────────────────────
+function buildDetailRows(rows) {
+  const out = [['Store #','Division','BU','Stage','Raw Status']];
+  rows.forEach(function(r) {
+    out.push([r.plk || '', r.division || '', r.bu || '', r.stage || '', r.rawStatus || '']);
+  });
+  return out;
+}
+
+function buildSummaryRows(rows, title) {
+  const counts = {};
+  STAGES.forEach(function(s) { if (s !== 'Total LE') counts[s] = 0; });
+  rows.forEach(function(r) { if (r.stage && counts[r.stage] !== undefined) counts[r.stage]++; });
+  const out = [[title, 'Count']];
+  STAGES.forEach(function(s) {
+    if (s === 'Total LE') out.push(['Total LE', rows.length]);
+    else out.push([s, counts[s]]);
+  });
+  return out;
+}
+
+function exportModalToExcel() {
+  const stageF = document.getElementById('modal-filter-stage').value;
+  const buF    = document.getElementById('modal-filter-bu').value;
+  const rows   = MODAL_ROWS.filter(function(r) {
+    return (!stageF || r.stage === stageF) && (!buF || String(r.bu) === buF);
+  });
+  if (!rows.length) return;
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.aoa_to_sheet(buildDetailRows(rows));
+  ws['!cols'] = [10, 12, 6, 20, 36].map(function(w) { return { wch: w }; });
+  XLSX.utils.book_append_sheet(wb, ws, 'Restaurants');
+  XLSX.writeFile(wb, (MODAL_TITLE_TEXT || 'Renovations').replace(/[^a-zA-Z0-9 ]/g, '_') + '.xlsx');
+}
+
+function exportDivisionToExcel(divisionLabel, btn) {
+  const buFilter = document.getElementById('bu-filter').value;
+  let rows = ALL_ROWS.filter(function(r) { return r.division === divisionLabel; });
+  if (buFilter) rows = rows.filter(function(r) { return String(r.bu) === buFilter; });
+
+  const orig = btn ? btn.innerHTML : '';
+  if (btn) { btn.textContent = 'Exporting…'; btn.disabled = true; }
+  try {
+    const wb = XLSX.utils.book_new();
+    const wsSummary = XLSX.utils.aoa_to_sheet(buildSummaryRows(rows, 'Stage'));
+    wsSummary['!cols'] = [{ wch: 22 }, { wch: 8 }];
+    XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
+    const wsDetail = XLSX.utils.aoa_to_sheet(buildDetailRows(rows));
+    wsDetail['!cols'] = [10, 12, 6, 20, 36].map(function(w) { return { wch: w }; });
+    XLSX.utils.book_append_sheet(wb, wsDetail, 'Restaurants');
+    XLSX.writeFile(wb, 'Renovations_' + divisionLabel.replace(/\s/g, '_') + (buFilter ? '_BU' + buFilter : '') + '.xlsx');
+  } finally {
+    if (btn) { btn.innerHTML = orig; btn.disabled = false; }
+  }
+}
+
+function exportAllToExcel() {
+  const buFilter = document.getElementById('bu-filter').value;
+  const filtered = buFilter ? ALL_ROWS.filter(function(r) { return String(r.bu) === buFilter; }) : ALL_ROWS;
+  const wb = XLSX.utils.book_new();
+
+  // Summary sheet
+  const summaryRows = [['Division', 'Not Started', '360 Phase', 'In Design', 'Permitting', 'Under Construction', 'Punch List', 'Complete', 'Total LE']];
+  const totals = {};
+  STAGES.forEach(function(s) { if (s !== 'Total LE') totals[s] = 0; });
 
   DIVISIONS.forEach(function(div) {
-    // If global BU filter is active, respect it; otherwise check per-div pill
-    let divRows = filtered.filter(function(r) {
-      return r.division && r.division.toLowerCase().indexOf(div.label.toLowerCase()) !== -1;
-    });
-
-    if (!globalBU) {
-      // Check per-division BU pill
-      const container = document.getElementById(div.buPillsId);
-      const activePill = container && container.querySelector('.bu-pill.active');
-      const pillBU = activePill ? activePill.dataset.bu : '';
-      if (pillBU) {
-        divRows = divRows.filter(function(r) { return String(r.bu) === pillBU; });
-      }
-    }
-
-    renderDivision(div, divRows);
+    const rows = filtered.filter(function(r) { return r.division === div.label; });
+    const counts = {};
+    STAGES.forEach(function(s) { if (s !== 'Total LE') counts[s] = 0; });
+    rows.forEach(function(r) { if (r.stage && counts[r.stage] !== undefined) counts[r.stage]++; });
+    STAGES.forEach(function(s) { if (s !== 'Total LE') totals[s] += counts[s]; });
+    summaryRows.push([div.label, counts['Not Started'], counts['360 Phase'], counts['In Design'], counts['Permitting'], counts['Under Construction'], counts['Punch List'], counts['Complete'], rows.length]);
   });
-}
+  summaryRows.push(['Total', totals['Not Started'], totals['360 Phase'], totals['In Design'], totals['Permitting'], totals['Under Construction'], totals['Punch List'], totals['Complete'], filtered.length]);
 
-// ── Build shared legend (first time only) ────────────────────────────────────
-function buildLegend() {
-  const legendEl = document.getElementById('legend');
-  if (!legendEl) return;
-  let html = '';
-  STAGES.forEach(function(stage) {
-    html += '<div class="legend-item"><div class="legend-dot" style="background:' +
-      STAGE_COLORS[stage] + '"></div><span>' + stage + '</span></div>';
-  });
-  legendEl.innerHTML = html;
+  const wsSummary = XLSX.utils.aoa_to_sheet(summaryRows);
+  wsSummary['!cols'] = [14, 12, 10, 10, 12, 18, 12, 10, 10].map(function(w) { return { wch: w }; });
+  XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary by Division');
+
+  // Detail sheet
+  const wsDetail = XLSX.utils.aoa_to_sheet(buildDetailRows(filtered));
+  wsDetail['!cols'] = [10, 12, 6, 20, 36].map(function(w) { return { wch: w }; });
+  XLSX.utils.book_append_sheet(wb, wsDetail, 'All Restaurants');
+
+  XLSX.writeFile(wb, 'Renovations_All_Divisions' + (buFilter ? '_BU' + buFilter : '') + '.xlsx');
 }
 
 // ── Init ─────────────────────────────────────────────────────────────────────
@@ -436,49 +651,31 @@ async function init() {
       throw new Error(err.error || 'HTTP ' + resp.status);
     }
     const data = await resp.json();
-
     if (!data.rows || data.rows.length === 0)
-      throw new Error('No renovation records returned. Verify Smartsheet column names via /api/renovations?debug=1');
+      throw new Error('No renovation records returned — check /api/renovations?debug=1 to verify column names.');
 
     ALL_ROWS = data.rows;
 
+    document.getElementById('loading-overlay').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
     document.getElementById('last-updated').textContent =
       'Last updated: ' + new Date(data.lastUpdated).toLocaleString();
-    document.getElementById('loading-state').style.display = 'none';
-    document.getElementById('div-grid').style.display      = 'grid';
 
-    populateBUDropdown(ALL_ROWS);
+    populateBUDropdown();
+    renderKPIBanner(ALL_ROWS);
+    buildChartCards(ALL_ROWS);
+    buildLegend();
 
     DIVISIONS.forEach(function(div) {
-      const divRows = ALL_ROWS.filter(function(r) {
-        return r.division && r.division.toLowerCase().indexOf(div.label.toLowerCase()) !== -1;
-      });
-      buildBUPills(div, divRows);
-    });
-
-    buildLegend();
-    filterAndRender();
-
-    document.getElementById('bu-filter').addEventListener('change', function() {
-      // Reset all per-div pills to "All" when global filter changes
-      DIVISIONS.forEach(function(div) {
-        const container = document.getElementById(div.buPillsId);
-        if (container) {
-          container.querySelectorAll('.bu-pill').forEach(function(p) {
-            p.classList.remove('active');
-            p.classList.add('inactive');
-          });
-          const allPill = container.querySelector('[data-bu=""]');
-          if (allPill) { allPill.classList.replace('inactive','active'); }
-        }
-      });
-      filterAndRender();
+      const divRows = ALL_ROWS.filter(function(r) { return r.division === div.label; });
+      renderDivisionChart(div, divRows);
     });
 
   } catch(err) {
-    document.getElementById('loading-state').style.display = 'none';
-    document.getElementById('error-state').style.display   = '';
-    document.getElementById('error-msg').textContent       = err.message;
+    document.getElementById('loading-overlay').innerHTML =
+      '<div style="font-size:40px;margin-bottom:16px;">⚠️</div>' +
+      '<div style="font-size:18px;font-weight:700;color:#374151;margin-bottom:8px;">Could not load data</div>' +
+      '<div style="font-size:14px;color:#9ca3af;max-width:480px;text-align:center;">' + err.message + '</div>';
   }
 }
 
