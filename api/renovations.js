@@ -67,7 +67,7 @@ module.exports = async function(req, res) {
       const rawStatus = get(row, "Renovation Status") || null;
       const stage     = rawStatus ? (STAGE_MAP[rawStatus.trim()] || null) : null;
       return {
-        plk:      get(row, "PLK #") || get(row, "Rest No.") || get(row, "Restaurant #") || null,
+        plk:      get(row, "Store Number"),
         division: get(row, "Division") || null,
         bu:       get(row, "BU"),
         rawStatus,
