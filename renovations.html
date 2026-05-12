@@ -589,22 +589,48 @@ function exportModalToExcel() {
   XLSX.writeFile(wb, (MODAL_TITLE_TEXT || 'Renovations').replace(/[^a-zA-Z0-9 ]/g, '_') + '.xlsx');
 }
 
-function exportDivisionToExcel(divisionLabel, btn) {
+async function exportDivisionToExcel(divisionLabel, btn) {
   const buFilter = document.getElementById('bu-filter').value;
   let rows = ALL_ROWS.filter(function(r) { return r.division === divisionLabel; });
   if (buFilter) rows = rows.filter(function(r) { return String(r.bu) === buFilter; });
 
+  const counts = {};
+  STAGES.forEach(function(s) { if (s !== 'Total LE') counts[s] = 0; });
+  rows.forEach(function(r) { if (r.stage && counts[r.stage] !== undefined) counts[r.stage]++; });
+
+  const payload = {
+    divisionName: divisionLabel,
+    buFilter:     buFilter,
+    stageCounts:  counts,
+    total:        rows.length,
+    sites:        rows.map(function(r) {
+      return { plk: r.plk || '', division: r.division || '', bu: r.bu || '', stage: r.stage || '', rawStatus: r.rawStatus || '' };
+    })
+  };
+
   const orig = btn ? btn.innerHTML : '';
   if (btn) { btn.textContent = 'Exporting…'; btn.disabled = true; }
   try {
-    const wb = XLSX.utils.book_new();
-    const wsSummary = XLSX.utils.aoa_to_sheet(buildSummaryRows(rows, 'Stage'));
-    wsSummary['!cols'] = [{ wch: 22 }, { wch: 8 }];
-    XLSX.utils.book_append_sheet(wb, wsSummary, 'Summary');
-    const wsDetail = XLSX.utils.aoa_to_sheet(buildDetailRows(rows));
-    wsDetail['!cols'] = [10, 12, 6, 20, 36].map(function(w) { return { wch: w }; });
-    XLSX.utils.book_append_sheet(wb, wsDetail, 'Restaurants');
-    XLSX.writeFile(wb, 'Renovations_' + divisionLabel.replace(/\s/g, '_') + (buFilter ? '_BU' + buFilter : '') + '.xlsx');
+    const res = await fetch('/api/export_renovation', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(function() { return {}; });
+      throw new Error(err.error || 'Export failed: HTTP ' + res.status);
+    }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = url;
+    a.download = 'Renovations_' + divisionLabel.replace(/\s/g, '_') + (buFilter ? '_BU' + buFilter : '') + '.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch(e) {
+    alert('Export failed: ' + e.message);
   } finally {
     if (btn) { btn.innerHTML = orig; btn.disabled = false; }
   }
