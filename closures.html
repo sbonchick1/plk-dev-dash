@@ -542,7 +542,7 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const grandTotal=rows.length;
   const bucket = canvasId.includes("opp") ? "LE (Opp)" : "LE";
   const nonCtrlTotal = activeReasons.reduce((a,r)=>a+reasonCounts[r].nonCtrl, 0);
-  REASON_CHART_DATA[bucket] = { reasons:activeReasons, counts:reasonCounts, grandTotal, nonCtrlTotal };
+  REASON_CHART_DATA[bucket] = { reasons:activeReasons, counts:reasonCounts, grandTotal, nonCtrlTotal, ctrlColor, nonCtrlColor, totalColor };
   const labels=[...activeReasons,"Total"];
   const wrappedLabels = labels.map(l => wrapLabel(l, 13));
   const n=labels.length;
@@ -902,17 +902,49 @@ function exportFuturePipeline(){
   XLSX.utils.book_append_sheet(wb,ws,"2027-2028 Pipeline");XLSX.writeFile(wb,"2027_2028_Closure_Pipeline.xlsx");
 }
 const REASON_CHART_DATA={};
-function exportReasonChart(bucket){
+async function exportReasonChart(bucket){
   const d=REASON_CHART_DATA[bucket]; if(!d) return;
-  const wb=XLSX.utils.book_new();
-  const rows=[["Closure Reason","PLK Controlled","Non-Controlled","Total"]];
-  d.reasons.forEach(r=>{rows.push([r,d.counts[r].ctrl,d.counts[r].nonCtrl,d.counts[r].ctrl+d.counts[r].nonCtrl]);});
-  rows.push(["TOTAL",d.grandTotal-d.nonCtrlTotal,d.nonCtrlTotal,d.grandTotal]);
-  const ws=XLSX.utils.aoa_to_sheet(rows);
-  ws["!cols"]=[{wch:32},{wch:16},{wch:16},{wch:10}];
-  const safe=bucket.replace(/[^a-zA-Z0-9]/g,"_");
-  XLSX.utils.book_append_sheet(wb,ws,bucket.slice(0,31));
-  XLSX.writeFile(wb,`Closure_Reason_${safe}.xlsx`);
+  const btn = document.querySelector(`button[onclick="exportReasonChart('${bucket}')"]`);
+  const origHTML = btn ? btn.innerHTML : null;
+  if(btn){ btn.disabled=true; btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> Exporting…'; }
+  try {
+    const bucketFn = bucket==="LE" ? isLE : isLEOpp;
+    const sites = ALL_DATA.filter(r=>bucketFn(r)).map(s=>({
+      restNum:s.restNum||"", fz:s.fz||"", address:s.address||"", city:s.city||"",
+      state:s.state||"", dateOfClosure:s.dateOfClosure||"", closureBucket:s.closureBucket||"",
+      closureRisk:s.closureRisk||"", closureReason:s.closureReason||"",
+      plkControl:s.plkControl||"", ars2025:s.ars2025||"", ttmEbitda:s.ttmEbitda||"",
+      comments:s.comments||""
+    }));
+    const payload = {
+      bucketName: bucket,
+      reasons:      d.reasons,
+      ctrlCounts:   d.reasons.map(r=>d.counts[r].ctrl),
+      nonCtrlCounts:d.reasons.map(r=>d.counts[r].nonCtrl),
+      grandTotal:   d.grandTotal,
+      ctrlColor:    d.ctrlColor,
+      nonCtrlColor: d.nonCtrlColor,
+      totalColor:   d.totalColor,
+      sites
+    };
+    const res = await fetch("/api/export_closure_chart", {
+      method:"POST", headers:{"Content-Type":"application/json"},
+      body: JSON.stringify(payload)
+    });
+    if(!res.ok) throw new Error(await res.text());
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `Closure_Reason_${bucket.replace(/[^a-zA-Z0-9]/g,"_")}.xlsx`;
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a); URL.revokeObjectURL(url);
+  } catch(err) {
+    console.error("Export error:", err);
+    alert("Export failed: " + err.message);
+  } finally {
+    if(btn){ btn.disabled=false; btn.innerHTML=origHTML; }
+  }
 }
 async function fetchData(){
   try{
