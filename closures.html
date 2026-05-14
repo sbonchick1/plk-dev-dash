@@ -558,7 +558,7 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const ctx=document.getElementById(canvasId);
   const existing = Chart.getChart(ctx);
   if (existing) existing.destroy();
-  const MIN_BAR_H = 18;
+  const MIN_BAR_H = 14;
   const labelPlugin = {
     id: "labels_" + canvasId,
     afterDraw(chart) {
@@ -568,28 +568,32 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
       const cCtx = chart.ctx;
       cCtx.save();
       cCtx.font = "bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
-      cCtx.fillStyle = "#FFFFFF";
       cCtx.textAlign = "center";
-      cCtx.textBaseline = "middle";
-      // Reason bars: draw label inside each segment individually
+
+      function drawLabel(val, bar) {
+        if (!bar || !val) return;
+        const h = Math.abs(bar.base - bar.y);
+        if (h >= MIN_BAR_H) {
+          // Inside bar — white, vertically centered
+          cCtx.fillStyle = "#FFFFFF";
+          cCtx.textBaseline = "middle";
+          cCtx.fillText(String(val), bar.x, (bar.y + bar.base) / 2);
+        } else {
+          // Above bar — dark, small offset
+          cCtx.fillStyle = "#374151";
+          cCtx.textBaseline = "bottom";
+          cCtx.fillText(String(val), bar.x, bar.y - 3);
+        }
+      }
+
+      // Reason bars: label each segment individually
       for (let i = 0; i < n - 1; i++) {
-        const b1 = meta1 && meta1.data[i];
-        if (b1 && ctrlData[i] > 0) {
-          const h = Math.abs(b1.base - b1.y);
-          if (h >= MIN_BAR_H) cCtx.fillText(String(ctrlData[i]), b1.x, (b1.y + b1.base) / 2);
-        }
-        const b2 = meta2 && meta2.data[i];
-        if (b2 && nonCtrlData[i] > 0) {
-          const h = Math.abs(b2.base - b2.y);
-          if (h >= MIN_BAR_H) cCtx.fillText(String(nonCtrlData[i]), b2.x, (b2.y + b2.base) / 2);
-        }
+        if (ctrlData[i] > 0)    drawLabel(ctrlData[i],    meta1 && meta1.data[i]);
+        if (nonCtrlData[i] > 0) drawLabel(nonCtrlData[i], meta2 && meta2.data[i]);
       }
       // Total bar
-      const bTotal = meta3 && meta3.data[n - 1];
-      if (bTotal && grandTotal > 0) {
-        const h = Math.abs(bTotal.base - bTotal.y);
-        if (h >= MIN_BAR_H) cCtx.fillText(String(grandTotal), bTotal.x, (bTotal.y + bTotal.base) / 2);
-      }
+      if (grandTotal > 0) drawLabel(grandTotal, meta3 && meta3.data[n - 1]);
+
       cCtx.restore();
     }
   };
