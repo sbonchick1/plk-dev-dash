@@ -194,7 +194,7 @@ def build_xlsx(payload: dict) -> bytes:
     })
 
     chart.set_title({"name": f"2026 Closure Reason — {bucket_name}", "overlay": False})
-    chart.set_legend({"position": "bottom"})
+    chart.set_legend({"position": "bottom", "delete_series": [0]})
     chart.set_size({"width": 720, "height": 440})
     chart.set_y_axis({"visible": False, "major_gridlines": {"visible": False}})
     chart.set_x_axis({"major_gridlines": {"visible": False}, "line": {"none": True}})
