@@ -558,7 +558,6 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
   const ctx=document.getElementById(canvasId);
   const existing = Chart.getChart(ctx);
   if (existing) existing.destroy();
-  const MIN_BAR_H = 14;
   const labelPlugin = {
     id: "labels_" + canvasId,
     afterDraw(chart) {
@@ -569,30 +568,39 @@ function buildReasonChart(canvasId, rows, ctrlColor, nonCtrlColor, totalColor) {
       cCtx.save();
       cCtx.font = "bold 11px -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif";
       cCtx.textAlign = "center";
+      cCtx.textBaseline = "middle";
 
-      function drawLabel(val, bar) {
+      function drawLabel(val, bar, bgColor) {
         if (!bar || !val) return;
-        const h = Math.abs(bar.base - bar.y);
-        if (h >= MIN_BAR_H) {
-          // Inside bar — white, vertically centered
-          cCtx.fillStyle = "#FFFFFF";
-          cCtx.textBaseline = "middle";
-          cCtx.fillText(String(val), bar.x, (bar.y + bar.base) / 2);
+        const text = String(val);
+        const midX = bar.x;
+        const midY = (bar.y + bar.base) / 2;
+        const tw = cCtx.measureText(text).width;
+        const padX = 5, padY = 3;
+        const bw = tw + padX * 2;
+        const bh = 18;
+        const rx = 3;
+        const bx = midX - bw / 2;
+        const by = midY - bh / 2;
+        // Colored background pill
+        cCtx.fillStyle = bgColor;
+        if (cCtx.roundRect) {
+          cCtx.beginPath(); cCtx.roundRect(bx, by, bw, bh, rx); cCtx.fill();
         } else {
-          // Above bar — dark, small offset
-          cCtx.fillStyle = "#374151";
-          cCtx.textBaseline = "bottom";
-          cCtx.fillText(String(val), bar.x, bar.y - 3);
+          cCtx.fillRect(bx, by, bw, bh);
         }
+        // White text
+        cCtx.fillStyle = "#FFFFFF";
+        cCtx.fillText(text, midX, midY);
       }
 
       // Reason bars: label each segment individually
       for (let i = 0; i < n - 1; i++) {
-        if (ctrlData[i] > 0)    drawLabel(ctrlData[i],    meta1 && meta1.data[i]);
-        if (nonCtrlData[i] > 0) drawLabel(nonCtrlData[i], meta2 && meta2.data[i]);
+        if (ctrlData[i] > 0)    drawLabel(ctrlData[i],    meta1 && meta1.data[i], ctrlColor);
+        if (nonCtrlData[i] > 0) drawLabel(nonCtrlData[i], meta2 && meta2.data[i], nonCtrlColor);
       }
       // Total bar
-      if (grandTotal > 0) drawLabel(grandTotal, meta3 && meta3.data[n - 1]);
+      if (grandTotal > 0) drawLabel(grandTotal, meta3 && meta3.data[n - 1], totalColor);
 
       cCtx.restore();
     }
